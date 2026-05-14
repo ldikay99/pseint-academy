@@ -19305,27 +19305,18 @@ FinProceso</textarea>
                 status.className = 'info';
                 status.textContent = 'Enviando reporte al autor...';
 
-                // FormData → JSON (Web3Forms acepta ambos, JSON es más limpio)
+                // CRÍTICO: usar FormData (no JSON) para evitar CORS preflight.
+                // Con Content-Type: application/json el navegador hace una request
+                // OPTIONS previa, y Web3Forms responde 403 a OPTIONS sin headers
+                // CORS correctos → "Error de red". Con multipart/form-data el
+                // browser lo trata como "simple request" sin preflight y funciona.
                 const formData = new FormData(form);
-                const jsonData = {};
-                formData.forEach((value, key) => {
-                    // Si una clave ya existe, convertir a array (para checkboxes multi)
-                    if (jsonData[key]) {
-                        jsonData[key] = Array.isArray(jsonData[key])
-                            ? [...jsonData[key], value]
-                            : [jsonData[key], value];
-                    } else {
-                        jsonData[key] = value;
-                    }
-                });
 
                 fetch('https://api.web3forms.com/submit', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify(jsonData)
+                    body: formData
+                    // No headers — dejamos al navegador poner Content-Type:
+                    // multipart/form-data automático con boundary.
                 }).then(async (r) => {
                     let data = null;
                     try { data = await r.json(); } catch(_) {}
