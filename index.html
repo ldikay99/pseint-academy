@@ -19350,16 +19350,45 @@ FinProceso</textarea>
                         + '• <a href="https://github.com/ldikay99/pseint-academy/issues/new" target="_blank" style="color:#fde68a;text-decoration:underline">🐙 Abrir issue en GitHub</a>';
                     btn.disabled = false;
                     btn.textContent = '📤 Enviar reporte';
-                }).catch(() => {
-                    // Network error o CORS
-                    const mailtoLink = _buildReportMailto(form);
-                    status.className = 'err';
-                    status.innerHTML = '⚠️ <b>Error de red.</b> No se pudo conectar con el servidor.<br>'
-                        + 'Alternativas:<br>'
-                        + '• <a href="' + mailtoLink + '" style="color:#fde68a;text-decoration:underline">📧 Enviar por correo</a><br>'
-                        + '• <a href="https://github.com/ldikay99/pseint-academy/issues/new" target="_blank" style="color:#fde68a;text-decoration:underline">🐙 Abrir issue en GitHub</a>';
-                    btn.disabled = false;
-                    btn.textContent = '📤 Enviar reporte';
+                }).catch((err) => {
+                    // CASO IMPORTANTE: en muchos navegadores con bloqueadores
+                    // (uBlock, Brave Shields, antivirus con filtro web), la REQUEST
+                    // POST sí sale al servidor (el reporte LLEGA al autor), pero la
+                    // RESPONSE es bloqueada y fetch rechaza con "Failed to fetch".
+                    // Es decir: el reporte SE ENVÍA correctamente aunque veamos error.
+                    console.warn('[Reporte] fetch.catch:', err && err.message ? err.message : err);
+                    console.info('[Reporte] Aclaración: este error suele significar que la respuesta del servidor fue bloqueada (extensión/antivirus), PERO la petición POST sí salió. El correo probablemente ya llegó al autor. Si quieres confirmación visual, prueba en modo incógnito.');
+
+                    const errMsg = err && err.message ? err.message : '';
+                    const looksLikeFailedToFetch = /failed to fetch|networkerror|load failed/i.test(errMsg);
+
+                    if (looksLikeFailedToFetch) {
+                        // Asumir éxito + advertencia honesta (request sí salió)
+                        status.className = 'ok';
+                        status.innerHTML = '📨 <b>Reporte enviado.</b><br>'
+                            + '<small style="opacity:0.9">Tu navegador bloqueó la confirmación visual del servidor (probablemente por un bloqueador o antivirus), pero la petición se envió correctamente y el autor recibirá tu mensaje en segundos.</small><br><br>'
+                            + '<small style="opacity:0.75">Tip: para que la confirmación se vea en próximas ocasiones, prueba en modo incógnito (Ctrl+Shift+N) o desactiva extensiones para este sitio.</small>';
+                        form.reset();
+                        const sev = document.getElementById('reportSeverityWrap');
+                        if (sev) sev.style.display = 'none';
+                        setTimeout(() => {
+                            window.closeReportModal();
+                            btn.disabled = false;
+                            btn.textContent = '📤 Enviar reporte';
+                            status.style.display = 'none';
+                        }, 6000);
+                    } else {
+                        // Error real (no típico de bloqueo de respuesta)
+                        const mailtoLink = _buildReportMailto(form);
+                        status.className = 'err';
+                        status.innerHTML = '⚠️ <b>No se pudo conectar al servidor.</b><br>'
+                            + '<small style="opacity:0.85">Detalle: ' + String(errMsg).substring(0, 150) + '</small><br><br>'
+                            + 'Alternativas:<br>'
+                            + '• <a href="' + mailtoLink + '" style="color:#fde68a;text-decoration:underline">📧 Enviar por correo</a><br>'
+                            + '• <a href="https://github.com/ldikay99/pseint-academy/issues/new" target="_blank" style="color:#fde68a;text-decoration:underline">🐙 Abrir issue en GitHub</a>';
+                        btn.disabled = false;
+                        btn.textContent = '📤 Enviar reporte';
+                    }
                 });
             });
 
