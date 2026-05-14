@@ -188,6 +188,38 @@
             }
             /* Dark (default) ya está cubierto por las :root vars */
 
+            /* ── FIX: legibilidad de mensajes de error/warn por tema ──
+               Los colores claros (#fca5a5, #fde68a) son ilegibles sobre
+               fondos claros del tema Light. Forzamos versiones más oscuras
+               donde sea necesario para mantener contraste WCAG. */
+            html[data-theme="light"] .error-item,
+            html[data-theme="light"] .fs-bottom-content .fs-error-line,
+            html[data-theme="light"] .diag-panel.error-panel .diag-panel-header {
+                color: #b91c1c !important;
+            }
+            html[data-theme="light"] .warn-item,
+            html[data-theme="light"] .fs-bottom-content .fs-warn-item .fs-error-line,
+            html[data-theme="light"] .diag-panel.warn-panel .diag-panel-header {
+                color: #92400e !important;
+            }
+            html[data-theme="light"] .fs-bottom-content,
+            html[data-theme="light"] .console-out,
+            html[data-theme="light"] .big-console {
+                color: #1f2937 !important;
+                background: #fafafa !important;
+            }
+            html[data-theme="light"] .cout-line {
+                color: #1f2937;
+            }
+            html[data-theme="light"] .error-line-num {
+                background: rgba(239,68,68,0.15) !important;
+                color: #b91c1c !important;
+            }
+            /* Solarized: textos un poco más cálidos */
+            html[data-theme="solarized"] .error-item { color: #dc322f !important; }
+            html[data-theme="solarized"] .warn-item { color: #cb4b16 !important; }
+            /* Monokai y Ocean ya son dark, los colores existentes funcionan */
+
             /* Reduced motion: respeta preferencias del usuario */
             @media (prefers-reduced-motion: reduce) {
                 *, *::before, *::after {
@@ -1697,7 +1729,7 @@
                    tags que appendConsole añade explícitamente. */
                 white-space: normal;
                 word-break: break-word;
-                color: #e2e8f0;
+                color: var(--text-main);
                 text-align: left !important;
             }
             /* Anular cualquier centrado heredado de las líneas .cout-line */
@@ -3879,16 +3911,6 @@
                 <a href="#playground" aria-label="Editor">⚡ Editor</a>
                 <a href="#referencia" aria-label="Referencia">📖 Referencia</a>
                 <a href="#progreso" aria-label="Progreso">🏆 Progreso</a>
-                <button
-                    onclick="openReportModal()"
-                    aria-label="Reportar bug o sugerencia"
-                    title="Reportar bug o enviar sugerencia"
-                    style="background:linear-gradient(135deg,#10b981,#34d399);color:#fff;border:none;padding:7px 14px;border-radius:18px;cursor:pointer;font:inherit;font-size:0.85rem;font-weight:700;box-shadow:0 2px 8px rgba(16,185,129,0.35);transition:transform 0.15s"
-                    onmouseover="this.style.transform='translateY(-1px)'"
-                    onmouseout="this.style.transform='translateY(0)'"
-                >
-                    📨 Reportar
-                </button>
             </div>
             <button
                 class="nav-burger"
@@ -4078,7 +4100,6 @@
                                 </div>
                                 <button class="btn-ghost" style="padding:4px 10px;font-size:0.72rem" onclick="toggleEditorFullscreen()" title="Pantalla completa (F11)">⛶</button>
                                 <button class="btn-ghost" style="padding:4px 10px;font-size:0.72rem" onclick="toggleShortcuts()" title="Atajos de teclado">⌨</button>
-                                <button class="btn-ghost" style="padding:4px 10px;font-size:0.72rem" onclick="openReportModal()" title="Reportar bug o sugerencia">📨 Reportar</button>
                             </div>
                         </div>
                         <!-- Snippets panel -->
@@ -4245,7 +4266,6 @@ FinProceso</textarea>
                             </div>
                         </div>
                         <button class="fs-icon-btn" onclick="toggleShortcuts()" title="Atajos de teclado">⌨ Atajos</button>
-                        <button class="fs-icon-btn" onclick="openReportModal()" title="Reportar bug o sugerencia">📨 Reportar</button>
                         <button class="fs-icon-btn" onclick="openFlowchart()" title="Ver diagrama de flujo (F7)">🔀 Diagrama</button>
                         <!-- Theme picker en pantalla completa -->
                         <div class="theme-picker-wrap" style="position:relative;display:inline-block">
@@ -4843,7 +4863,7 @@ FinProceso</textarea>
         </button>
 
         <!-- Menú GLOBAL del theme picker (flotante, position:fixed para escapar de overflow:hidden de padres) -->
-        <div id="themePickerMenu" role="menu" aria-label="Lista de temas" style="position:fixed;display:none;flex-direction:column;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:6px;min-width:260px;box-shadow:0 8px 32px rgba(0,0,0,0.6);z-index:99999"></div>
+        <div id="themePickerMenu" role="menu" aria-label="Lista de temas" style="position:fixed;display:none;flex-direction:column;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:6px;min-width:260px;box-shadow:0 8px 32px rgba(0,0,0,0.6);z-index:2147483647"></div>
 
         <!-- MODAL DE LECCIÓN -->
         <div
