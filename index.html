@@ -8581,9 +8581,17 @@ FinProceso`,
                     this.subprocs = {};
                     this.lines = [];
                     this.pos = 0;
-                    this.maxSteps = 1000000;
+                    // Caps de seguridad MÁS estrictos para prevenir crash del navegador.
+                    // Eran 1_000_000 — demasiado alto, podía colgar el thread principal
+                    // varios minutos antes de cortar.
+                    this.maxSteps = 200000;       // pasos totales del programa
+                    this.maxLoopIters = 100000;   // iteraciones por loop individual
+                    this.maxOutputLines = 10000;  // cap del output (anti-spam de DOM)
+                    this.outputLineCount = 0;
                     this.steps = 0;
                     this.callStack = 0;
+                    this.startTime = Date.now();
+                    this.maxRunMs = 30000;        // 30 seg de wall-clock máximo
                 }
 
                 tokenize(code) {
@@ -8928,6 +8936,14 @@ FinProceso`,
                                 return v;
                             })
                             .join("");
+                        // Cap del output: evita saturar el DOM en bucles que imprimen mucho
+                        this.outputLineCount++;
+                        if (this.outputLineCount > this.maxOutputLines) {
+                            throw new Error(
+                                "🛑 Salida excesiva: se imprimieron más de " + this.maxOutputLines +
+                                " líneas. Probable bucle infinito o sin control. Revisa tu lógica."
+                            );
+                        }
                         this.output(String(out), null, noNewline);
                         return;
                     }
@@ -9492,13 +9508,19 @@ FinProceso`,
                         throw new Error("Falta 'FinMientras' para cerrar el bucle 'Mientras " + condStr + "'");
                     }
                     let iters = 0;
-                    while (this.evalExpr(condStr) && iters < 1000000) {
+                    while (this.evalExpr(condStr) && iters < this.maxLoopIters) {
                         iters++;
                         this.steps++;
+                        // Cap global de pasos (seguridad anti-crash)
                         if (this.steps > this.maxSteps)
-                            throw new Error("Límite de pasos alcanzado");
-                        let savedMain = this.lines,
-                            savedPos = this.pos;
+                            throw new Error("Límite de pasos alcanzado (" + this.maxSteps + "). Revisa si tu Mientras tiene una condición de salida válida.");
+                        // Cap de wall-clock (30s) — evita colgar la pestaña indefinidamente
+                        if (Date.now() - this.startTime > this.maxRunMs)
+                            throw new Error("⏱ Tiempo máximo (30s) excedido. Probable bucle infinito en 'Mientras " + condStr + "'.");
+                        // CEDER control al event loop cada 500 iteraciones — sin esto, el
+                        // thread del navegador queda bloqueado y la página se congela.
+                        if (iters % 500 === 0) await new Promise(r => setTimeout(r, 0));
+                        let savedMain = this.lines, savedPos = this.pos;
                         this.lines = bodyLines;
                         this.pos = 0;
                         let r = await this.runBlock(null);
@@ -9507,9 +9529,9 @@ FinProceso`,
                         if (r && r.type === "break") break;
                         if (r && r.type === "return") return r;
                     }
-                    if (iters >= 1000000)
+                    if (iters >= this.maxLoopIters)
                         throw new Error(
-                            "Ciclo Mientras: demasiadas iteraciones. ¿Es un bucle infinito?",
+                            "Ciclo Mientras: alcanzó " + this.maxLoopIters + " iteraciones. ¿Es un bucle infinito? Revisa que la variable de la condición '" + condStr + "' se modifique dentro del bucle.",
                         );
                 }
 
@@ -9535,21 +9557,22 @@ FinProceso`,
                         iters++;
                         this.steps++;
                         if (this.steps > this.maxSteps)
-                            throw new Error("Límite de pasos alcanzado");
-                        let savedMain = this.lines,
-                            savedPos = this.pos;
+                            throw new Error("Límite de pasos alcanzado (" + this.maxSteps + "). Revisa la condición 'Hasta Que " + condStr + "'.");
+                        if (Date.now() - this.startTime > this.maxRunMs)
+                            throw new Error("⏱ Tiempo máximo (30s) excedido. Probable bucle infinito en 'Repetir...Hasta Que " + condStr + "'.");
+                        if (iters % 500 === 0) await new Promise(r => setTimeout(r, 0));
+                        let savedMain = this.lines, savedPos = this.pos;
                         this.lines = bodyLines;
                         this.pos = 0;
                         let r = await this.runBlock(null);
                         this.lines = savedMain;
                         this.pos = savedPos;
                         if (r && r.type === "break") break;
-                        // FIX: propagar return desde Repetir.
                         if (r && r.type === "return") return r;
-                    } while (!this.evalExpr(condStr) && iters < 1000000);
-                    if (iters >= 1000000)
+                    } while (!this.evalExpr(condStr) && iters < this.maxLoopIters);
+                    if (iters >= this.maxLoopIters)
                         throw new Error(
-                            "Ciclo Repetir: demasiadas iteraciones. ¿Es un bucle infinito?",
+                            "Ciclo Repetir: alcanzó " + this.maxLoopIters + " iteraciones. ¿Es un bucle infinito? Verifica que la condición 'Hasta Que " + condStr + "' eventualmente sea verdadera.",
                         );
                 }
 
@@ -9575,7 +9598,7 @@ FinProceso`,
                     let vn = varN.toLowerCase();
                     this.vars[vn] = from;
                     let iters = 0;
-                    const MAX_ITERS = 1000000;
+                    const MAX_ITERS = this.maxLoopIters;
                     while (
                         (step > 0
                             ? this.vars[vn] <= to
@@ -9585,9 +9608,11 @@ FinProceso`,
                         iters++;
                         this.steps++;
                         if (this.steps > this.maxSteps)
-                            throw new Error("Límite de pasos alcanzado");
-                        let savedMain = this.lines,
-                            savedPos = this.pos;
+                            throw new Error("Límite de pasos alcanzado (" + this.maxSteps + ").");
+                        if (Date.now() - this.startTime > this.maxRunMs)
+                            throw new Error("⏱ Tiempo máximo (30s) excedido en el bucle 'Para " + varN + "'.");
+                        if (iters % 500 === 0) await new Promise(r => setTimeout(r, 0));
+                        let savedMain = this.lines, savedPos = this.pos;
                         this.lines = bodyLines;
                         this.pos = 0;
                         let r = await this.runBlock(null);
@@ -14092,12 +14117,25 @@ FinProceso`,
                             if (/^finmientras$/i.test(t)) {
                                 if (inLoop) {
                                     const hasNoExit = !inLoop.modified && !inLoop.hasEarlyExit;
-                                    if (hasNoExit && inLoop.condIsLiteral) {
-                                        warns.push(`💡 Sugerencia (línea ${inLoop.line}): 'Mientras Verdadero Hacer' sin 'Salir'/'Retornar' adentro produce un bucle infinito. Asegúrate de tener una condición de salida.`);
-                                        infiniteTips++;
-                                    } else if (hasNoExit && inLoop.condVars.size > 0) {
-                                        const vs = Array.from(inLoop.condVars).slice(0,3).join(', ');
-                                        warns.push(`💡 Sugerencia (línea ${inLoop.line}): la condición del Mientras usa ${vs}, pero NINGUNA de esas variables se modifica dentro del bucle. Probable bucle infinito.`);
+                                    if (hasNoExit) {
+                                        // Marcar VISUALMENTE la línea del Mientras (subrayado wavy amarillo)
+                                        const rawL = lines[inLoop.line - 1] || '';
+                                        const colStart = Math.max(0, rawL.search(/\S/));
+                                        const colEnd = Math.min(rawL.length, colStart + rawL.trim().length);
+                                        if (colEnd > colStart) {
+                                            _paramErrorRanges.push({
+                                                line: inLoop.line,
+                                                startCol: colStart,
+                                                endCol: colEnd,
+                                                severity: 'warn'
+                                            });
+                                        }
+                                        if (inLoop.condIsLiteral) {
+                                            warns.push(`⚠️ Línea ${inLoop.line}: posible BUCLE INFINITO — 'Mientras Verdadero Hacer' sin 'Salir' / 'Retornar' / 'Interrumpir' adentro. El programa se ejecutará hasta agotar el tiempo límite (30s). Añade una condición de salida.`);
+                                        } else if (inLoop.condVars.size > 0) {
+                                            const vs = Array.from(inLoop.condVars).slice(0,3).join(', ');
+                                            warns.push(`⚠️ Línea ${inLoop.line}: posible BUCLE INFINITO — la condición usa ${vs} pero NINGUNA de esas variables se modifica dentro del bucle. El programa se colgará al ejecutarlo.`);
+                                        }
                                         infiniteTips++;
                                     }
                                     inLoop = null;
