@@ -21722,7 +21722,12 @@ document.addEventListener('keydown', (e) => {
         const viewH = ta.clientHeight;
         const viewW = ta.clientWidth;
         let out = '';
-        // Helper de clamping
+        // FIX: detectar si hay un gutter (números de línea) que ocupa el lado
+        // izquierdo. En playground existe .big-line-nums (40px ancho, z-index:3,
+        // fondo sólido) que TAPA los carriles dibujados desde x=0. Skip esa zona.
+        let gutterWidth = 0;
+        const gutter = ta.parentElement && ta.parentElement.querySelector('.big-line-nums, .line-nums');
+        if (gutter) gutterWidth = gutter.offsetWidth || 0;
         const inView = (y) => (y >= -lh && y <= viewH + lh);
 
         // ── CAPA DE VARIABLES: conexiones de variables usadas en control flow ──
@@ -21735,15 +21740,14 @@ document.addEventListener('keydown', (e) => {
         // con los carriles ni con las verticales de bloques.
         const cfVars = _findControlFlowVars(ta.value);
         // Espacio reservado a la izquierda para carriles + emojis ✓/✗.
-        // Por defecto playground tiene ~48px (gutter), lecciones ~14px.
-        // Forzamos un mínimo aplicando padding-left si hace falta.
+        // Si hay gutter (playground), los carriles empiezan DESPUÉS del gutter.
         const RAIL_WIDTH = 4;
         const RAIL_GAP = 2;
-        const RAIL_EDGE = 4; // padding entre el borde del editor y el primer carril
-        const EMOJI_RESERVE = 14; // espacio para ✓/✗ a la izquierda
-        const railsNeeded = Math.min(cfVars.length, 6); // máximo 6 carriles visibles
-        const railsSpace = railsNeeded > 0 ? (RAIL_EDGE + railsNeeded * (RAIL_WIDTH + RAIL_GAP)) : 0;
-        const neededLeft = railsSpace + EMOJI_RESERVE + 4;
+        const RAIL_EDGE = gutterWidth + 4; // padding después del gutter (si lo hay)
+        const EMOJI_RESERVE = 14;
+        const railsNeeded = Math.min(cfVars.length, 6);
+        const railsSpace = railsNeeded > 0 ? (railsNeeded * (RAIL_WIDTH + RAIL_GAP)) : 0;
+        const neededLeft = gutterWidth + 4 + railsSpace + EMOJI_RESERVE + 4;
         // Si el padLeft del editor es menor que lo necesario, lo ampliamos
         // dinámicamente (solo si está activo el modo Guías y hay variables).
         if (cfVars.length > 0 && padLeft < neededLeft) {
@@ -21864,10 +21868,13 @@ document.addEventListener('keydown', (e) => {
                            '" stroke="' + COLOR_FALSE + '" stroke-width="1.8" opacity="' + currentOpacity +
                            '" stroke-linecap="round"/>';
                 }
-                // Badges ✓/✗ — colocados en el GUTTER IZQUIERDO del editor
-                // (no sobre el texto). xBadge fijo cerca del borde izquierdo.
+                // Badges ✓/✗ — colocados en el área DESPUÉS del gutter pero ANTES del texto.
+                // En playground hay gutter de 40px → xBadge ≈ 44px.
+                // En lecciones no hay gutter → xBadge ≈ padLeft - 10.
                 const badgeR = 6;
-                const xBadge = Math.max(badgeR + 2, padLeft - badgeR - 4);
+                const xBadge = gutterWidth > 0
+                    ? gutterWidth + Math.max(8, (padLeft - gutterWidth) / 2)
+                    : Math.max(badgeR + 2, padLeft - badgeR - 4);
                 const badgeY1 = padTop + (block.startLine + 1) * lh + lh * 0.5 - scrollTop;
                 const badgeY2 = padTop + block.sinoLine * lh + lh * 0.5 - scrollTop;
                 if (inView(badgeY1)) {
