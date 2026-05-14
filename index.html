@@ -3548,6 +3548,9 @@
             .ac-tag-kw  { background: rgba(129,140,248,0.2); color: #818cf8; }
             .ac-tag-fn  { background: rgba(96,165,250,0.2);  color: #60a5fa; }
             .ac-tag-snip{ background: rgba(52,211,153,0.2);  color: #34d399; }
+            .ac-tag-type{ background: rgba(244,114,182,0.2); color: #f472b6; }
+            .ac-tag-lit { background: rgba(251,191,36,0.2);  color: #fbbf24; }
+            .ac-tag-op  { background: rgba(231,121,249,0.2); color: #e779f9; }
             .ac-label   { flex: 1; color: var(--text-main); }
             .ac-desc    { font-size: 0.7rem; color: var(--text-dim); font-family: var(--font-body); }
 
@@ -14610,18 +14613,28 @@ FinProceso`,
                         { lbl: 'Borrar Pantalla',        ins: 'Borrar Pantalla\n' }
                     ]},
                     { name: 'Control de flujo', items: [
-                        { lbl: 'Si … Entonces … FinSi',  ins: 'Si condicion Entonces\n\t// Lógica aquí\nFinSi\n' },
-                        { lbl: 'Si … Sino … FinSi',      ins: 'Si condicion Entonces\n\t// Lógica aquí\nSiNo\n\t// Lógica aquí\nFinSi\n' },
-                        { lbl: 'Mientras … FinMientras', ins: 'Mientras condicion Hacer\n\t// Lógica aquí\nFinMientras\n' },
-                        { lbl: 'Para … FinPara',         ins: 'Para i <- 1 Hasta 10 Hacer\n\t// Lógica aquí\nFinPara\n' },
-                        { lbl: 'Para con Paso',          ins: 'Para i <- 1 Hasta 10 Con Paso 1 Hacer\n\t// Lógica aquí\nFinPara\n' },
-                        { lbl: 'Repetir … Hasta Que',    ins: 'Repetir\n\t// Lógica aquí\nHasta Que condicion\n' },
-                        { lbl: 'Segun … FinSegun',       ins: 'Segun variable Hacer\n\t1:\n\t\t// Lógica aquí\n\t2:\n\t\t// Lógica aquí\n\tDe Otro Modo:\n\t\t// Lógica aquí\nFinSegun\n' }
+                        { lbl: 'Si … Entonces … FinSi',
+                          ins: 'Si condicion Entonces\n\t// Se ejecuta cuando la condicion es Verdadera\nFinSi\n' },
+                        { lbl: 'Si … Sino … FinSi',
+                          ins: 'Si condicion Entonces\n\t// Rama Verdadera: se ejecuta si la condicion es Verdadera\nSiNo\n\t// Rama Falsa: se ejecuta si la condicion es Falsa\nFinSi\n' },
+                        { lbl: 'Mientras … FinMientras',
+                          ins: 'Mientras condicion Hacer\n\t// Se repite mientras la condicion sea Verdadera\n\t// Recuerda modificar la variable de la condicion para evitar bucle infinito\nFinMientras\n' },
+                        { lbl: 'Para … FinPara',
+                          ins: 'Para i <- 1 Hasta 10 Hacer\n\t// Repite 10 veces (i toma valores de 1 a 10)\n\t// Usa la variable i para acceder al numero de iteracion\nFinPara\n' },
+                        { lbl: 'Para con Paso',
+                          ins: 'Para i <- 1 Hasta 10 Con Paso 2 Hacer\n\t// i avanza de 2 en 2: 1, 3, 5, 7, 9\n\t// Usa Paso -1 para contar hacia atras\nFinPara\n' },
+                        { lbl: 'Repetir … Hasta Que',
+                          ins: 'Repetir\n\t// Se ejecuta SIEMPRE al menos una vez\n\t// Luego repite hasta que la condicion sea Verdadera\nHasta Que condicion\n' },
+                        { lbl: 'Segun … FinSegun',
+                          ins: 'Segun variable Hacer\n\t1:\n\t\t// Se ejecuta cuando variable = 1\n\t2, 3:\n\t\t// Se ejecuta cuando variable = 2 O variable = 3\n\t4-9:\n\t\t// Se ejecuta cuando variable esta entre 4 y 9\n\tDe Otro Modo:\n\t\t// Caso por defecto si ningun otro coincide\nFinSegun\n' }
                     ]},
                     { name: 'SubProcesos / Funciones', items: [
-                        { lbl: 'SubProceso',             ins: 'SubProceso miSub(param1, param2)\n\t// Lógica aquí\nFinSubProceso\n' },
-                        { lbl: 'Funcion con retorno',    ins: 'Funcion resultado <- miFuncion(param)\n\tresultado <- 0\nFinFuncion\n' },
-                        { lbl: 'Procedimiento',          ins: 'Procedimiento miProc(param)\n\t// Lógica aquí\nFinProcedimiento\n' }
+                        { lbl: 'SubProceso',
+                          ins: 'SubProceso miSubProceso(param1, param2)\n\t// SubProceso = bloque reutilizable que NO retorna valor\n\t// Recibe parametros y los procesa internamente\nFinSubProceso\n' },
+                        { lbl: 'Funcion con retorno',
+                          ins: 'Funcion resultado <- miFuncion(param)\n\t// Funcion = bloque que SI retorna un valor mediante la variable de retorno\n\t// Asigna a "resultado" el valor que quieres devolver\n\tresultado <- 0\nFinFuncion\n' },
+                        { lbl: 'Procedimiento',
+                          ins: 'Procedimiento miProcedimiento(param)\n\t// Procedimiento = SubProceso con parametros Por Referencia\n\t// Los cambios a los parametros afectan al llamador\nFinProcedimiento\n' }
                     ]},
                     { name: 'Funciones matemáticas', items: [
                         { lbl: 'RAIZ(x)',         ins: 'RAIZ()' },
@@ -15192,6 +15205,17 @@ FinProceso`,
                 // Modificadores de parámetros
                 { label: "Por Valor", tag: "kw", desc: "Parámetro pasado por valor", insert: "Por Valor" },
                 { label: "Por Referencia", tag: "kw", desc: "Parámetro pasado por referencia", insert: "Por Referencia" },
+                // Literales booleanos
+                { label: "Verdadero", tag: "lit", desc: "Literal lógico verdadero (true)", insert: "Verdadero" },
+                { label: "Falso", tag: "lit", desc: "Literal lógico falso (false)", insert: "Falso" },
+                // Constantes matemáticas
+                { label: "PI", tag: "lit", desc: "Constante PI (3.14159...)", insert: "PI" },
+                // Operadores lógicos como tokens
+                { label: "Y", tag: "op", desc: "Operador lógico Y (AND)", insert: "Y" },
+                { label: "O", tag: "op", desc: "Operador lógico O (OR)", insert: "O" },
+                { label: "NO", tag: "op", desc: "Operador lógico NO (NOT)", insert: "NO" },
+                { label: "MOD", tag: "op", desc: "Módulo (resto de división entera)", insert: "MOD" },
+                { label: "DIV", tag: "op", desc: "División entera", insert: "DIV" },
                 // Funciones
                 { label: "Aleatorio()", tag: "fn", desc: "Número aleatorio", insert: "Aleatorio(1, 100)" },
                 { label: "RAIZ()", tag: "fn", desc: "Raíz cuadrada", insert: "RAIZ($X$)" },
@@ -21385,19 +21409,28 @@ document.addEventListener('keydown', (e) => {
                 else if (raw[k] === ' ') indent++;
                 else break;
             }
+            // Detectar SiNo dentro del Si más reciente — divide en rama Verdadera/Falsa
+            if (/^sino\s*$/i.test(t) || /^sino\s+si\s+/i.test(t)) {
+                for (let j = openers.length - 1; j >= 0; j--) {
+                    if (openers[j].kind === 'si') {
+                        if (!openers[j].sinoLine) openers[j].sinoLine = i;
+                        break;
+                    }
+                }
+                continue;
+            }
             // ¿Apertura?
             let opened = null;
             for (const k of Object.keys(RE_OPEN)) {
                 if (RE_OPEN[k].test(t)) { opened = k; break; }
             }
             if (opened) {
-                openers.push({ kind: opened, startLine: i, indent });
+                openers.push({ kind: opened, startLine: i, indent, sinoLine: null });
                 continue;
             }
             // ¿Cierre?
             for (const k of Object.keys(RE_CLOSE)) {
                 if (RE_CLOSE[k].test(t)) {
-                    // Pop hasta encontrar match del mismo tipo
                     for (let j = openers.length - 1; j >= 0; j--) {
                         if (openers[j].kind === k) {
                             const o = openers.splice(j, 1)[0];
@@ -21405,7 +21438,8 @@ document.addEventListener('keydown', (e) => {
                                 kind: o.kind,
                                 startLine: o.startLine,
                                 endLine: i,
-                                indent: o.indent
+                                indent: o.indent,
+                                sinoLine: o.sinoLine
                             });
                             break;
                         }
@@ -21424,34 +21458,58 @@ document.addEventListener('keydown', (e) => {
     function _renderIndentGuides(ta, svg) {
         const { lh, charW, padTop, padLeft } = _measure(ta);
         const lines = ta.value.split('\n');
-        const guides = []; // {x, y1, y2}
-        // Para cada línea, contar el indent visual; pintar líneas verticales en cada
-        // nivel donde la siguiente línea tiene >= ese indent (extender el guide).
-        // Más simple: en cada línea, pintar líneas verticales en cada nivel < indent actual.
-        for (let i = 0; i < lines.length; i++) {
+        // FIX: calcular indent EFECTIVO por línea, considerando que líneas vacías
+        // "heredan" el indent mínimo de líneas con contenido alrededor.
+        // Así las guías se ven CONTINUAS y no cortadas/intermitentes.
+        const N = lines.length;
+        const realIndent = new Array(N);
+        for (let i = 0; i < N; i++) {
             const raw = lines[i];
-            // Calcular indent visual
+            if (!raw.trim()) { realIndent[i] = -1; continue; } // vacía marcada
             let indent = 0;
             for (let k = 0; k < raw.length; k++) {
                 if (raw[k] === '\t') indent = Math.floor(indent / TAB_SIZE) * TAB_SIZE + TAB_SIZE;
                 else if (raw[k] === ' ') indent++;
                 else break;
             }
-            const lvls = Math.floor(indent / TAB_SIZE);
-            const y = padTop + i * lh;
-            for (let l = 0; l < lvls; l++) {
-                const x = padLeft + (l * TAB_SIZE + 0.5) * charW;
-                guides.push({ x, y1: y, y2: y + lh, lvl: l });
+            realIndent[i] = indent;
+        }
+        // Indent efectivo: para líneas vacías, usar min(prev no-vacía, next no-vacía)
+        const effIndent = new Array(N);
+        for (let i = 0; i < N; i++) {
+            if (realIndent[i] >= 0) { effIndent[i] = realIndent[i]; continue; }
+            // Línea vacía → buscar prev y next no-vacía
+            let prev = -1, next = -1;
+            for (let j = i - 1; j >= 0; j--) if (realIndent[j] >= 0) { prev = realIndent[j]; break; }
+            for (let j = i + 1; j < N; j++) if (realIndent[j] >= 0) { next = realIndent[j]; break; }
+            if (prev < 0 && next < 0) effIndent[i] = 0;
+            else if (prev < 0) effIndent[i] = next;
+            else if (next < 0) effIndent[i] = prev;
+            else effIndent[i] = Math.min(prev, next);
+        }
+        // Render: para cada línea, dibujar verticales en cada nivel < effIndent[i]
+        // Usamos rangos consecutivos para emitir UNA línea por rango (menos DOM y suave).
+        let out = '';
+        // Por cada nivel L (1..maxIndent / TAB_SIZE), buscar runs consecutivos
+        let maxLvls = 0;
+        for (let i = 0; i < N; i++) maxLvls = Math.max(maxLvls, Math.floor(effIndent[i] / TAB_SIZE));
+        for (let l = 0; l < maxLvls; l++) {
+            const minIndentNeeded = (l + 1) * TAB_SIZE;
+            let runStart = -1;
+            for (let i = 0; i <= N; i++) {
+                const active = (i < N && effIndent[i] >= minIndentNeeded);
+                if (active && runStart < 0) runStart = i;
+                else if (!active && runStart >= 0) {
+                    const y1 = padTop + runStart * lh;
+                    const y2 = padTop + i * lh;
+                    const x = padLeft + (l * TAB_SIZE + 0.5) * charW;
+                    out += '<line x1="' + x.toFixed(1) + '" y1="' + y1.toFixed(1) +
+                           '" x2="' + x.toFixed(1) + '" y2="' + y2.toFixed(1) +
+                           '" stroke="currentColor" stroke-width="1" opacity="' + (currentOpacity * 0.6) + '"/>';
+                    runStart = -1;
+                }
             }
         }
-        // Render
-        let out = '';
-        for (const g of guides) {
-            out += '<line x1="' + g.x.toFixed(1) + '" y1="' + g.y1.toFixed(1) +
-                   '" x2="' + g.x.toFixed(1) + '" y2="' + g.y2.toFixed(1) +
-                   '" stroke="currentColor" stroke-width="1" opacity="' + (currentOpacity * 0.6) + '"/>';
-        }
-        // El SVG hereda color del container — usamos un gris muted
         svg.innerHTML = out;
         svg.style.color = 'rgba(127,127,127,0.6)';
     }
@@ -21464,31 +21522,56 @@ document.addEventListener('keydown', (e) => {
 
         // Para cada bloque:
         //   1) Línea vertical desde la apertura hasta el cierre
-        //   2) Para cada línea de contenido (no vacía, no comentario solo):
-        //      una línea HORIZONTAL corta desde la vertical hasta justo antes
-        //      del primer caracter no-blanco — apunta al contenido SIN tocarlo.
+        //   2) Codos horizontales SOLO en las líneas inmediatamente hijas (indent = bloque + 1 tab)
+        //      → menos ruido visual, solo apunta a lo que sigue directamente al bloque
+        //   3) Si el bloque es Si con SiNo:
+        //      - Antes del SiNo: color verde (rama Verdadera)
+        //      - Después: color rojo/ámbar (rama Falsa)
+        //      - Marca '✓' en apertura, '✗' en SiNo
         // SIN cabezas de flecha puntiagudas; solo líneas limpias.
+        const COLOR_TRUE  = '#10b981';  // verde — rama verdadera
+        const COLOR_FALSE = '#f97316';  // naranja — rama falsa
         for (let b = 0; b < blocks.length; b++) {
             const block = blocks[b];
-            const color = COLORS[b % COLORS.length];
+            const colorDefault = COLORS[b % COLORS.length];
             const lvl = Math.floor(block.indent / TAB_SIZE);
-            // Posición X de la vertical: justo en la columna del bloque + medio char
             const xVert = padLeft + (lvl * TAB_SIZE + 0.5) * charW;
+            const childIndent = (lvl + 1) * TAB_SIZE;
             const yStart = padTop + (block.startLine + 1) * lh;
             const yEnd = padTop + block.endLine * lh + lh * 0.5;
             if (yEnd <= yStart) continue;
 
-            // 1) Línea vertical principal del bloque
-            out += '<line x1="' + xVert.toFixed(1) + '" y1="' + yStart.toFixed(1) +
-                   '" x2="' + xVert.toFixed(1) + '" y2="' + yEnd.toFixed(1) +
-                   '" stroke="' + color + '" stroke-width="1.5" opacity="' + currentOpacity +
-                   '" stroke-linecap="round"/>';
+            const isSiWithSino = block.kind === 'si' && block.sinoLine;
+            const sinoY = isSiWithSino ? padTop + block.sinoLine * lh : null;
 
-            // 2) Codos horizontales hacia el contenido de cada línea hija
+            if (isSiWithSino) {
+                // 1a) Tramo VERDADERO (verde) desde apertura hasta SiNo
+                out += '<line x1="' + xVert.toFixed(1) + '" y1="' + yStart.toFixed(1) +
+                       '" x2="' + xVert.toFixed(1) + '" y2="' + sinoY.toFixed(1) +
+                       '" stroke="' + COLOR_TRUE + '" stroke-width="1.8" opacity="' + currentOpacity +
+                       '" stroke-linecap="round"/>';
+                // 1b) Tramo FALSO (naranja) desde SiNo hasta cierre
+                out += '<line x1="' + xVert.toFixed(1) + '" y1="' + (sinoY + lh).toFixed(1) +
+                       '" x2="' + xVert.toFixed(1) + '" y2="' + yEnd.toFixed(1) +
+                       '" stroke="' + COLOR_FALSE + '" stroke-width="1.8" opacity="' + currentOpacity +
+                       '" stroke-linecap="round"/>';
+                // Etiquetas ✓ / ✗ pequeñas al lado de las verticales
+                out += '<text x="' + (xVert - 4).toFixed(1) + '" y="' + (yStart + 9).toFixed(1) +
+                       '" font-size="10" fill="' + COLOR_TRUE + '" font-weight="700" text-anchor="end" opacity="' + (currentOpacity + 0.2) + '">✓</text>';
+                out += '<text x="' + (xVert - 4).toFixed(1) + '" y="' + (sinoY + lh + 9).toFixed(1) +
+                       '" font-size="10" fill="' + COLOR_FALSE + '" font-weight="700" text-anchor="end" opacity="' + (currentOpacity + 0.2) + '">✗</text>';
+            } else {
+                // Línea vertical normal de un solo color
+                out += '<line x1="' + xVert.toFixed(1) + '" y1="' + yStart.toFixed(1) +
+                       '" x2="' + xVert.toFixed(1) + '" y2="' + yEnd.toFixed(1) +
+                       '" stroke="' + colorDefault + '" stroke-width="1.5" opacity="' + currentOpacity +
+                       '" stroke-linecap="round"/>';
+            }
+
+            // 2) Codos horizontales SOLO en líneas hijas directas (indent == childIndent)
             for (let i = block.startLine + 1; i < block.endLine; i++) {
                 const raw = lines[i];
                 if (!raw) continue;
-                // Calcular indent visual y posición del primer non-whitespace
                 let indent = 0;
                 let firstNonWs = -1;
                 for (let k = 0; k < raw.length; k++) {
@@ -21496,19 +21579,28 @@ document.addEventListener('keydown', (e) => {
                     else if (raw[k] === ' ') indent++;
                     else { firstNonWs = k; break; }
                 }
-                if (firstNonWs < 0) continue; // línea vacía
-                // Quitar comentario puro
+                if (firstNonWs < 0) continue;
                 const trimmed = raw.slice(firstNonWs).trim();
                 if (!trimmed || trimmed.startsWith('//')) continue;
-                // X final del codo: justo antes del primer carácter visible
+                // Solo dibujar el codo si la línea es HIJO DIRECTO del bloque (mismo nivel + 1)
+                if (indent !== childIndent) continue;
+                // Skip las líneas SiNo / FinSi etc. — son palabras estructurales del propio bloque
+                if (/^(sino|finsi|finmientras|finpara|finsegun|hasta\s+que|de\s+otro\s+modo)/i.test(trimmed)) continue;
+
                 const xEndH = padLeft + indent * charW - 2;
-                // Solo dibujar si el codo se aleja hacia la DERECHA de la vertical
                 if (xEndH <= xVert + 2) continue;
                 const yMid = padTop + i * lh + lh * 0.5;
-                // Codo: línea horizontal corta
-                out += '<line x1="' + (xVert).toFixed(1) + '" y1="' + yMid.toFixed(1) +
+
+                // Color del codo: depende de si está en rama Verdadera o Falsa del Si/SiNo
+                let codoColor = colorDefault;
+                let codoOpacity = currentOpacity * 0.85;
+                if (isSiWithSino) {
+                    codoColor = (i < block.sinoLine) ? COLOR_TRUE : COLOR_FALSE;
+                    codoOpacity = currentOpacity * 0.9;
+                }
+                out += '<line x1="' + xVert.toFixed(1) + '" y1="' + yMid.toFixed(1) +
                        '" x2="' + xEndH.toFixed(1) + '" y2="' + yMid.toFixed(1) +
-                       '" stroke="' + color + '" stroke-width="1.2" opacity="' + (currentOpacity * 0.85) +
+                       '" stroke="' + codoColor + '" stroke-width="1.3" opacity="' + codoOpacity +
                        '" stroke-linecap="round"/>';
             }
         }
