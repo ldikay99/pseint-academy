@@ -4597,7 +4597,7 @@ FinProceso</textarea>
                     <p style="font-size:0.86rem;color:var(--text-muted);margin-bottom:14px">
                         Llena el formulario y enviamos tu reporte directo al autor. Es <b>anónimo por defecto</b> — solo deja tu email si quieres respuesta.
                     </p>
-                    <form id="reportForm" action="https://formsubmit.co/solopvppro@gmail.com" method="POST" style="display:flex;flex-direction:column;gap:12px">
+                    <form id="reportForm" action="javascript:void(0)" method="POST" style="display:flex;flex-direction:column;gap:12px">
                         <!-- FormSubmit config: honeypot, no captcha (lo añadimos visualmente), redirect, subject template -->
                         <input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off"/>
                         <input type="hidden" name="_captcha" value="false"/>
@@ -19234,7 +19234,64 @@ FinProceso</textarea>
                     if (typeof showToast === 'function') showToast('No hay código en los editores');
                 }
             };
-            // Submit AJAX (sin redirección) — FormSubmit acepta fetch con _captcha=false
+            // Construir el cuerpo del reporte en formato legible
+            function _buildReportBody(form) {
+                const data = new FormData(form);
+                const sections = [];
+                sections.push('═══════════════════════════════════════════');
+                sections.push('  PSeInt Academy — Reporte');
+                sections.push('═══════════════════════════════════════════');
+                sections.push('');
+                const orderedKeys = ['Tipo', 'Severidad', 'Area', 'Asunto', 'Descripcion', 'Pasos', '_replyto', 'Anonimo'];
+                const labels = {
+                    'Tipo': 'Tipo de reporte',
+                    'Severidad': 'Severidad',
+                    'Area': 'Área afectada',
+                    'Asunto': 'Asunto',
+                    'Descripcion': 'Descripción',
+                    'Pasos': 'Pasos para reproducir',
+                    '_replyto': 'Email de contacto',
+                    'Anonimo': 'Reporte anónimo'
+                };
+                for (const key of orderedKeys) {
+                    const val = data.get(key);
+                    if (!val) continue;
+                    sections.push('▸ ' + (labels[key] || key) + ':');
+                    sections.push(String(val).split('\n').map(l => '  ' + l).join('\n'));
+                    sections.push('');
+                }
+                const code = data.get('CodigoPseInt');
+                if (code && code.trim()) {
+                    sections.push('▸ Código PSeInt:');
+                    sections.push('  ┌──────────────────────────────────────────');
+                    sections.push(code.split('\n').map(l => '  │ ' + l).join('\n'));
+                    sections.push('  └──────────────────────────────────────────');
+                    sections.push('');
+                }
+                sections.push('───────────────────────────────────────────');
+                sections.push('  Metadatos automáticos');
+                sections.push('───────────────────────────────────────────');
+                const metaKeys = ['Pagina', 'Version', 'UserAgent', 'Pantalla', 'Idioma', 'FechaCliente'];
+                for (const key of metaKeys) {
+                    const val = data.get(key);
+                    if (val) sections.push('  ' + key + ': ' + val);
+                }
+                sections.push('');
+                sections.push('Enviado desde el formulario integrado.');
+                return sections.join('\n');
+            }
+
+            function _buildReportMailto(form) {
+                const data = new FormData(form);
+                const subject = (data.get('_subject') || '[PSeInt Academy] Reporte');
+                const body = _buildReportBody(form);
+                return 'mailto:solopvppro@gmail.com'
+                    + '?subject=' + encodeURIComponent(subject)
+                    + '&body=' + encodeURIComponent(body);
+            }
+
+            // Submit: usa mailto: como método principal (100% gratis, sin servicios externos)
+            // El usuario solo hace clic en "Enviar" en su cliente de correo.
             document.addEventListener('submit', function(e) {
                 const form = e.target;
                 if (!form || form.id !== 'reportForm') return;
@@ -19242,29 +19299,55 @@ FinProceso</textarea>
                 const btn = document.getElementById('reportSubmitBtn');
                 const status = document.getElementById('reportStatus');
                 btn.disabled = true;
-                btn.textContent = '⏳ Enviando...';
+                btn.textContent = '⏳ Preparando...';
                 status.style.display = 'block';
                 status.className = 'info';
-                status.textContent = 'Enviando reporte...';
-                fetch(form.action, {
-                    method: 'POST',
-                    body: new FormData(form),
-                    headers: { 'Accept': 'application/json' }
-                }).then(r => r.ok ? r.json().catch(() => ({})) : Promise.reject(r))
-                  .then(() => {
+                status.textContent = 'Preparando reporte...';
+
+                // Construir el mailto: con todo el contenido formateado
+                const mailtoLink = _buildReportMailto(form);
+                const body = _buildReportBody(form);
+
+                // Intentar abrir el cliente de correo del usuario
+                let clientOpened = false;
+                try {
+                    window.location.href = mailtoLink;
+                    clientOpened = true;
+                } catch(_) {}
+
+                // Mostrar confirmación y alternativas
+                setTimeout(() => {
                     status.className = 'ok';
-                    status.innerHTML = '✅ <b>¡Reporte enviado!</b> Gracias por ayudar a mejorar la app. Si dejaste tu email, recibirás respuesta cuando lo revise.';
-                    form.reset();
-                    document.getElementById('reportSeverityWrap').style.display = 'none';
-                    setTimeout(() => { window.closeReportModal(); btn.disabled = false; btn.textContent = '📤 Enviar reporte'; status.style.display = 'none'; }, 3500);
-                  })
-                  .catch(() => {
-                    status.className = 'err';
-                    status.innerHTML = '⚠️ No se pudo enviar. Intenta de nuevo o <a href="https://github.com/ldikay99/pseint-academy/issues/new" target="_blank" style="color:inherit;text-decoration:underline">abre un issue en GitHub</a>.';
+                    status.innerHTML = '✅ <b>Reporte preparado.</b><br>'
+                        + 'Se abrió tu cliente de correo con el reporte listo para enviar. '
+                        + 'Solo dale clic a <b>Enviar</b> en tu correo.<br><br>'
+                        + '<b>¿No se abrió?</b> Usa una de estas opciones:<br>'
+                        + '• <a href="' + mailtoLink + '" style="color:var(--accent1);text-decoration:underline">📧 Reintentar abrir cliente de correo</a><br>'
+                        + '• <button type="button" onclick="_copyReportToClipboard()" style="background:none;border:none;color:var(--accent1);text-decoration:underline;cursor:pointer;padding:0;font:inherit">📋 Copiar reporte al portapapeles</button> (pégalo en cualquier correo a <b>solopvppro@gmail.com</b>)<br>'
+                        + '• <a href="https://github.com/ldikay99/pseint-academy/issues/new" target="_blank" style="color:var(--accent1);text-decoration:underline">🐙 Abrir issue en GitHub</a>';
+                    // Guardar el body para copiar al portapapeles
+                    window._lastReportBody = body;
                     btn.disabled = false;
                     btn.textContent = '📤 Enviar reporte';
-                  });
+                }, 400);
             });
+
+            window._copyReportToClipboard = function() {
+                const txt = window._lastReportBody || '';
+                if (!txt) return;
+                navigator.clipboard.writeText(txt).then(() => {
+                    if (typeof showToast === 'function') showToast('📋 Reporte copiado. Pégalo en un correo a solopvppro@gmail.com');
+                }).catch(() => {
+                    // Fallback: textarea temporal + execCommand
+                    const ta = document.createElement('textarea');
+                    ta.value = txt;
+                    document.body.appendChild(ta);
+                    ta.select();
+                    try { document.execCommand('copy'); if (typeof showToast === 'function') showToast('📋 Copiado'); }
+                    catch(_) { if (typeof showToast === 'function') showToast('No se pudo copiar — selecciona manualmente'); }
+                    document.body.removeChild(ta);
+                });
+            };
 
             if (document.readyState === "loading") {
                 document.addEventListener("DOMContentLoaded", () => { safeInit(); showWelcomeIfNeeded(); });
