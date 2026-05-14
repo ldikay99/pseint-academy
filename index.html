@@ -21325,7 +21325,22 @@ document.addEventListener('keydown', (e) => {
         if (!isNaN(op) && op >= 0.1 && op <= 1) currentOpacity = op;
     } catch(_) {}
 
-    // Paleta de colores que rota por profundidad — alta saturación, opacidad por overlay
+    // Colores por TIPO de bloque (más intuitivo que por orden de aparición).
+    // Así Proceso siempre es gris, Repetir siempre rosado, Segun siempre naranja, etc.
+    // Variables del usuario tienen su propio espacio coloreado en el margen izquierdo.
+    const BLOCK_COLORS = {
+        proceso:      '#9ca3af', // gris (contenedor del programa)
+        algoritmo:    '#9ca3af',
+        sub:          '#fbbf24', // ámbar (subrutina)
+        funcion:      '#fbbf24',
+        procedim:     '#fbbf24',
+        si:           '#10b981', // verde (cuando hay SiNo se divide en verde+naranja)
+        mientras:     '#22d3ee', // cyan (loop con condición previa)
+        para:         '#a78bfa', // violeta (loop con contador)
+        repetir:      '#f472b6', // rosado (loop con condición posterior)
+        segun:        '#fb923c', // naranja (multi-case)
+    };
+    // Fallback si aparece un tipo no listado
     const COLORS = ['#38bdf8', '#a78bfa', '#34d399', '#fbbf24', '#f472b6', '#fb923c', '#22d3ee', '#c084fc'];
 
     function _measure(ta) {
@@ -21641,19 +21656,23 @@ document.addEventListener('keydown', (e) => {
         // Helper de clamping
         const inView = (y) => (y >= -lh && y <= viewH + lh);
 
-        // ── NUEVA CAPA: conexiones de variables que se usan en control flow ──
+        // ── CAPA DE VARIABLES: conexiones de variables que se usan en control flow ──
         // Cada variable que aparece en Si/Mientras/Para/Segun/Hasta Que se
         // conecta visualmente con sus asignaciones (Leer/<-) mediante un
-        // "carril" coloreado en el margen izquierdo del editor.
+        // "carril" coloreado en el margen IZQUIERDO del editor (en el área
+        // del padding, antes del texto). Los carriles están bien separados
+        // para que con múltiples variables se distingan claramente.
         const cfVars = _findControlFlowVars(ta.value);
-        // Asignar carril a cada variable (de izquierda a derecha en el margen)
-        const RAIL_WIDTH = 3;
-        const RAIL_GAP = 1.5;
+        const RAIL_WIDTH = 2.5;
+        const RAIL_GAP = 2.5;
+        const RAIL_OFFSET_X = 3; // píxeles desde el borde izquierdo del editor
         for (let v = 0; v < cfVars.length; v++) {
             const variable = cfVars[v];
             const color = _colorForVar(variable.name);
-            // Carril X — en el margen izquierdo, antes del padLeft
-            const railX = 2 + v * (RAIL_WIDTH + RAIL_GAP);
+            // Carril X — solo dentro del padLeft (no invade el texto)
+            const railX = RAIL_OFFSET_X + v * (RAIL_WIDTH + RAIL_GAP);
+            // Si el carril se acercaría al texto, lo saltamos (max ~9 variables visibles)
+            if (railX + RAIL_WIDTH > padLeft - 2) continue;
             // Combinar todas las líneas (assign + use) y conectarlas con un segmento
             // por cada par consecutivo, indicando claramente el flujo.
             const allLines = [];
@@ -21677,17 +21696,10 @@ document.addEventListener('keydown', (e) => {
             for (const ln of allLines) {
                 const y = padTop + ln.line * lh + lh * 0.5 - scrollTop;
                 if (!inView(y)) continue;
-                out += '<circle cx="' + (railX).toFixed(1) + '" cy="' + y.toFixed(1) +
-                       '" r="' + (ln.kind === 'a' ? 3.5 : 2.5) + '" fill="' + color +
+                // Punto centrado en el carril, ligeramente más grande en asignaciones
+                out += '<circle cx="' + (railX + RAIL_WIDTH/2).toFixed(1) + '" cy="' + y.toFixed(1) +
+                       '" r="' + (ln.kind === 'a' ? 3 : 2.5) + '" fill="' + color +
                        '" opacity="' + currentOpacity + '"/>';
-                // Label de variable solo en USOS (marca el control flow)
-                if (ln.kind === 'u') {
-                    const labelX = railX + 6;
-                    out += '<text x="' + labelX.toFixed(1) + '" y="' + (y + 3.5).toFixed(1) +
-                           '" font-size="9" font-weight="700" fill="' + color +
-                           '" opacity="' + (currentOpacity + 0.15) + '">' +
-                           variable.name.substring(0, 10) + '</text>';
-                }
             }
         }
 
@@ -21704,13 +21716,17 @@ document.addEventListener('keydown', (e) => {
         const COLOR_FALSE = '#f97316';  // naranja — rama falsa
         for (let b = 0; b < blocks.length; b++) {
             const block = blocks[b];
-            const colorDefault = COLORS[b % COLORS.length];
+            // Color por TIPO (no por orden) — así Proceso siempre es gris, Repetir rosa, etc.
+            const colorDefault = BLOCK_COLORS[block.kind] || COLORS[b % COLORS.length];
             const lvl = Math.floor(block.indent / TAB_SIZE);
             // Coordenadas relativas al viewport (restando scroll del textarea)
             const xVert = padLeft + (lvl * TAB_SIZE + 0.5) * charW - scrollLeft;
             const childIndent = (lvl + 1) * TAB_SIZE;
+            // FIX: la línea vertical empieza JUSTO DESPUÉS del header (apertura)
+            //       y termina JUSTO ANTES del cierre (FinX/Hasta Que/etc.) —
+            //       así no se sobrepone al texto del header ni del cierre.
             const yStart = padTop + (block.startLine + 1) * lh - scrollTop;
-            const yEnd = padTop + block.endLine * lh + lh * 0.5 - scrollTop;
+            const yEnd = padTop + block.endLine * lh - 2 - scrollTop;
             if (yEnd <= yStart) continue;
             // Cull: si todo el bloque está fuera de la vista, skip
             if (yEnd < 0 || yStart > viewH) continue;
@@ -21719,10 +21735,12 @@ document.addEventListener('keydown', (e) => {
             const sinoY = isSiWithSino ? padTop + block.sinoLine * lh - scrollTop : null;
 
             if (isSiWithSino) {
+                // sinoY ahora apunta al medio de la línea del SiNo
+                const sinoMidY = padTop + block.sinoLine * lh + lh * 0.5 - scrollTop;
                 // Tramos clampeados al viewport (defensivo)
                 const v_yStart = Math.max(0, Math.min(viewH, yStart));
-                const v_sinoY  = Math.max(0, Math.min(viewH, sinoY));
-                const v_sinoEnd = Math.max(0, Math.min(viewH, sinoY + lh));
+                const v_sinoY  = Math.max(0, Math.min(viewH, sinoMidY - 2));
+                const v_sinoEnd = Math.max(0, Math.min(viewH, sinoMidY + 2));
                 const v_yEnd   = Math.max(0, Math.min(viewH, yEnd));
                 if (v_sinoY > v_yStart) {
                     out += '<line x1="' + xVert.toFixed(1) + '" y1="' + v_yStart.toFixed(1) +
