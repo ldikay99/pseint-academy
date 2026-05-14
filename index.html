@@ -8525,15 +8525,97 @@ FinProceso`,
             }
 
             function resetProgress() {
-                if (confirm("¿Reiniciar todo el progreso? Esto borrará tus estados de todas las lecciones.")) {
-                    lessonStates = {};
-                    completed = new Set();
-                    localStorage.removeItem("pseinc_states");
-                    localStorage.removeItem("pseinc_completed");
-                    renderLessons();
-                    updateProgress();
-                }
+                // Modal personalizado en vez del confirm() nativo del navegador.
+                showConfirmModal({
+                    title: '⚠️ Reiniciar progreso',
+                    message: '¿Seguro que quieres <b>borrar todo tu progreso</b>?<br><br>' +
+                             'Esto eliminará el estado de TODAS las lecciones (lecturas, intentos y completadas) ' +
+                             'almacenado en este navegador. <b>No se puede deshacer.</b>',
+                    okText: '🗑 Sí, borrar todo',
+                    okStyle: 'danger',
+                    cancelText: 'Cancelar',
+                    onConfirm: () => {
+                        lessonStates = {};
+                        completed = new Set();
+                        try {
+                            localStorage.removeItem("pseinc_states");
+                            localStorage.removeItem("pseinc_completed");
+                        } catch(_) {}
+                        renderLessons();
+                        updateProgress();
+                        if (typeof showToast === 'function') showToast('✓ Progreso reiniciado');
+                    }
+                });
             }
+
+            /** Modal de confirmación personalizado — reemplaza confirm() nativo.
+             *  opts: { title, message, okText, cancelText, okStyle: 'danger'|'primary', onConfirm, onCancel } */
+            function showConfirmModal(opts) {
+                opts = opts || {};
+                let existing = document.getElementById('confirmModalOverlay');
+                if (existing) existing.remove();
+                const overlay = document.createElement('div');
+                overlay.id = 'confirmModalOverlay';
+                overlay.setAttribute('role', 'dialog');
+                overlay.setAttribute('aria-modal', 'true');
+                overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:2147483600;' +
+                    'display:flex;align-items:center;justify-content:center;padding:16px;' +
+                    'animation:confirmFadeIn 0.18s ease-out';
+                const okIsDanger = (opts.okStyle === 'danger');
+                const okBg = okIsDanger
+                    ? 'linear-gradient(135deg,#dc2626,#ef4444)'
+                    : 'linear-gradient(135deg,#10b981,#34d399)';
+                const okShadow = okIsDanger
+                    ? '0 4px 14px rgba(220,38,38,0.4)'
+                    : '0 4px 14px rgba(16,185,129,0.4)';
+                overlay.innerHTML =
+                    '<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:14px;' +
+                         'max-width:480px;width:100%;padding:24px;box-shadow:0 12px 48px rgba(0,0,0,0.5);' +
+                         'animation:confirmSlideIn 0.22s ease-out">' +
+                      '<h3 style="margin:0 0 12px 0;font-size:1.15rem;color:var(--text-main)">' +
+                        (opts.title || 'Confirmar') + '</h3>' +
+                      '<div style="margin-bottom:20px;font-size:0.92rem;line-height:1.5;color:var(--text-muted)">' +
+                        (opts.message || '¿Estás seguro?') + '</div>' +
+                      '<div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap">' +
+                        '<button id="confirmModalCancel" style="padding:9px 18px;background:transparent;color:var(--text-main);' +
+                          'border:1px solid var(--border);border-radius:7px;cursor:pointer;font:inherit;font-weight:600">' +
+                          (opts.cancelText || 'Cancelar') + '</button>' +
+                        '<button id="confirmModalOk" style="padding:9px 20px;background:' + okBg + ';color:#fff;' +
+                          'border:none;border-radius:7px;cursor:pointer;font:inherit;font-weight:700;' +
+                          'box-shadow:' + okShadow + '">' +
+                          (opts.okText || 'Aceptar') + '</button>' +
+                      '</div>' +
+                    '</div>';
+                // Inyectar animaciones una sola vez
+                if (!document.getElementById('confirmModalStyles')) {
+                    const st = document.createElement('style');
+                    st.id = 'confirmModalStyles';
+                    st.textContent = '@keyframes confirmFadeIn { from { opacity:0 } to { opacity:1 } }' +
+                                     '@keyframes confirmSlideIn { from { transform:translateY(-10px);opacity:0 } to { transform:translateY(0);opacity:1 } }';
+                    document.head.appendChild(st);
+                }
+                document.body.appendChild(overlay);
+                const close = () => { overlay.remove(); };
+                const onOk = () => {
+                    close();
+                    if (typeof opts.onConfirm === 'function') opts.onConfirm();
+                };
+                const onCancel = () => {
+                    close();
+                    if (typeof opts.onCancel === 'function') opts.onCancel();
+                };
+                document.getElementById('confirmModalOk').addEventListener('click', onOk);
+                document.getElementById('confirmModalCancel').addEventListener('click', onCancel);
+                overlay.addEventListener('click', (e) => { if (e.target === overlay) onCancel(); });
+                // ESC cierra. Enter confirma.
+                const keyHandler = (e) => {
+                    if (e.key === 'Escape') { e.preventDefault(); onCancel(); document.removeEventListener('keydown', keyHandler); }
+                    else if (e.key === 'Enter') { e.preventDefault(); onOk(); document.removeEventListener('keydown', keyHandler); }
+                };
+                document.addEventListener('keydown', keyHandler);
+                setTimeout(() => { try { document.getElementById('confirmModalOk').focus(); } catch(_) {} }, 50);
+            }
+            window.showConfirmModal = showConfirmModal;
 
             let currentLesson = null;
             let currentTab = "theory";
@@ -12316,30 +12398,15 @@ FinProceso`,
                             }
                         }
                     }
-                    // ── Escribir: validaciones de lista de argumentos ───────────
-                    // Detectar coma final colgante y dos identificadores sin separador.
+                    // ── Escribir: solo detectar coma final colgante ──
+                    // (La detección "faltan comas entre tokens" fue retirada porque
+                    // tenía demasiados falsos positivos con expresiones legítimas
+                    // como `Escribir "x:", a + b` o `Escribir Sin Saltar "msg "`.)
                     if (/^escribir(\s|$)/i.test(t)) {
-                        // Quitar 'Escribir' y opcional 'Sin Saltar' del inicio
                         let body = t.replace(/^escribir\s*/i, '').replace(/^sin\s+saltar\s*/i, '');
-                        // Neutralizar strings entre comillas para analizar solo identificadores/operadores
                         let masked = body.replace(/"[^"]*"/g, '""');
-                        // Coma final (después del último argumento)
                         if (/,\s*$/.test(masked.trim())) {
                             errors.push({line: ln, msg: "Escribir: coma final sin argumento. Quita la última coma o agrega el siguiente valor."});
-                            continue;
-                        }
-                        // Dos identificadores/literales seguidos sin coma (ej: `x y` o `x "msg"` o `"a" x`)
-                        // Patrón: token (no operador, no coma) seguido de espacio(s) y otro token
-                        let tokenLike = /(?:"")|(?:\b[a-zA-ZáéíóúÁÉÍÓÚñÑ_][a-zA-ZáéíóúÁÉÍÓÚñÑ_0-9]*(?:\s*\([^)]*\))?(?:\s*\[[^\]]*\])?)|(?:-?\d+(?:\.\d+)?)/g;
-                        // Reemplazamos secuencias válidas de "token (operador token)*" agrupándolas
-                        let normalized = masked.replace(/([a-zA-ZáéíóúÁÉÍÓÚñÑ_][a-zA-ZáéíóúÁÉÍÓÚñÑ_0-9]*|""|-?\d+(?:\.\d+)?)(\s+)([a-zA-ZáéíóúÁÉÍÓÚñÑ_][a-zA-ZáéíóúÁÉÍÓÚñÑ_0-9]*|""|-?\d+(?:\.\d+)?)/g, (m, a, sp, b, off, full) => {
-                            // Si hay un operador antes/después de los tokens, no es error (ej: "x + y", "x mod y")
-                            // Mirar el contexto inmediato (3 chars antes y después del match) para operadores binarios
-                            // Detectamos así: si entre a y b no hay operador → falta coma
-                            return 'X__X'; // marca posiciones problemáticas
-                        });
-                        if (/X__X/.test(normalized)) {
-                            errors.push({line: ln, msg: "Escribir: faltan comas entre argumentos. Sepáralos con ',' (ej: Escribir x, y, z)."});
                             continue;
                         }
                     }
@@ -21491,10 +21558,12 @@ document.addEventListener('keydown', (e) => {
         if (cs.position === 'static') container.style.position = 'relative';
         const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
         svg.setAttribute('aria-hidden', 'true');
-        // CRITICAL: z-index 0 y FIRST CHILD del container para quedar DEBAJO del
-        // highlight overlay (que tiene el texto pintado). Así las guías NO se
-        // sobreponen al texto, especialmente con tildes/caracteres anchos.
-        svg.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0';
+        // FIX: z-index 2 — encima del highlight overlay para que el fondo
+        // opaco de la zona reservada tape el código cuando hay scroll
+        // horizontal. Las líneas/emojis fuera de la zona reservada quedan
+        // visibles porque tienen transparencia/opacidad parcial. Lo crítico
+        // es que el rectángulo de fondo opaco SÍ tape.
+        svg.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:2';
         svg.classList.add('fg-layer');
         container.insertBefore(svg, container.firstChild);
         ta._fg_layer = svg;
@@ -21790,15 +21859,35 @@ document.addEventListener('keydown', (e) => {
         // textarea cuando hay variables, para que el contenido NO se choque
         // con los carriles ni con las verticales de bloques.
         const cfVars = _findControlFlowVars(ta.value);
-        // Espacio reservado a la izquierda para carriles + emojis ✓/✗.
-        // Si hay gutter (playground), los carriles empiezan DESPUÉS del gutter.
         const RAIL_WIDTH = 4;
         const RAIL_GAP = 2;
-        const RAIL_EDGE = gutterWidth + 4; // padding después del gutter (si lo hay)
+        const RAIL_EDGE = gutterWidth + 4;
         const EMOJI_RESERVE = 14;
         const railsNeeded = Math.min(cfVars.length, 6);
         const railsSpace = railsNeeded > 0 ? (railsNeeded * (RAIL_WIDTH + RAIL_GAP)) : 0;
         const neededLeft = gutterWidth + 4 + railsSpace + EMOJI_RESERVE + 4;
+        // ── FONDO OPACO RESERVADO ──
+        // Igual que el gutter, los carriles necesitan un fondo opaco que
+        // TAPE el código cuando se hace scroll horizontal. Sin este fondo,
+        // los emojis/líneas se ven superpuestos al texto que aparece
+        // tras desplazarse.
+        // Se calcula el ancho total de la zona reservada y se pinta como
+        // primer elemento del SVG (queda debajo de los carriles/emojis).
+        if (cfVars.length > 0) {
+            // Resolver el bg-color del editor leyendo computed style del padre
+            let bgColor = 'var(--bg-dark)';
+            try {
+                const parentBg = window.getComputedStyle(ta.parentElement).backgroundColor;
+                if (parentBg && parentBg !== 'rgba(0, 0, 0, 0)' && parentBg !== 'transparent') {
+                    bgColor = parentBg;
+                }
+            } catch(_) {}
+            const reservedW = Math.max(railsSpace + 4, neededLeft - gutterWidth);
+            const reservedX = gutterWidth;
+            out += '<rect x="' + reservedX.toFixed(1) + '" y="0" ' +
+                   'width="' + reservedW.toFixed(1) + '" height="' + viewH + '" ' +
+                   'fill="' + bgColor + '" opacity="1"/>';
+        }
         // Si el padLeft del editor es menor que lo necesario, lo ampliamos
         // dinámicamente (solo si está activo el modo Guías y hay variables).
         if (cfVars.length > 0 && padLeft < neededLeft) {
