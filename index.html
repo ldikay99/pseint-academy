@@ -192,15 +192,44 @@
                Los colores claros (#fca5a5, #fde68a) son ilegibles sobre
                fondos claros del tema Light. Forzamos versiones más oscuras
                donde sea necesario para mantener contraste WCAG. */
-            html[data-theme="light"] .error-item,
-            html[data-theme="light"] .fs-bottom-content .fs-error-line,
-            html[data-theme="light"] .diag-panel.error-panel .diag-panel-header {
-                color: #b91c1c !important;
+            /* Variables CSS unificadas para colores semánticos por tema */
+            :root {
+                --color-error: #fca5a5;
+                --color-error-strong: #f87171;
+                --color-warn: #fde68a;
+                --color-warn-strong: #fbbf24;
             }
-            html[data-theme="light"] .warn-item,
-            html[data-theme="light"] .fs-bottom-content .fs-warn-item .fs-error-line,
-            html[data-theme="light"] .diag-panel.warn-panel .diag-panel-header {
-                color: #92400e !important;
+            html[data-theme="light"] {
+                --color-error: #b91c1c;
+                --color-error-strong: #991b1b;
+                --color-warn: #92400e;
+                --color-warn-strong: #78350f;
+            }
+            html[data-theme="solarized"] {
+                --color-error: #dc322f;
+                --color-error-strong: #d33682;
+                --color-warn: #cb4b16;
+                --color-warn-strong: #b58900;
+            }
+            /* Forzar colores en TODOS los items de error/warn usando las variables */
+            .error-item,
+            .fs-bottom-content .fs-error-item,
+            .fs-bottom-content .fs-error-line {
+                color: var(--color-error) !important;
+            }
+            .warn-item,
+            .fs-bottom-content .fs-warn-item,
+            .fs-bottom-content .fs-warn-item .fs-error-line {
+                color: var(--color-warn) !important;
+            }
+            .error-msg, .warn-msg, .fs-error-msg, .fs-warn-msg {
+                color: inherit !important;
+            }
+            .diag-panel.error-panel .diag-panel-header {
+                color: var(--color-error-strong) !important;
+            }
+            .diag-panel.warn-panel .diag-panel-header {
+                color: var(--color-warn-strong) !important;
             }
             html[data-theme="light"] .fs-bottom-content,
             html[data-theme="light"] .console-out,
@@ -215,10 +244,6 @@
                 background: rgba(239,68,68,0.15) !important;
                 color: #b91c1c !important;
             }
-            /* Solarized: textos un poco más cálidos */
-            html[data-theme="solarized"] .error-item { color: #dc322f !important; }
-            html[data-theme="solarized"] .warn-item { color: #cb4b16 !important; }
-            /* Monokai y Ocean ya son dark, los colores existentes funcionan */
 
             /* Reduced motion: respeta preferencias del usuario */
             @media (prefers-reduced-motion: reduce) {
@@ -4205,6 +4230,11 @@ FinProceso</textarea>
                             >
                                 📋 Plantillas
                             </button>
+                            <button type="button" class="fg-toggle-btn" onclick="cycleFlowMode()" aria-label="Alternar guías visuales" title="Líneas de indent / Flechas de flujo / Off" style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;background:var(--bg-card2);color:var(--text-main);border:1px solid var(--border);border-radius:8px;font-size:0.78rem;font:inherit;cursor:pointer">
+                                <span aria-hidden="true">🧭</span>
+                                <span>Guías:</span>
+                                <span class="fg-mode-label" style="font-weight:700;color:var(--accent1)">Líneas</span>
+                            </button>
                             <div class="theme-picker-wrap" style="position:relative;display:inline-block">
                                 <button type="button" class="theme-picker-btn" onclick="toggleThemePicker(this)" aria-label="Seleccionar tema del editor" aria-haspopup="true" aria-expanded="false" style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;background:var(--bg-card2);color:var(--text-main);border:1px solid var(--border);border-radius:8px;font-size:0.78rem;font:inherit;cursor:pointer">
                                     <span aria-hidden="true">🎨</span>
@@ -4267,6 +4297,10 @@ FinProceso</textarea>
                         </div>
                         <button class="fs-icon-btn" onclick="toggleShortcuts()" title="Atajos de teclado">⌨ Atajos</button>
                         <button class="fs-icon-btn" onclick="openFlowchart()" title="Ver diagrama de flujo (F7)">🔀 Diagrama</button>
+                        <!-- Toggle Flow Guides en fullscreen -->
+                        <button type="button" class="fs-icon-btn fg-toggle-btn" onclick="cycleFlowMode()" title="Alternar guías visuales (líneas / flechas / off)">
+                            🧭 <span class="fg-mode-label">Líneas</span>
+                        </button>
                         <!-- Theme picker en pantalla completa -->
                         <div class="theme-picker-wrap" style="position:relative;display:inline-block">
                             <button type="button" class="theme-picker-btn fs-icon-btn" onclick="toggleThemePicker(this)" aria-label="Seleccionar tema del editor" aria-haspopup="true" aria-expanded="false">
@@ -15388,10 +15422,15 @@ FinProceso`,
 	 <div class="editor-wrap" style="border: 1px solid var(--border); border-radius: var(--radius);">
 		<div class="editor-toolbar" style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
 		  <span>📝 Ejemplo ejecutable</span>
-		  <div class="theme-picker-wrap" style="position:relative;display:inline-block">
-		    <button type="button" class="theme-picker-btn" onclick="toggleThemePicker(this)" aria-label="Seleccionar tema" aria-haspopup="true" aria-expanded="false" style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;background:var(--bg-card2);color:var(--text-main);border:1px solid var(--border);border-radius:6px;font-size:0.72rem;font:inherit;cursor:pointer">
-		      🎨 <span class="theme-picker-label" style="font-weight:700;color:var(--accent1)">Dark</span> ▾
+		  <div style="display:inline-flex;gap:6px;flex-wrap:wrap">
+		    <button type="button" class="fg-toggle-btn" onclick="cycleFlowMode()" title="Alternar guías" style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:var(--bg-card2);color:var(--text-main);border:1px solid var(--border);border-radius:6px;font-size:0.72rem;font:inherit;cursor:pointer">
+		      🧭 <span class="fg-mode-label" style="font-weight:700;color:var(--accent1)">Líneas</span>
 		    </button>
+		    <div class="theme-picker-wrap" style="position:relative;display:inline-block">
+		      <button type="button" class="theme-picker-btn" onclick="toggleThemePicker(this)" aria-label="Seleccionar tema" aria-haspopup="true" aria-expanded="false" style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;background:var(--bg-card2);color:var(--text-main);border:1px solid var(--border);border-radius:6px;font-size:0.72rem;font:inherit;cursor:pointer">
+		        🎨 <span class="theme-picker-label" style="font-weight:700;color:var(--accent1)">Dark</span> ▾
+		      </button>
+		    </div>
 		  </div>
 		</div>
 		<div class="editor-container" id="exampleEditorContainer">
@@ -15425,10 +15464,15 @@ FinProceso`,
 	 <div class="editor-wrap" style="border: 1px solid var(--border); border-radius: var(--radius); margin-bottom:12px;">
 		<div class="editor-toolbar" style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
 		  <span>✏️ Tu solución</span>
-		  <div class="theme-picker-wrap" style="position:relative;display:inline-block">
-		    <button type="button" class="theme-picker-btn" onclick="toggleThemePicker(this)" aria-label="Seleccionar tema" aria-haspopup="true" aria-expanded="false" style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;background:var(--bg-card2);color:var(--text-main);border:1px solid var(--border);border-radius:6px;font-size:0.72rem;font:inherit;cursor:pointer">
-		      🎨 <span class="theme-picker-label" style="font-weight:700;color:var(--accent1)">Dark</span> ▾
+		  <div style="display:inline-flex;gap:6px;flex-wrap:wrap">
+		    <button type="button" class="fg-toggle-btn" onclick="cycleFlowMode()" title="Alternar guías" style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:var(--bg-card2);color:var(--text-main);border:1px solid var(--border);border-radius:6px;font-size:0.72rem;font:inherit;cursor:pointer">
+		      🧭 <span class="fg-mode-label" style="font-weight:700;color:var(--accent1)">Líneas</span>
 		    </button>
+		    <div class="theme-picker-wrap" style="position:relative;display:inline-block">
+		      <button type="button" class="theme-picker-btn" onclick="toggleThemePicker(this)" aria-label="Seleccionar tema" aria-haspopup="true" aria-expanded="false" style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;background:var(--bg-card2);color:var(--text-main);border:1px solid var(--border);border-radius:6px;font-size:0.72rem;font:inherit;cursor:pointer">
+		        🎨 <span class="theme-picker-label" style="font-weight:700;color:var(--accent1)">Dark</span> ▾
+		      </button>
+		    </div>
 		  </div>
 		</div>
 		<div class="editor-container" id="challengeEditorContainer">
@@ -21229,6 +21273,340 @@ document.addEventListener('keydown', (e) => {
 });
 
 })(); // fin IIFE IDE v3
+
+/* ════════════════════════════════════════════════════════════════════
+   FLOW GUIDES — Indent guides + Arrows de control de flujo
+   ════════════════════════════════════════════════════════════════════
+   Dos modos visuales que se pueden alternar por el usuario:
+   - INDENT (default, estilo VS Code): líneas verticales sutiles en cada
+     nivel de tab para visualizar la jerarquía.
+   - ARROWS: para cada bloque de control (Si/Mientras/Para/Repetir/
+     SubProceso/Funcion/Proceso) dibuja una línea coloreada vertical
+     con cabezas de flecha en la apertura y el cierre, ayudando al
+     usuario a visualizar el flujo del programa.
+   Funciona en todos los editores: playground, ejemplo, reto y
+   pantalla completa.
+   ════════════════════════════════════════════════════════════════════ */
+(function FlowGuides() {
+    const TAB_SIZE = 4;
+    const STORAGE_KEY = 'pseinc_flow_mode'; // 'indent' | 'arrows' | 'off'
+    const OPACITY_KEY = 'pseinc_flow_opacity'; // 0..1
+    const ATTACHED = new WeakSet();
+    let currentMode = 'indent';
+    let currentOpacity = 0.5;
+    try { currentMode = localStorage.getItem(STORAGE_KEY) || 'indent'; } catch(_) {}
+    try {
+        const op = parseFloat(localStorage.getItem(OPACITY_KEY));
+        if (!isNaN(op) && op >= 0.1 && op <= 1) currentOpacity = op;
+    } catch(_) {}
+
+    // Paleta de colores que rota por profundidad — alta saturación, opacidad por overlay
+    const COLORS = ['#38bdf8', '#a78bfa', '#34d399', '#fbbf24', '#f472b6', '#fb923c', '#22d3ee', '#c084fc'];
+
+    function _measure(ta) {
+        // Tamaño del char y altura de línea reales basados en computed style
+        const cs = window.getComputedStyle(ta);
+        const fontSize = parseFloat(cs.fontSize) || 13;
+        let lh = parseFloat(cs.lineHeight);
+        if (isNaN(lh)) lh = fontSize * 1.6;
+        // Char width vía canvas (monospace)
+        let charW = ta._fg_charW;
+        if (!charW) {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            ctx.font = cs.font || (cs.fontSize + ' ' + cs.fontFamily);
+            charW = ctx.measureText('0').width || (fontSize * 0.6);
+            ta._fg_charW = charW;
+        }
+        const padTop = parseFloat(cs.paddingTop) || 0;
+        const padLeft = parseFloat(cs.paddingLeft) || 0;
+        return { lh, charW, padTop, padLeft };
+    }
+
+    function _getOrCreateLayer(ta) {
+        if (ta._fg_layer && ta._fg_layer.isConnected) return ta._fg_layer;
+        // Insertar como sibling DENTRO del container del editor
+        const container = ta.parentElement;
+        if (!container) return null;
+        // Asegurar que el container es position:relative
+        const cs = window.getComputedStyle(container);
+        if (cs.position === 'static') container.style.position = 'relative';
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('aria-hidden', 'true');
+        svg.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:2';
+        svg.classList.add('fg-layer');
+        // Insertar antes del textarea (queda detrás visualmente porque el textarea es transparente)
+        container.insertBefore(svg, ta);
+        ta._fg_layer = svg;
+        return svg;
+    }
+
+    // Parser simple: identifica bloques de control y su rango de líneas
+    function _parseBlocks(text) {
+        const lines = text.split('\n');
+        const openers = [];
+        const blocks = [];
+        const RE_OPEN = {
+            si:        /^si\s+.+\s+entonces\s*$/i,
+            mientras:  /^mientras\s+.+\s+hacer\s*$/i,
+            para:      /^para\s+\w+\s*<-\s*.+\s+hasta\s+.+\s+hacer\s*$/i,
+            repetir:   /^repetir\s*$/i,
+            segun:     /^segun\s+.+(?:\s+hacer)?\s*$/i,
+            proceso:   /^(?:proceso|algoritmo)\s+\S+/i,
+            sub:       /^subproceso\s+/i,
+            funcion:   /^(?:funcion|función)\s+/i,
+            procedim:  /^procedimiento\s+/i,
+        };
+        const RE_CLOSE = {
+            si:        /^finsi\s*$/i,
+            mientras:  /^finmientras\s*$/i,
+            para:      /^finpara\s*$/i,
+            repetir:   /^hasta\s+que\s+/i,
+            segun:     /^(?:finsegun|finsegún)\s*$/i,
+            proceso:   /^(?:finproceso|finalgoritmo)\s*$/i,
+            sub:       /^finsubproceso\s*$/i,
+            funcion:   /^(?:finfuncion|finfunción)\s*$/i,
+            procedim:  /^finprocedimiento\s*$/i,
+        };
+        for (let i = 0; i < lines.length; i++) {
+            const raw = lines[i];
+            // Quitar comentario
+            let ci = -1, inStr = false;
+            for (let j = 0; j < raw.length - 1; j++) {
+                if (raw[j] === '"') inStr = !inStr;
+                if (!inStr && raw[j] === '/' && raw[j+1] === '/') { ci = j; break; }
+            }
+            const t = (ci >= 0 ? raw.slice(0, ci) : raw).trim();
+            if (!t) continue;
+            // Indent en chars visuales
+            let indent = 0;
+            for (let k = 0; k < raw.length; k++) {
+                if (raw[k] === '\t') indent = Math.floor(indent / TAB_SIZE) * TAB_SIZE + TAB_SIZE;
+                else if (raw[k] === ' ') indent++;
+                else break;
+            }
+            // ¿Apertura?
+            let opened = null;
+            for (const k of Object.keys(RE_OPEN)) {
+                if (RE_OPEN[k].test(t)) { opened = k; break; }
+            }
+            if (opened) {
+                openers.push({ kind: opened, startLine: i, indent });
+                continue;
+            }
+            // ¿Cierre?
+            for (const k of Object.keys(RE_CLOSE)) {
+                if (RE_CLOSE[k].test(t)) {
+                    // Pop hasta encontrar match del mismo tipo
+                    for (let j = openers.length - 1; j >= 0; j--) {
+                        if (openers[j].kind === k) {
+                            const o = openers.splice(j, 1)[0];
+                            blocks.push({
+                                kind: o.kind,
+                                startLine: o.startLine,
+                                endLine: i,
+                                indent: o.indent
+                            });
+                            break;
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+        // Bloques no cerrados: extender hasta el final
+        for (const o of openers) {
+            blocks.push({ kind: o.kind, startLine: o.startLine, endLine: lines.length - 1, indent: o.indent });
+        }
+        return blocks;
+    }
+
+    function _renderIndentGuides(ta, svg) {
+        const { lh, charW, padTop, padLeft } = _measure(ta);
+        const lines = ta.value.split('\n');
+        const guides = []; // {x, y1, y2}
+        // Para cada línea, contar el indent visual; pintar líneas verticales en cada
+        // nivel donde la siguiente línea tiene >= ese indent (extender el guide).
+        // Más simple: en cada línea, pintar líneas verticales en cada nivel < indent actual.
+        for (let i = 0; i < lines.length; i++) {
+            const raw = lines[i];
+            // Calcular indent visual
+            let indent = 0;
+            for (let k = 0; k < raw.length; k++) {
+                if (raw[k] === '\t') indent = Math.floor(indent / TAB_SIZE) * TAB_SIZE + TAB_SIZE;
+                else if (raw[k] === ' ') indent++;
+                else break;
+            }
+            const lvls = Math.floor(indent / TAB_SIZE);
+            const y = padTop + i * lh;
+            for (let l = 0; l < lvls; l++) {
+                const x = padLeft + (l * TAB_SIZE + 0.5) * charW;
+                guides.push({ x, y1: y, y2: y + lh, lvl: l });
+            }
+        }
+        // Render
+        let out = '';
+        for (const g of guides) {
+            out += '<line x1="' + g.x.toFixed(1) + '" y1="' + g.y1.toFixed(1) +
+                   '" x2="' + g.x.toFixed(1) + '" y2="' + g.y2.toFixed(1) +
+                   '" stroke="currentColor" stroke-width="1" opacity="' + (currentOpacity * 0.6) + '"/>';
+        }
+        // El SVG hereda color del container — usamos un gris muted
+        svg.innerHTML = out;
+        svg.style.color = 'rgba(127,127,127,0.6)';
+    }
+
+    function _renderArrows(ta, svg) {
+        const { lh, charW, padTop, padLeft } = _measure(ta);
+        const blocks = _parseBlocks(ta.value);
+        let out = '';
+        // Marcador de flecha (defs reutilizable)
+        out += '<defs>';
+        for (let i = 0; i < COLORS.length; i++) {
+            out += '<marker id="fg-arr-' + i + '" viewBox="0 0 10 10" refX="5" refY="5" ' +
+                   'markerWidth="6" markerHeight="6" orient="auto-start-reverse">' +
+                   '<path d="M 0 0 L 10 5 L 0 10 z" fill="' + COLORS[i] + '" opacity="' + currentOpacity + '"/>' +
+                   '</marker>';
+        }
+        out += '</defs>';
+        // Indent guides muy sutiles de fondo
+        const lines = ta.value.split('\n');
+        for (let i = 0; i < lines.length; i++) {
+            const raw = lines[i];
+            let indent = 0;
+            for (let k = 0; k < raw.length; k++) {
+                if (raw[k] === '\t') indent = Math.floor(indent / TAB_SIZE) * TAB_SIZE + TAB_SIZE;
+                else if (raw[k] === ' ') indent++;
+                else break;
+            }
+            const lvls = Math.floor(indent / TAB_SIZE);
+            const y = padTop + i * lh;
+            for (let l = 0; l < lvls; l++) {
+                const x = padLeft + (l * TAB_SIZE + 0.5) * charW;
+                out += '<line x1="' + x.toFixed(1) + '" y1="' + y.toFixed(1) +
+                       '" x2="' + x.toFixed(1) + '" y2="' + (y + lh).toFixed(1) +
+                       '" stroke="rgba(127,127,127,0.15)" stroke-width="1"/>';
+            }
+        }
+        // Cada bloque: línea coloreada vertical con flecha en apertura y cierre
+        for (let b = 0; b < blocks.length; b++) {
+            const block = blocks[b];
+            const color = COLORS[b % COLORS.length];
+            const lvl = Math.floor(block.indent / TAB_SIZE);
+            const x = padLeft + (lvl * TAB_SIZE + 0.5) * charW;
+            const yStart = padTop + (block.startLine + 1) * lh - 4;
+            const yEnd = padTop + block.endLine * lh + 4;
+            if (yEnd <= yStart) continue;
+            // Línea principal del bloque
+            out += '<line x1="' + x.toFixed(1) + '" y1="' + yStart.toFixed(1) +
+                   '" x2="' + x.toFixed(1) + '" y2="' + yEnd.toFixed(1) +
+                   '" stroke="' + color + '" stroke-width="1.5" opacity="' + currentOpacity + '" ' +
+                   'marker-end="url(#fg-arr-' + (b % COLORS.length) + ')"/>';
+            // Pequeño dot en la apertura
+            out += '<circle cx="' + x.toFixed(1) + '" cy="' + yStart.toFixed(1) +
+                   '" r="2.5" fill="' + color + '" opacity="' + currentOpacity + '"/>';
+        }
+        svg.innerHTML = out;
+        svg.style.color = '';
+    }
+
+    function _renderForEditor(ta) {
+        if (!ta) return;
+        const mode = currentMode;
+        let svg = _getOrCreateLayer(ta);
+        if (!svg) return;
+        if (mode === 'off') {
+            svg.style.display = 'none';
+            return;
+        }
+        svg.style.display = '';
+        // Sincronizar scroll del SVG con el textarea
+        try {
+            svg.style.transform = 'translate(' + (-ta.scrollLeft) + 'px, ' + (-ta.scrollTop) + 'px)';
+        } catch(_) {}
+        if (mode === 'arrows') {
+            _renderArrows(ta, svg);
+        } else {
+            _renderIndentGuides(ta, svg);
+        }
+    }
+
+    function _scheduleRender(ta) {
+        if (ta._fg_raf) cancelAnimationFrame(ta._fg_raf);
+        ta._fg_raf = requestAnimationFrame(() => {
+            ta._fg_raf = null;
+            _renderForEditor(ta);
+        });
+    }
+
+    function _attach(ta) {
+        if (!ta || ATTACHED.has(ta)) return;
+        ATTACHED.add(ta);
+        _scheduleRender(ta);
+        ta.addEventListener('input', () => _scheduleRender(ta));
+        ta.addEventListener('scroll', () => _scheduleRender(ta), { passive: true });
+        window.addEventListener('resize', () => _scheduleRender(ta));
+    }
+
+    // Re-render TODOS los editores
+    function _rerenderAll() {
+        document.querySelectorAll('#playgroundEditor, #exampleEditor, #challengeEditor').forEach(ta => {
+            if (ta) {
+                _attach(ta);
+                _scheduleRender(ta);
+            }
+        });
+    }
+
+    // API pública
+    window.flowGuides = {
+        mode: () => currentMode,
+        setMode: function(m) {
+            if (m !== 'indent' && m !== 'arrows' && m !== 'off') return;
+            currentMode = m;
+            try { localStorage.setItem(STORAGE_KEY, m); } catch(_) {}
+            _rerenderAll();
+            // Update labels
+            document.querySelectorAll('.fg-mode-label').forEach(el => {
+                el.textContent = m === 'arrows' ? 'Flechas' : m === 'off' ? 'Off' : 'Líneas';
+            });
+            if (typeof showToast === 'function') showToast('🧭 Guías: ' + (m === 'arrows' ? 'Flechas de flujo' : m === 'off' ? 'Desactivadas' : 'Líneas de indentación'));
+        },
+        setOpacity: function(o) {
+            o = parseFloat(o);
+            if (isNaN(o) || o < 0.1 || o > 1) return;
+            currentOpacity = o;
+            try { localStorage.setItem(OPACITY_KEY, String(o)); } catch(_) {}
+            _rerenderAll();
+        },
+        opacity: () => currentOpacity,
+        rerender: _rerenderAll,
+        attach: _attach
+    };
+
+    // Auto-attach a editores existentes y nuevos
+    function _autoAttach() {
+        _rerenderAll();
+        // Sincronizar labels de los botones toggle con el modo actual
+        document.querySelectorAll('.fg-mode-label').forEach(el => {
+            el.textContent = currentMode === 'arrows' ? 'Flechas' : currentMode === 'off' ? 'Off' : 'Líneas';
+        });
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', _autoAttach);
+    } else {
+        setTimeout(_autoAttach, 100);
+    }
+    // Re-attach periódicamente para editores dinámicos (lecciones)
+    setInterval(_autoAttach, 1500);
+
+    // Toggle cíclico: indent → arrows → off → indent
+    window.cycleFlowMode = function() {
+        const next = currentMode === 'indent' ? 'arrows' :
+                     currentMode === 'arrows' ? 'off' : 'indent';
+        window.flowGuides.setMode(next);
+    };
+})();
         </script>
 
     </body>
