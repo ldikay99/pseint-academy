@@ -4185,14 +4185,13 @@ FinProceso</textarea>
                                 📋 Plantillas
                             </button>
                             <div class="theme-picker-wrap" style="position:relative;display:inline-block">
-                                <button type="button" id="themePickerBtn" onclick="toggleThemePicker()" aria-label="Seleccionar tema del editor" aria-haspopup="true" aria-expanded="false" style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;background:var(--bg-card2);color:var(--text-main);border:1px solid var(--border);border-radius:8px;font-size:0.78rem;font:inherit;cursor:pointer">
+                                <button type="button" class="theme-picker-btn" onclick="toggleThemePicker(this)" aria-label="Seleccionar tema del editor" aria-haspopup="true" aria-expanded="false" style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;background:var(--bg-card2);color:var(--text-main);border:1px solid var(--border);border-radius:8px;font-size:0.78rem;font:inherit;cursor:pointer">
                                     <span aria-hidden="true">🎨</span>
                                     <span>Tema:</span>
-                                    <span id="themePickerLabel" style="font-weight:700;color:var(--accent1)">Dark</span>
+                                    <span class="theme-picker-label" style="font-weight:700;color:var(--accent1)">Dark</span>
                                     <span aria-hidden="true" style="font-size:0.7rem;opacity:0.7">▾</span>
                                 </button>
-                                <div id="themePickerMenu" role="menu" aria-label="Lista de temas" style="position:absolute;top:calc(100% + 6px);right:0;display:none;flex-direction:column;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:6px;min-width:240px;box-shadow:0 8px 32px rgba(0,0,0,0.5);z-index:500"></div>
-                                <!-- select oculto para mantener compatibilidad con el JS existente -->
+                                <!-- select oculto para mantener compatibilidad -->
                                 <select id="themeSelector" aria-hidden="true" tabindex="-1" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none">
                                     <option value="dark">Dark</option>
                                     <option value="light">Light</option>
@@ -4248,6 +4247,12 @@ FinProceso</textarea>
                         <button class="fs-icon-btn" onclick="toggleShortcuts()" title="Atajos de teclado">⌨ Atajos</button>
                         <button class="fs-icon-btn" onclick="openReportModal()" title="Reportar bug o sugerencia">📨 Reportar</button>
                         <button class="fs-icon-btn" onclick="openFlowchart()" title="Ver diagrama de flujo (F7)">🔀 Diagrama</button>
+                        <!-- Theme picker en pantalla completa -->
+                        <div class="theme-picker-wrap" style="position:relative;display:inline-block">
+                            <button type="button" class="theme-picker-btn fs-icon-btn" onclick="toggleThemePicker(this)" aria-label="Seleccionar tema del editor" aria-haspopup="true" aria-expanded="false">
+                                🎨 <span class="theme-picker-label">Dark</span> ▾
+                            </button>
+                        </div>
                         <button class="fs-run-btn" id="fsRunBtn" onclick="runPlayground()" title="Ejecutar (F5)">▶ Ejecutar</button>
                         <button class="fs-stop-btn" id="fsStopBtn" onclick="stopExecution()" title="Detener ejecución" style="display:none">⏹ Detener</button>
                         <!-- spacer empuja Salir a la derecha -->
@@ -4645,10 +4650,13 @@ FinProceso</textarea>
                             <div id="reportQuotaBar" style="height:100%;width:0%;background:#10b981;transition:width 0.4s, background 0.4s"></div>
                         </div>
                         <div style="margin-top:8px;font-size:0.72rem;color:var(--text-dim);line-height:1.4">
-                            ℹ️ Web3Forms es gratis con cuota mensual (250 envíos). El contador se reinicia el día 1 de cada mes.
-                            Para evitar abuso, solo puedes enviar <b>1 reporte por hora</b>.
-                            Para reportes adicionales o seguimiento detallado, usa
-                            <a href="https://github.com/ldikay99/pseint-academy/issues/new" target="_blank" rel="noopener" style="color:var(--accent1)">GitHub Issues</a>.
+                            ℹ️ El contador local muestra envíos desde <b>este navegador</b>. La cuota REAL del mes está en
+                            <a href="https://web3forms.com/dashboard" target="_blank" rel="noopener" style="color:var(--accent1)">Web3Forms dashboard</a>
+                            (250 total/mes, todos los usuarios). Para evitar abuso, solo puedes enviar <b>1 reporte/hora</b>.
+                            Más reportes → <a href="https://github.com/ldikay99/pseint-academy/issues/new" target="_blank" rel="noopener" style="color:var(--accent1)">GitHub Issues</a>.
+                            <br><span id="reportQuotaSyncWrap" style="display:none;margin-top:4px;display:inline-block">
+                                <button type="button" onclick="_syncQuotaFromDashboard()" style="background:transparent;border:1px solid var(--border);color:var(--text-main);padding:3px 8px;border-radius:4px;cursor:pointer;font-size:0.7rem;margin-top:6px">🔄 Sincronizar con dashboard real</button>
+                            </span>
                         </div>
                     </div>
                     <p style="font-size:0.86rem;color:var(--text-muted);margin-bottom:14px">
@@ -4828,6 +4836,9 @@ FinProceso</textarea>
         >
             📨
         </button>
+
+        <!-- Menú GLOBAL del theme picker (flotante, position:fixed para escapar de overflow:hidden de padres) -->
+        <div id="themePickerMenu" role="menu" aria-label="Lista de temas" style="position:fixed;display:none;flex-direction:column;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:6px;min-width:260px;box-shadow:0 8px 32px rgba(0,0,0,0.6);z-index:99999"></div>
 
         <!-- MODAL DE LECCIÓN -->
         <div
@@ -15226,8 +15237,13 @@ FinProceso`,
                 // Example tab — editor con syntax highlight
                 document.getElementById("tab-example").innerHTML = `
 	 <div class="editor-wrap" style="border: 1px solid var(--border); border-radius: var(--radius);">
-		<div class="editor-toolbar">
+		<div class="editor-toolbar" style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
 		  <span>📝 Ejemplo ejecutable</span>
+		  <div class="theme-picker-wrap" style="position:relative;display:inline-block">
+		    <button type="button" class="theme-picker-btn" onclick="toggleThemePicker(this)" aria-label="Seleccionar tema" aria-haspopup="true" aria-expanded="false" style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;background:var(--bg-card2);color:var(--text-main);border:1px solid var(--border);border-radius:6px;font-size:0.72rem;font:inherit;cursor:pointer">
+		      🎨 <span class="theme-picker-label" style="font-weight:700;color:var(--accent1)">Dark</span> ▾
+		    </button>
+		  </div>
 		</div>
 		<div class="editor-container" id="exampleEditorContainer">
 		  <div class="editor-highlight" id="exampleHighlight" aria-hidden="true"></div>
@@ -15258,7 +15274,14 @@ FinProceso`,
 		${verifyBadge}
 	 </div>
 	 <div class="editor-wrap" style="border: 1px solid var(--border); border-radius: var(--radius); margin-bottom:12px;">
-		<div class="editor-toolbar"><span>✏️ Tu solución</span></div>
+		<div class="editor-toolbar" style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
+		  <span>✏️ Tu solución</span>
+		  <div class="theme-picker-wrap" style="position:relative;display:inline-block">
+		    <button type="button" class="theme-picker-btn" onclick="toggleThemePicker(this)" aria-label="Seleccionar tema" aria-haspopup="true" aria-expanded="false" style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;background:var(--bg-card2);color:var(--text-main);border:1px solid var(--border);border-radius:6px;font-size:0.72rem;font:inherit;cursor:pointer">
+		      🎨 <span class="theme-picker-label" style="font-weight:700;color:var(--accent1)">Dark</span> ▾
+		    </button>
+		  </div>
+		</div>
 		<div class="editor-container" id="challengeEditorContainer">
 		  <div class="editor-highlight" id="challengeHighlight" aria-hidden="true"></div>
 		  <textarea class="code-editor" id="challengeEditor" spellcheck="false" wrap="off" style="min-height:180px;" placeholder="Escribe tu solución aquí...">Proceso MiSolucion
@@ -19216,10 +19239,11 @@ FinProceso</textarea>
                     document.querySelectorAll('#themeSelector, #themeSelectorFs').forEach(sel => {
                         if (sel.value !== name) sel.value = name;
                     });
-                    // Actualizar label del picker visual
-                    const lbl = document.getElementById('themePickerLabel');
-                    if (lbl) lbl.textContent = name.charAt(0).toUpperCase() + name.slice(1);
-                    // Marcar tema activo en el menú
+                    // Actualizar label de TODOS los pickers visuales (puede haber varios)
+                    document.querySelectorAll('.theme-picker-label').forEach(lbl => {
+                        lbl.textContent = name.charAt(0).toUpperCase() + name.slice(1);
+                    });
+                    // Marcar tema activo en el menú global
                     document.querySelectorAll('.theme-option').forEach(opt => {
                         opt.dataset.active = (opt.dataset.theme === name) ? '1' : '0';
                     });
@@ -19320,37 +19344,77 @@ FinProceso</textarea>
                         if (chk) chk.style.display = isActive ? 'inline' : 'none';
                     });
                 }
-                window.toggleThemePicker = function() {
+                // Toggle del menú flotante (position:fixed) cerca del botón clickeado
+                window.toggleThemePicker = function(triggerBtn) {
                     buildThemeMenu();
                     const menu = document.getElementById('themePickerMenu');
-                    const btn = document.getElementById('themePickerBtn');
                     if (!menu) return;
                     const isOpen = menu.style.display === 'flex';
-                    menu.style.display = isOpen ? 'none' : 'flex';
-                    if (btn) btn.setAttribute('aria-expanded', String(!isOpen));
-                    if (!isOpen) {
-                        // Sync state
-                        const current = (document.documentElement.getAttribute('data-theme') || 'dark');
-                        document.querySelectorAll('.theme-option').forEach(o => {
-                            const isActive = (o.dataset.theme === current);
-                            o.dataset.active = isActive ? '1' : '0';
-                            o.style.borderColor = isActive ? 'var(--accent1)' : 'transparent';
-                            const chk = o.querySelector('.theme-active-check');
-                            if (chk) chk.style.display = isActive ? 'inline' : 'none';
-                        });
+                    // Cerrar TODOS los botones expandidos
+                    document.querySelectorAll('.theme-picker-btn').forEach(b => b.setAttribute('aria-expanded', 'false'));
+                    if (isOpen) {
+                        menu.style.display = 'none';
+                        return;
                     }
+                    // Calcular posición debajo del botón clickeado
+                    const btn = triggerBtn || document.querySelector('.theme-picker-btn');
+                    if (!btn) return;
+                    const rect = btn.getBoundingClientRect();
+                    menu.style.display = 'flex';
+                    // Por defecto debajo y alineado a la derecha del botón
+                    const menuWidth = 260;
+                    let left = rect.right - menuWidth;
+                    if (left < 10) left = 10;
+                    if (left + menuWidth > window.innerWidth - 10) left = window.innerWidth - menuWidth - 10;
+                    let top = rect.bottom + 6;
+                    // Si no cabe abajo, mostrar arriba
+                    if (top + 300 > window.innerHeight) {
+                        top = rect.top - 6 - Math.min(300, menu.scrollHeight || 280);
+                    }
+                    menu.style.left = left + 'px';
+                    menu.style.top = top + 'px';
+                    btn.setAttribute('aria-expanded', 'true');
+                    // Sync active state
+                    const current = (document.documentElement.getAttribute('data-theme') || 'dark');
+                    document.querySelectorAll('.theme-option').forEach(o => {
+                        const isActive = (o.dataset.theme === current);
+                        o.dataset.active = isActive ? '1' : '0';
+                        o.style.borderColor = isActive ? 'var(--accent1)' : 'transparent';
+                        const chk = o.querySelector('.theme-active-check');
+                        if (chk) chk.style.display = isActive ? 'inline' : 'none';
+                    });
                 };
                 window.closeThemePicker = function() {
                     const menu = document.getElementById('themePickerMenu');
-                    const btn = document.getElementById('themePickerBtn');
                     if (menu) menu.style.display = 'none';
-                    if (btn) btn.setAttribute('aria-expanded', 'false');
+                    document.querySelectorAll('.theme-picker-btn').forEach(b => b.setAttribute('aria-expanded', 'false'));
                 };
                 // Cerrar al hacer click fuera
                 document.addEventListener('click', (e) => {
-                    const wrap = e.target.closest('.theme-picker-wrap');
-                    if (!wrap) window.closeThemePicker();
+                    if (e.target.closest('.theme-picker-wrap') || e.target.closest('#themePickerMenu')) return;
+                    window.closeThemePicker();
                 });
+                // Cerrar al scroll o resize (la posición fija se desactualiza)
+                window.addEventListener('scroll', window.closeThemePicker, { passive: true });
+                window.addEventListener('resize', window.closeThemePicker);
+
+                // Función helper: inyectar un theme picker en cualquier contenedor
+                window.injectThemePicker = function(container) {
+                    if (!container || container.querySelector('.theme-picker-wrap')) return;
+                    const wrap = document.createElement('div');
+                    wrap.className = 'theme-picker-wrap';
+                    wrap.style.cssText = 'position:relative;display:inline-block';
+                    const current = (document.documentElement.getAttribute('data-theme') || 'dark');
+                    const currentLabel = current.charAt(0).toUpperCase() + current.slice(1);
+                    wrap.innerHTML =
+                        '<button type="button" class="theme-picker-btn" onclick="toggleThemePicker(this)" aria-label="Seleccionar tema" aria-haspopup="true" aria-expanded="false" ' +
+                        'style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;background:var(--bg-card2);color:var(--text-main);border:1px solid var(--border);border-radius:8px;font-size:0.78rem;font:inherit;cursor:pointer">' +
+                        '<span aria-hidden="true">🎨</span><span>Tema:</span>' +
+                        '<span class="theme-picker-label" style="font-weight:700;color:var(--accent1)">' + currentLabel + '</span>' +
+                        '<span aria-hidden="true" style="font-size:0.7rem;opacity:0.7">▾</span>' +
+                        '</button>';
+                    container.appendChild(wrap);
+                };
             })();
 
             // ══════════════════════════════════════════════════════════════
@@ -19395,6 +19459,27 @@ FinProceso</textarea>
                 const h = Math.floor(min / 60), m = min % 60;
                 return h + 'h ' + (m ? m + 'min' : '');
             }
+            // Sincronizar manualmente con el dashboard de Web3Forms
+            window._syncQuotaFromDashboard = function() {
+                const cur = prompt(
+                    'Sincronizar contador con el dashboard real de Web3Forms.\n\n' +
+                    'Ve a https://web3forms.com/dashboard, mira "Submissions this month",\n' +
+                    'y escribe ese número aquí:'
+                );
+                if (cur === null) return;
+                const n = parseInt(cur);
+                if (isNaN(n) || n < 0 || n > 10000) {
+                    if (typeof showToast === 'function') showToast('Número inválido. Pon un entero entre 0 y 10000.');
+                    return;
+                }
+                const monthKey = _currentMonthKey();
+                try {
+                    localStorage.setItem('pseinc_report_count_' + monthKey, String(n));
+                } catch(_) {}
+                _updateQuotaBanner();
+                if (typeof showToast === 'function') showToast('🔄 Contador sincronizado: ' + n + ' / ' + REPORT_CONFIG.MONTHLY_QUOTA);
+            };
+
             function _generateTicketId() {
                 const ts = Date.now().toString(36).toUpperCase().slice(-6);
                 const rand = Math.floor(Math.random() * 9999).toString(36).toUpperCase().padStart(3, '0');
@@ -19405,8 +19490,10 @@ FinProceso</textarea>
                 const text = document.getElementById('reportQuotaText');
                 const cooldown = document.getElementById('reportCooldownText');
                 const bar = document.getElementById('reportQuotaBar');
+                const syncWrap = document.getElementById('reportQuotaSyncWrap');
                 if (!text || !bar) return;
-                text.innerHTML = '📊 Quedan <b>' + stats.remaining + '</b> de ' + REPORT_CONFIG.MONTHLY_QUOTA + ' envíos este mes';
+                text.innerHTML = '📊 <b>' + stats.count + '</b> envíos hechos desde este navegador este mes <span style="opacity:0.6;font-size:0.7rem">(cuota total mensual: ' + REPORT_CONFIG.MONTHLY_QUOTA + ')</span>';
+                if (syncWrap) syncWrap.style.display = 'inline-block';
                 const pct = (stats.remaining / REPORT_CONFIG.MONTHLY_QUOTA) * 100;
                 bar.style.width = Math.max(2, pct) + '%';
                 // Color dinámico: verde >50% / ámbar 20-50% / rojo <20% / rojo+pulse 0%
