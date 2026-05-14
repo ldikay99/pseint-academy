@@ -3704,6 +3704,16 @@
                 background: var(--bg-dark);
                 overflow: hidden;
             }
+            /* FIX: alinear z-index del highlight overlay del playground con el
+               del editor de lecciones, así el SVG de Flow Guides (z-index 0)
+               queda por DEBAJO del texto pintado. Sin esto, el SVG se veía
+               solo en lecciones y no en playground. */
+            .big-editor-highlight {
+                z-index: 1;
+                position: absolute;
+                inset: 0;
+                pointer-events: none;
+            }
             /* ── Overlay de rangos problemáticos (estilo VS Code) ──
                Cada paréntesis con parámetros mal recibe un subrayado
                ondulado amarillo justo en su rango. */
@@ -8581,17 +8591,16 @@ FinProceso`,
                     this.subprocs = {};
                     this.lines = [];
                     this.pos = 0;
-                    // Caps de seguridad MÁS estrictos para prevenir crash del navegador.
-                    // Eran 1_000_000 — demasiado alto, podía colgar el thread principal
-                    // varios minutos antes de cortar.
-                    this.maxSteps = 200000;       // pasos totales del programa
-                    this.maxLoopIters = 100000;   // iteraciones por loop individual
-                    this.maxOutputLines = 10000;  // cap del output (anti-spam de DOM)
+                    // Caps de seguridad MÁS ESTRICTOS — antes la página se crasheaba
+                    // con bucles infinitos antes de llegar a los caps.
+                    this.maxSteps = 50000;        // pasos totales del programa
+                    this.maxLoopIters = 50000;    // iteraciones por loop individual
+                    this.maxOutputLines = 3000;   // cap del output (anti-spam de DOM)
                     this.outputLineCount = 0;
                     this.steps = 0;
                     this.callStack = 0;
                     this.startTime = Date.now();
-                    this.maxRunMs = 30000;        // 30 seg de wall-clock máximo
+                    this.maxRunMs = 10000;        // 10 seg de wall-clock máximo
                 }
 
                 tokenize(code) {
@@ -9519,7 +9528,7 @@ FinProceso`,
                             throw new Error("⏱ Tiempo máximo (30s) excedido. Probable bucle infinito en 'Mientras " + condStr + "'.");
                         // CEDER control al event loop cada 500 iteraciones — sin esto, el
                         // thread del navegador queda bloqueado y la página se congela.
-                        if (iters % 500 === 0) await new Promise(r => setTimeout(r, 0));
+                        if (iters % 100 === 0) await new Promise(r => setTimeout(r, 0));
                         let savedMain = this.lines, savedPos = this.pos;
                         this.lines = bodyLines;
                         this.pos = 0;
@@ -9560,7 +9569,7 @@ FinProceso`,
                             throw new Error("Límite de pasos alcanzado (" + this.maxSteps + "). Revisa la condición 'Hasta Que " + condStr + "'.");
                         if (Date.now() - this.startTime > this.maxRunMs)
                             throw new Error("⏱ Tiempo máximo (30s) excedido. Probable bucle infinito en 'Repetir...Hasta Que " + condStr + "'.");
-                        if (iters % 500 === 0) await new Promise(r => setTimeout(r, 0));
+                        if (iters % 100 === 0) await new Promise(r => setTimeout(r, 0));
                         let savedMain = this.lines, savedPos = this.pos;
                         this.lines = bodyLines;
                         this.pos = 0;
@@ -9611,7 +9620,7 @@ FinProceso`,
                             throw new Error("Límite de pasos alcanzado (" + this.maxSteps + ").");
                         if (Date.now() - this.startTime > this.maxRunMs)
                             throw new Error("⏱ Tiempo máximo (30s) excedido en el bucle 'Para " + varN + "'.");
-                        if (iters % 500 === 0) await new Promise(r => setTimeout(r, 0));
+                        if (iters % 100 === 0) await new Promise(r => setTimeout(r, 0));
                         let savedMain = this.lines, savedPos = this.pos;
                         this.lines = bodyLines;
                         this.pos = 0;
@@ -12477,10 +12486,32 @@ FinProceso`,
                         if (/^repetir$/i.test(t2)) continue;
                         if (/^sino$/i.test(t2)) continue;
                         if (/^(de\s+otro\s+modo|otro)\s*:/i.test(t2)) continue;
+                        // ── FIX: Si INLINE — extraer solo la condición y el RHS de la asignación
+                        // interna, NO toda la expresión que incluiría 'FinSi'.
+                        // Patrón: Si COND Entonces STMT FinSi  (y con SiNo opcional)
+                        const inlineSi = t2.match(/^Si\s+(.+?)\s+Entonces\s+(.+?)(?:\s+SiNo\s+(.+?))?\s+FinSi\s*$/i);
+                        if (inlineSi) {
+                            // Validar la condición (con la pasa normal)
+                            // Y los STMT internos. Procesamos las partes por separado.
+                            const partsToValidate = [inlineSi[1], inlineSi[2]];
+                            if (inlineSi[3]) partsToValidate.push(inlineSi[3]);
+                            // Combinar en una "expresión virtual" con comas, mismo trato
+                            const exprPart = partsToValidate.join(' , ');
+                            // (continúa con el flujo normal)
+                            // Para evitar duplicar código, asignamos y dejamos que la pasa siguiente lo use
+                            // No usamos `continue` para que el código siguiente analice la expresión.
+                            // (manejado en el flujo principal abajo via la variable exprPart)
+                            // Setear exprPart aquí y NO ejecutar los else-if siguientes
+                            var __forcedExpr = exprPart;
+                        }
 
                         // Extraer la "expresión" a analizar según el tipo de instrucción
                         let exprPart = null;
-                        if (/^escribir\s+/i.test(t2)) {
+                        // Si fue Si inline ya tenemos exprPart prepara
+                        if (typeof __forcedExpr === 'string' && __forcedExpr) {
+                            exprPart = __forcedExpr;
+                            __forcedExpr = null;
+                        } else if (/^escribir\s+/i.test(t2)) {
                             exprPart = t2.replace(/^escribir\s+/i, '');
                         } else if (/^leer\s+/i.test(t2)) {
                             // Leer declara variables — pero los nombres deben ser identificadores válidos.
