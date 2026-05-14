@@ -38,3 +38,15 @@ pseint_editor*.html
 # Notas privadas
 NOTES.md
 TODO_PRIVATE.md
+
+# Archivos internos de Claude Code (no deben publicarse)
+CLAUDE.md
+.claude/
+.claude-code/
+claude.md
+*.claude.md
+
+# Scripts de prueba locales
+test_*.js
+test_*.html
+*.test.js
