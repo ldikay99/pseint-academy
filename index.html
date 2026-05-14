@@ -12518,7 +12518,6 @@ FinProceso`,
                             const tokL = tok.toLowerCase();
                             const tokStart = mTok.index;
                             const tokEnd = tokStart + tok.length;
-                            if (declaredVars.has(tok)) continue;
                             if (procNames.has(tokL)) continue;
                             if (reportedTokens.has(tok)) continue;
                             if (tok.length < 1) continue;
@@ -12533,6 +12532,10 @@ FinProceso`,
                                 if (!/\s/.test(noStr[k])) { next = noStr[k]; break; }
                             }
 
+                            // ── FIX IMPORTANTE: chequear si es RESERVADA antes que declaredVars ──
+                            // Si el usuario hizo `Definir y Como Entero`, `y` está en declaredVars,
+                            // pero `y` ES reservada y SIGUE siendo error usarla. Procesamos primero
+                            // el check de reservada para no perder esos errores.
                             if (reservedVars.has(tokL)) {
                                 // 1) Literales válidos en posición de valor (Verdadero, Falso, Pi, E)
                                 if (LITERAL_OK.has(tokL)) continue;
@@ -12601,6 +12604,11 @@ FinProceso`,
                                 // Cualquier otro reservado no categorizado → tolerar (no saturar)
                                 continue;
                             }
+
+                            // Si llegamos aquí, NO es palabra reservada.
+                            // Ahora sí aplicamos el filtro de variables declaradas:
+                            // si el usuario la declaró, no es error.
+                            if (declaredVars.has(tok)) continue;
 
                             // Variable usada sin declarar (case-sensitive)
                             reportedTokens.add(tok);
