@@ -4649,11 +4649,16 @@ FinProceso</textarea>
                         <div style="height:6px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden">
                             <div id="reportQuotaBar" style="height:100%;width:0%;background:#10b981;transition:width 0.4s, background 0.4s"></div>
                         </div>
-                        <div style="margin-top:8px;font-size:0.72rem;color:var(--text-dim);line-height:1.4">
-                            ℹ️ El contador local muestra envíos desde <b>este navegador</b>. La cuota REAL del mes está en
-                            <a href="https://web3forms.com/dashboard" target="_blank" rel="noopener" style="color:var(--accent1)">Web3Forms dashboard</a>
-                            (250 total/mes, todos los usuarios). Para evitar abuso, solo puedes enviar <b>1 reporte/hora</b>.
-                            Más reportes → <a href="https://github.com/ldikay99/pseint-academy/issues/new" target="_blank" rel="noopener" style="color:var(--accent1)">GitHub Issues</a>.
+                        <div style="margin-top:8px;font-size:0.72rem;color:var(--text-dim);line-height:1.5">
+                            ℹ️ <b>Plan gratuito limitado:</b> por ahora la app sólo puede procesar
+                            <b>250 reportes mensuales</b> (cuota gratis de Web3Forms compartida entre todos los usuarios).
+                            Cuando consigamos patrocinio o el proyecto crezca lo suficiente, podremos expandir esta cuota.
+                            <br>El contador de abajo muestra envíos desde <b>este navegador</b>. Para ver el total real consulta el
+                            <a href="https://web3forms.com/dashboard" target="_blank" rel="noopener" style="color:var(--accent1)">dashboard de Web3Forms</a>.
+                            <br>Para prevenir spam y abuso, hay un límite de <b>1 reporte por hora</b> por usuario.
+                            Si el límite te impide enviar algo importante, usa
+                            <a href="https://github.com/ldikay99/pseint-academy/issues/new" target="_blank" rel="noopener" style="color:var(--accent1)">GitHub Issues</a>
+                            como alternativa (sin límites).
                             <br><span id="reportQuotaSyncWrap" style="display:none;margin-top:4px;display:inline-block">
                                 <button type="button" onclick="_syncQuotaFromDashboard()" style="background:transparent;border:1px solid var(--border);color:var(--text-main);padding:3px 8px;border-radius:4px;cursor:pointer;font-size:0.7rem;margin-top:6px">🔄 Sincronizar con dashboard real</button>
                             </span>
@@ -10942,6 +10947,7 @@ FinProceso`,
                     window._errorLineSet = new Set();
                     window._paramErrorRanges = [];
                     window._undeclaredVars = new Map();
+                    window._reservedAsVarNames = new Set();
                     window.syncHighlight && syncHighlight("playgroundEditor", "playgroundHighlight");
                     // Limpiar overlays de rangos problemáticos
                     if (window._renderParamErrorOverlays) window._renderParamErrorOverlays();
@@ -11740,6 +11746,10 @@ FinProceso`,
                 let lines = code.split("\n");
                 let stack = []; // stack of open blocks
                 let hasProc = false;
+                // Reiniciar el registro de "palabras reservadas usadas como variable".
+                // El highlighter lo lee para pintar TODAS las apariciones en rojo
+                // (incluyendo el lado derecho de expresiones como `x + y`).
+                window._reservedAsVarNames = new Set();
                 // ── Palabras reservadas del lenguaje (NO usables como identificadores) ──
                 // Si están entre comillas no hay error (son string). Si se usan como
                 // nombre de variable, función, parámetro o ciclo: error.
@@ -11810,6 +11820,13 @@ FinProceso`,
                             const loc = _findTokenCol(rawLine, nm, 0);
                             if (loc) _pushRange(lineIdx, loc.start, loc.end, 'error');
                         }
+                        // Registrar el nombre globalmente — el highlighter lo usa
+                        // para pintar de rojo TODAS las apariciones (no solo la línea
+                        // de declaración). Guardamos case-sensitive Y case-insensitive.
+                        if (!window._reservedAsVarNames) window._reservedAsVarNames = new Set();
+                        window._reservedAsVarNames.add(nm);
+                        window._reservedAsVarNames.add(nm.toLowerCase());
+                        window._reservedAsVarNames.add(nm.toUpperCase());
                         return true;
                     }
                     return false;
@@ -12403,6 +12420,10 @@ FinProceso`,
                                 }
                                 if (reservedLeer.has(namePart.toLowerCase())) {
                                     errors.push({line: ln2, msg: `Leer: '${namePart}' es una palabra reservada de PSeInt y no puede usarse como nombre de variable. Renómbrala (ej: '${namePart}1' o 'mi${namePart}').`});
+                                    // Marcar global para el highlighter
+                                    window._reservedAsVarNames.add(namePart);
+                                    window._reservedAsVarNames.add(namePart.toLowerCase());
+                                    window._reservedAsVarNames.add(namePart.toUpperCase());
                                     leerError = true;
                                     break;
                                 }
@@ -12526,6 +12547,10 @@ FinProceso`,
                                             line: ln2,
                                             msg: `'${tok}' es una palabra reservada de PSeInt (operador lógico/aritmético) y no puede usarse como nombre de variable. Renómbrala (por ejemplo: '${tok}1', '${tok}Var' o 'mi${tok}').`
                                         });
+                                        // Marcar global para el highlighter — pinta TODAS las apariciones
+                                        window._reservedAsVarNames.add(tok);
+                                        window._reservedAsVarNames.add(tok.toLowerCase());
+                                        window._reservedAsVarNames.add(tok.toUpperCase());
                                         lineErrorCount++;
                                     }
                                     continue;
@@ -20036,6 +20061,13 @@ function highlightPSeInt(raw) {
             for (const name of nameSet) allUndeclared.add(name);
         }
     }
+    // NUEVO: incluir palabras reservadas usadas como variable. El analyzer
+    // las llena cuando detecta `Definir Y Como ...`, `Leer Si`, `x + Y`, etc.
+    // Necesitamos pintarlas de ROJO en TODAS las apariciones (no solo donde
+    // fueron declaradas), porque su mal uso es global a todo el programa.
+    if (window._reservedAsVarNames) {
+        for (const name of window._reservedAsVarNames) allUndeclared.add(name);
+    }
 
     // Filtrar varTypeMap: quitar cualquier var que esté en allUndeclared
     for (const key of Object.keys(varTypeMap)) {
@@ -20267,6 +20299,18 @@ function classifyWord(w, varTypeMap, undeclaredSet) {
     // Si el token exacto está marcado como no declarado → subrayado rojo,
     // sin ningún color de sintaxis encima.
     if (undeclaredSet && undeclaredSet.has(w)) {
+        return 'kw-undeclared';
+    }
+
+    // ── PRIORIDAD ALTA: Palabra reservada usada como variable ──────────
+    // Si el analyzer detectó que esta palabra (case-insensitive) fue usada
+    // como nombre de variable en cualquier parte del código, pintamos TODAS
+    // sus apariciones de rojo (kw-undeclared) — incluso fuera de la línea
+    // donde se detectó originalmente. Así, en
+    //     Definir y Como Entero     ← rojo aquí (ya detectado por undeclaredSet)
+    //     Escribir x + y            ← y debe también ser ROJO aquí
+    // el highlighter es consistente.
+    if (window._reservedAsVarNames && (window._reservedAsVarNames.has(w) || window._reservedAsVarNames.has(lw))) {
         return 'kw-undeclared';
     }
 
