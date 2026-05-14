@@ -21458,6 +21458,10 @@ document.addEventListener('keydown', (e) => {
     function _renderIndentGuides(ta, svg) {
         const { lh, charW, padTop, padLeft } = _measure(ta);
         const lines = ta.value.split('\n');
+        const scrollTop = ta.scrollTop;
+        const scrollLeft = ta.scrollLeft;
+        const viewH = ta.clientHeight;
+        const viewW = ta.clientWidth;
         // FIX: calcular indent EFECTIVO por línea, considerando que líneas vacías
         // "heredan" el indent mínimo de líneas con contenido alrededor.
         // Así las guías se ven CONTINUAS y no cortadas/intermitentes.
@@ -21500,11 +21504,18 @@ document.addEventListener('keydown', (e) => {
                 const active = (i < N && effIndent[i] >= minIndentNeeded);
                 if (active && runStart < 0) runStart = i;
                 else if (!active && runStart >= 0) {
-                    const y1 = padTop + runStart * lh;
-                    const y2 = padTop + i * lh;
-                    const x = padLeft + (l * TAB_SIZE + 0.5) * charW;
-                    out += '<line x1="' + x.toFixed(1) + '" y1="' + y1.toFixed(1) +
-                           '" x2="' + x.toFixed(1) + '" y2="' + y2.toFixed(1) +
+                    // Coordenadas relativas al viewport del textarea (restando scroll)
+                    const y1 = padTop + runStart * lh - scrollTop;
+                    const y2 = padTop + i * lh - scrollTop;
+                    const x = padLeft + (l * TAB_SIZE + 0.5) * charW - scrollLeft;
+                    // Cull: si toda la línea está fuera del viewport, skip
+                    if (y2 < 0 || y1 > viewH || x < 0 || x > viewW) { runStart = -1; continue; }
+                    // Clamp para no dibujar fuera del área visible (defensivo)
+                    const cy1 = Math.max(0, y1);
+                    const cy2 = Math.min(viewH, y2);
+                    if (cy2 <= cy1) { runStart = -1; continue; }
+                    out += '<line x1="' + x.toFixed(1) + '" y1="' + cy1.toFixed(1) +
+                           '" x2="' + x.toFixed(1) + '" y2="' + cy2.toFixed(1) +
                            '" stroke="currentColor" stroke-width="1" opacity="' + (currentOpacity * 0.6) + '"/>';
                     runStart = -1;
                 }
@@ -21518,7 +21529,13 @@ document.addEventListener('keydown', (e) => {
         const { lh, charW, padTop, padLeft } = _measure(ta);
         const blocks = _parseBlocks(ta.value);
         const lines = ta.value.split('\n');
+        const scrollTop = ta.scrollTop;
+        const scrollLeft = ta.scrollLeft;
+        const viewH = ta.clientHeight;
+        const viewW = ta.clientWidth;
         let out = '';
+        // Helper de clamping: convierte (x,y) global a coords del viewport y skipea si está fuera
+        const inView = (y) => (y >= -lh && y <= viewH + lh);
 
         // Para cada bloque:
         //   1) Línea vertical desde la apertura hasta el cierre
@@ -21535,37 +21552,54 @@ document.addEventListener('keydown', (e) => {
             const block = blocks[b];
             const colorDefault = COLORS[b % COLORS.length];
             const lvl = Math.floor(block.indent / TAB_SIZE);
-            const xVert = padLeft + (lvl * TAB_SIZE + 0.5) * charW;
+            // Coordenadas relativas al viewport (restando scroll del textarea)
+            const xVert = padLeft + (lvl * TAB_SIZE + 0.5) * charW - scrollLeft;
             const childIndent = (lvl + 1) * TAB_SIZE;
-            const yStart = padTop + (block.startLine + 1) * lh;
-            const yEnd = padTop + block.endLine * lh + lh * 0.5;
+            const yStart = padTop + (block.startLine + 1) * lh - scrollTop;
+            const yEnd = padTop + block.endLine * lh + lh * 0.5 - scrollTop;
             if (yEnd <= yStart) continue;
+            // Cull: si todo el bloque está fuera de la vista, skip
+            if (yEnd < 0 || yStart > viewH) continue;
 
             const isSiWithSino = block.kind === 'si' && block.sinoLine;
-            const sinoY = isSiWithSino ? padTop + block.sinoLine * lh : null;
+            const sinoY = isSiWithSino ? padTop + block.sinoLine * lh - scrollTop : null;
 
             if (isSiWithSino) {
-                // 1a) Tramo VERDADERO (verde) desde apertura hasta SiNo
-                out += '<line x1="' + xVert.toFixed(1) + '" y1="' + yStart.toFixed(1) +
-                       '" x2="' + xVert.toFixed(1) + '" y2="' + sinoY.toFixed(1) +
-                       '" stroke="' + COLOR_TRUE + '" stroke-width="1.8" opacity="' + currentOpacity +
-                       '" stroke-linecap="round"/>';
-                // 1b) Tramo FALSO (naranja) desde SiNo hasta cierre
-                out += '<line x1="' + xVert.toFixed(1) + '" y1="' + (sinoY + lh).toFixed(1) +
-                       '" x2="' + xVert.toFixed(1) + '" y2="' + yEnd.toFixed(1) +
-                       '" stroke="' + COLOR_FALSE + '" stroke-width="1.8" opacity="' + currentOpacity +
-                       '" stroke-linecap="round"/>';
-                // Etiquetas ✓ / ✗ pequeñas al lado de las verticales
-                out += '<text x="' + (xVert - 4).toFixed(1) + '" y="' + (yStart + 9).toFixed(1) +
-                       '" font-size="10" fill="' + COLOR_TRUE + '" font-weight="700" text-anchor="end" opacity="' + (currentOpacity + 0.2) + '">✓</text>';
-                out += '<text x="' + (xVert - 4).toFixed(1) + '" y="' + (sinoY + lh + 9).toFixed(1) +
-                       '" font-size="10" fill="' + COLOR_FALSE + '" font-weight="700" text-anchor="end" opacity="' + (currentOpacity + 0.2) + '">✗</text>';
+                // Tramos clampeados al viewport (defensivo)
+                const v_yStart = Math.max(0, Math.min(viewH, yStart));
+                const v_sinoY  = Math.max(0, Math.min(viewH, sinoY));
+                const v_sinoEnd = Math.max(0, Math.min(viewH, sinoY + lh));
+                const v_yEnd   = Math.max(0, Math.min(viewH, yEnd));
+                if (v_sinoY > v_yStart) {
+                    out += '<line x1="' + xVert.toFixed(1) + '" y1="' + v_yStart.toFixed(1) +
+                           '" x2="' + xVert.toFixed(1) + '" y2="' + v_sinoY.toFixed(1) +
+                           '" stroke="' + COLOR_TRUE + '" stroke-width="1.8" opacity="' + currentOpacity +
+                           '" stroke-linecap="round"/>';
+                }
+                if (v_yEnd > v_sinoEnd) {
+                    out += '<line x1="' + xVert.toFixed(1) + '" y1="' + v_sinoEnd.toFixed(1) +
+                           '" x2="' + xVert.toFixed(1) + '" y2="' + v_yEnd.toFixed(1) +
+                           '" stroke="' + COLOR_FALSE + '" stroke-width="1.8" opacity="' + currentOpacity +
+                           '" stroke-linecap="round"/>';
+                }
+                if (inView(yStart)) {
+                    out += '<text x="' + (xVert - 4).toFixed(1) + '" y="' + (yStart + 9).toFixed(1) +
+                           '" font-size="10" fill="' + COLOR_TRUE + '" font-weight="700" text-anchor="end" opacity="' + (currentOpacity + 0.2) + '">✓</text>';
+                }
+                if (inView(sinoY + lh)) {
+                    out += '<text x="' + (xVert - 4).toFixed(1) + '" y="' + (sinoY + lh + 9).toFixed(1) +
+                           '" font-size="10" fill="' + COLOR_FALSE + '" font-weight="700" text-anchor="end" opacity="' + (currentOpacity + 0.2) + '">✗</text>';
+                }
             } else {
-                // Línea vertical normal de un solo color
-                out += '<line x1="' + xVert.toFixed(1) + '" y1="' + yStart.toFixed(1) +
-                       '" x2="' + xVert.toFixed(1) + '" y2="' + yEnd.toFixed(1) +
-                       '" stroke="' + colorDefault + '" stroke-width="1.5" opacity="' + currentOpacity +
-                       '" stroke-linecap="round"/>';
+                // Línea vertical normal de un solo color, clampeada al viewport
+                const v_y1 = Math.max(0, Math.min(viewH, yStart));
+                const v_y2 = Math.max(0, Math.min(viewH, yEnd));
+                if (v_y2 > v_y1) {
+                    out += '<line x1="' + xVert.toFixed(1) + '" y1="' + v_y1.toFixed(1) +
+                           '" x2="' + xVert.toFixed(1) + '" y2="' + v_y2.toFixed(1) +
+                           '" stroke="' + colorDefault + '" stroke-width="1.5" opacity="' + currentOpacity +
+                           '" stroke-linecap="round"/>';
+                }
             }
 
             // 2) Codos horizontales SOLO en líneas hijas directas (indent == childIndent)
@@ -21582,16 +21616,14 @@ document.addEventListener('keydown', (e) => {
                 if (firstNonWs < 0) continue;
                 const trimmed = raw.slice(firstNonWs).trim();
                 if (!trimmed || trimmed.startsWith('//')) continue;
-                // Solo dibujar el codo si la línea es HIJO DIRECTO del bloque (mismo nivel + 1)
                 if (indent !== childIndent) continue;
-                // Skip las líneas SiNo / FinSi etc. — son palabras estructurales del propio bloque
                 if (/^(sino|finsi|finmientras|finpara|finsegun|hasta\s+que|de\s+otro\s+modo)/i.test(trimmed)) continue;
 
-                const xEndH = padLeft + indent * charW - 2;
+                const xEndH = padLeft + indent * charW - 2 - scrollLeft;
                 if (xEndH <= xVert + 2) continue;
-                const yMid = padTop + i * lh + lh * 0.5;
+                const yMid = padTop + i * lh + lh * 0.5 - scrollTop;
+                if (!inView(yMid)) continue;
 
-                // Color del codo: depende de si está en rama Verdadera o Falsa del Si/SiNo
                 let codoColor = colorDefault;
                 let codoOpacity = currentOpacity * 0.85;
                 if (isSiWithSino) {
@@ -21605,9 +21637,12 @@ document.addEventListener('keydown', (e) => {
             }
         }
 
-        // Indent guides MUY sutiles de fondo en cada nivel (donde NO hay bloque coloreado encima)
-        for (let i = 0; i < lines.length; i++) {
+        // Indent guides MUY sutiles de fondo (solo en líneas visibles, restando scroll)
+        const firstVisible = Math.max(0, Math.floor(scrollTop / lh) - 1);
+        const lastVisible = Math.min(lines.length, Math.ceil((scrollTop + viewH) / lh) + 1);
+        for (let i = firstVisible; i < lastVisible; i++) {
             const raw = lines[i];
+            if (!raw) continue;
             let indent = 0;
             for (let k = 0; k < raw.length; k++) {
                 if (raw[k] === '\t') indent = Math.floor(indent / TAB_SIZE) * TAB_SIZE + TAB_SIZE;
@@ -21615,9 +21650,10 @@ document.addEventListener('keydown', (e) => {
                 else break;
             }
             const lvls = Math.floor(indent / TAB_SIZE);
-            const y = padTop + i * lh;
+            const y = padTop + i * lh - scrollTop;
             for (let l = 0; l < lvls; l++) {
-                const x = padLeft + (l * TAB_SIZE + 0.5) * charW;
+                const x = padLeft + (l * TAB_SIZE + 0.5) * charW - scrollLeft;
+                if (x < 0 || x > viewW) continue;
                 out += '<line x1="' + x.toFixed(1) + '" y1="' + y.toFixed(1) +
                        '" x2="' + x.toFixed(1) + '" y2="' + (y + lh).toFixed(1) +
                        '" stroke="rgba(127,127,127,0.10)" stroke-width="1"/>';
@@ -21638,10 +21674,17 @@ document.addEventListener('keydown', (e) => {
             return;
         }
         svg.style.display = '';
-        // Sincronizar scroll del SVG con el textarea
-        try {
-            svg.style.transform = 'translate(' + (-ta.scrollLeft) + 'px, ' + (-ta.scrollTop) + 'px)';
-        } catch(_) {}
+        // FIX: el SVG cubre exactamente el área visible del textarea (no se mueve).
+        // Las coordenadas de los elementos SVG ya restan scrollTop/scrollLeft del
+        // textarea, así no necesitamos transform. Esto resuelve el bug de
+        // "guías cortadas al hacer scroll".
+        const taRect = ta.getBoundingClientRect();
+        const parentRect = svg.parentElement.getBoundingClientRect();
+        svg.style.left = (taRect.left - parentRect.left) + 'px';
+        svg.style.top = (taRect.top - parentRect.top) + 'px';
+        svg.style.width = ta.clientWidth + 'px';
+        svg.style.height = ta.clientHeight + 'px';
+        svg.style.transform = '';
         if (mode === 'arrows') {
             _renderArrows(ta, svg);
         } else {
@@ -21715,8 +21758,31 @@ document.addEventListener('keydown', (e) => {
     } else {
         setTimeout(_autoAttach, 100);
     }
-    // Re-attach periódicamente para editores dinámicos (lecciones)
-    setInterval(_autoAttach, 1500);
+    // FIX: REMOVIDO setInterval(1500) que causaba lag en el flowchart al
+    // re-renderizar todos los editores constantemente. Reemplazado con
+    // MutationObserver que solo dispara cuando aparece un nuevo editor.
+    if (typeof MutationObserver !== 'undefined') {
+        const mo = new MutationObserver((mutations) => {
+            for (const m of mutations) {
+                for (const n of m.addedNodes) {
+                    if (n && n.nodeType === 1) {
+                        // ¿Es un editor o contiene uno?
+                        if (n.id === 'exampleEditor' || n.id === 'challengeEditor' ||
+                            (n.querySelector && (n.querySelector('#exampleEditor') || n.querySelector('#challengeEditor')))) {
+                            setTimeout(_autoAttach, 50);
+                            return;
+                        }
+                    }
+                }
+            }
+        });
+        // Esperar a que body exista
+        const startObserver = () => {
+            if (document.body) mo.observe(document.body, { childList: true, subtree: true });
+            else setTimeout(startObserver, 100);
+        };
+        startObserver();
+    }
 
     // Toggle cíclico: indent → arrows → off → indent
     window.cycleFlowMode = function() {
