@@ -4033,6 +4033,7 @@
                                 </div>
                                 <button class="btn-ghost" style="padding:4px 10px;font-size:0.72rem" onclick="toggleEditorFullscreen()" title="Pantalla completa (F11)">⛶</button>
                                 <button class="btn-ghost" style="padding:4px 10px;font-size:0.72rem" onclick="toggleShortcuts()" title="Atajos de teclado">⌨</button>
+                                <button class="btn-ghost" style="padding:4px 10px;font-size:0.72rem" onclick="openReportModal()" title="Reportar bug o sugerencia">📨 Reportar</button>
                             </div>
                         </div>
                         <!-- Snippets panel -->
@@ -4194,6 +4195,7 @@ FinProceso</textarea>
                             </div>
                         </div>
                         <button class="fs-icon-btn" onclick="toggleShortcuts()" title="Atajos de teclado">⌨ Atajos</button>
+                        <button class="fs-icon-btn" onclick="openReportModal()" title="Reportar bug o sugerencia">📨 Reportar</button>
                         <button class="fs-icon-btn" onclick="openFlowchart()" title="Ver diagrama de flujo (F7)">🔀 Diagrama</button>
                         <button class="fs-run-btn" id="fsRunBtn" onclick="runPlayground()" title="Ejecutar (F5)">▶ Ejecutar</button>
                         <button class="fs-stop-btn" id="fsStopBtn" onclick="stopExecution()" title="Detener ejecución" style="display:none">⏹ Detener</button>
@@ -4569,6 +4571,137 @@ FinProceso</textarea>
                 </div>
             </div>
         </div>
+
+        <!-- ════════════════════════════════════════════════════════════
+             FORMULARIO DE REPORTES (bug/sugerencia/pregunta)
+             Envía los reportes al correo del autor vía FormSubmit
+             (servicio gratuito, sin registro, ilimitado).
+             ════════════════════════════════════════════════════════════ -->
+        <div class="modal-overlay" id="reportModal" role="dialog" aria-modal="true" aria-labelledby="reportModalTitle" style="z-index:420" onclick="if(event.target===this)closeReportModal()">
+            <div class="modal" style="max-width:620px;width:96%">
+                <div class="modal-header">
+                    <h2 id="reportModalTitle">📨 Reportar bug, sugerencia o pregunta</h2>
+                    <button class="modal-close" onclick="closeReportModal()" aria-label="Cerrar formulario">✕</button>
+                </div>
+                <div class="modal-body" style="max-height:78vh;overflow-y:auto">
+                    <p style="font-size:0.86rem;color:var(--text-muted);margin-bottom:14px">
+                        Llena el formulario y enviamos tu reporte directo al autor. Es <b>anónimo por defecto</b> — solo deja tu email si quieres respuesta.
+                    </p>
+                    <form id="reportForm" action="https://formsubmit.co/solopvppro@gmail.com" method="POST" style="display:flex;flex-direction:column;gap:12px">
+                        <!-- FormSubmit config: honeypot, no captcha (lo añadimos visualmente), redirect, subject template -->
+                        <input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off"/>
+                        <input type="hidden" name="_captcha" value="false"/>
+                        <input type="hidden" name="_template" value="table"/>
+                        <input type="hidden" name="_subject" id="reportSubjectAuto" value="[PSeInt Academy] Reporte"/>
+                        <input type="hidden" name="Pagina" value="https://ldikay99.github.io/pseint-academy/"/>
+                        <input type="hidden" name="Version" value="v1"/>
+                        <input type="hidden" name="UserAgent" id="reportUA" value=""/>
+                        <input type="hidden" name="Pantalla" id="reportScreen" value=""/>
+                        <input type="hidden" name="Idioma" id="reportLang" value=""/>
+                        <input type="hidden" name="FechaCliente" id="reportDate" value=""/>
+
+                        <!-- TIPO -->
+                        <div>
+                            <label style="font-size:0.82rem;font-weight:700;color:var(--text-main);display:block;margin-bottom:6px">Tipo de reporte *</label>
+                            <div style="display:flex;flex-wrap:wrap;gap:8px">
+                                <label class="report-chip"><input type="radio" name="Tipo" value="🐛 Bug" required onchange="onReportTypeChange(this.value)"/><span>🐛 Bug</span></label>
+                                <label class="report-chip"><input type="radio" name="Tipo" value="💡 Sugerencia" onchange="onReportTypeChange(this.value)"/><span>💡 Sugerencia / Mejora</span></label>
+                                <label class="report-chip"><input type="radio" name="Tipo" value="❓ Pregunta" onchange="onReportTypeChange(this.value)"/><span>❓ Pregunta / Duda</span></label>
+                                <label class="report-chip"><input type="radio" name="Tipo" value="✨ Otro" onchange="onReportTypeChange(this.value)"/><span>✨ Otro</span></label>
+                            </div>
+                        </div>
+
+                        <!-- SEVERIDAD (solo si Bug) -->
+                        <div id="reportSeverityWrap" style="display:none">
+                            <label style="font-size:0.82rem;font-weight:700;color:var(--text-main);display:block;margin-bottom:6px">¿Qué tan grave es?</label>
+                            <div style="display:flex;flex-wrap:wrap;gap:8px">
+                                <label class="report-chip"><input type="radio" name="Severidad" value="🔴 Crítico - rompe la app"/><span>🔴 Crítico</span></label>
+                                <label class="report-chip"><input type="radio" name="Severidad" value="🟠 Importante - feature no funciona"/><span>🟠 Importante</span></label>
+                                <label class="report-chip"><input type="radio" name="Severidad" value="🟡 Menor - molestia"/><span>🟡 Menor</span></label>
+                                <label class="report-chip"><input type="radio" name="Severidad" value="🟢 Cosmético"/><span>🟢 Cosmético</span></label>
+                            </div>
+                        </div>
+
+                        <!-- ÁREA -->
+                        <div>
+                            <label style="font-size:0.82rem;font-weight:700;color:var(--text-main);display:block;margin-bottom:6px">¿Dónde lo encontraste?</label>
+                            <select name="Area" required style="width:100%;padding:9px 10px;background:var(--bg-card2);color:var(--text-main);border:1px solid var(--border);border-radius:6px;font:inherit">
+                                <option value="">— Selecciona —</option>
+                                <option value="Editor playground (libre)">Editor playground (libre)</option>
+                                <option value="Editor de ejemplo en lección">Editor de ejemplo en lección</option>
+                                <option value="Editor del reto en lección">Editor del reto en lección</option>
+                                <option value="Pantalla completa (fullscreen)">Pantalla completa (fullscreen)</option>
+                                <option value="Intérprete (ejecución de código)">Intérprete (ejecución de código)</option>
+                                <option value="Diagrama de flujo">Diagrama de flujo</option>
+                                <option value="Autocompletado">Autocompletado</option>
+                                <option value="Análisis de errores / warnings">Análisis de errores / warnings</option>
+                                <option value="Formatter (Ctrl+S)">Formatter (Ctrl+S)</option>
+                                <option value="Find/Replace (Ctrl+F)">Find/Replace (Ctrl+F)</option>
+                                <option value="Sidebar de símbolos">Sidebar de símbolos</option>
+                                <option value="Temas / colores">Temas / colores</option>
+                                <option value="Lecciones / contenido">Lecciones / contenido</option>
+                                <option value="Móvil / responsive">Móvil / responsive</option>
+                                <option value="Otro / no estoy seguro">Otro / no estoy seguro</option>
+                            </select>
+                        </div>
+
+                        <!-- ASUNTO -->
+                        <div>
+                            <label style="font-size:0.82rem;font-weight:700;color:var(--text-main);display:block;margin-bottom:6px">Asunto corto *</label>
+                            <input type="text" name="Asunto" required maxlength="120" placeholder="Ej: El botón 'Ejecutar' no responde en móvil" style="width:100%;padding:9px 10px;background:var(--bg-card2);color:var(--text-main);border:1px solid var(--border);border-radius:6px;font:inherit"/>
+                        </div>
+
+                        <!-- DESCRIPCIÓN -->
+                        <div>
+                            <label style="font-size:0.82rem;font-weight:700;color:var(--text-main);display:block;margin-bottom:6px">Descripción detallada *</label>
+                            <textarea name="Descripcion" required minlength="15" rows="5" placeholder="Cuéntame qué pasó. Si es un bug: qué intentabas hacer, qué esperabas y qué pasó en su lugar." style="width:100%;padding:10px;background:var(--bg-card2);color:var(--text-main);border:1px solid var(--border);border-radius:6px;font:inherit;resize:vertical;min-height:90px"></textarea>
+                        </div>
+
+                        <!-- PASOS PARA REPRODUCIR (opcional, recomendado para bugs) -->
+                        <div>
+                            <label style="font-size:0.82rem;font-weight:700;color:var(--text-main);display:block;margin-bottom:6px">Pasos para reproducir <span style="color:var(--text-muted);font-weight:400">(opcional pero útil para bugs)</span></label>
+                            <textarea name="Pasos" rows="3" placeholder="1. Abrir el editor&#10;2. Pegar este código: ...&#10;3. Hacer click en Ejecutar&#10;4. ..." style="width:100%;padding:10px;background:var(--bg-card2);color:var(--text-main);border:1px solid var(--border);border-radius:6px;font:inherit;resize:vertical;min-height:70px"></textarea>
+                        </div>
+
+                        <!-- CÓDIGO PSEINT (opcional) -->
+                        <div>
+                            <label style="font-size:0.82rem;font-weight:700;color:var(--text-main);display:block;margin-bottom:6px">¿Tienes código PSeInt relacionado? <span style="color:var(--text-muted);font-weight:400">(opcional)</span></label>
+                            <textarea name="CodigoPseInt" rows="4" placeholder="Pega aquí el código PSeInt donde se ve el problema..." style="width:100%;padding:10px;background:var(--bg-card2);color:var(--text-main);border:1px solid var(--border);border-radius:6px;font:'Cascadia Code',Consolas,monospace;font-size:0.82rem;resize:vertical;min-height:90px"></textarea>
+                            <button type="button" onclick="copyEditorToReport()" style="margin-top:6px;font-size:0.78rem;background:transparent;color:var(--accent1);border:none;cursor:pointer;text-decoration:underline">📋 Copiar código del editor actual</button>
+                        </div>
+
+                        <!-- EMAIL (opcional) -->
+                        <div>
+                            <label style="font-size:0.82rem;font-weight:700;color:var(--text-main);display:block;margin-bottom:6px">Tu email <span style="color:var(--text-muted);font-weight:400">(opcional, solo si quieres respuesta)</span></label>
+                            <input type="email" name="_replyto" id="reportEmail" placeholder="tu@correo.com" style="width:100%;padding:9px 10px;background:var(--bg-card2);color:var(--text-main);border:1px solid var(--border);border-radius:6px;font:inherit"/>
+                            <label style="font-size:0.74rem;color:var(--text-muted);display:flex;align-items:center;gap:6px;margin-top:6px;cursor:pointer">
+                                <input type="checkbox" name="Anonimo" value="Sí, reporte anónimo" id="reportAnon" onchange="if(this.checked){document.getElementById('reportEmail').value='';document.getElementById('reportEmail').disabled=true;}else{document.getElementById('reportEmail').disabled=false;}"/>
+                                Reportar anónimamente (no recibirás respuesta)
+                            </label>
+                        </div>
+
+                        <!-- STATUS / SUBMIT -->
+                        <div id="reportStatus" style="display:none;padding:10px;border-radius:6px;font-size:0.85rem"></div>
+                        <div style="display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap">
+                            <a href="https://github.com/ldikay99/pseint-academy/issues/new" target="_blank" rel="noopener" style="font-size:0.78rem;color:var(--text-muted);text-decoration:underline">o abrir issue en GitHub →</a>
+                            <div style="display:flex;gap:8px">
+                                <button type="button" onclick="closeReportModal()" style="padding:9px 16px;background:transparent;color:var(--text-muted);border:1px solid var(--border);border-radius:6px;cursor:pointer;font:inherit">Cancelar</button>
+                                <button type="submit" id="reportSubmitBtn" style="padding:9px 18px;background:linear-gradient(135deg,#10b981,#34d399);color:#fff;border:none;border-radius:6px;cursor:pointer;font:inherit;font-weight:700">📤 Enviar reporte</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <style>
+            .report-chip { display:inline-flex; align-items:center; gap:6px; padding:7px 12px; background:var(--bg-card2); border:1px solid var(--border); border-radius:18px; cursor:pointer; font-size:0.82rem; user-select:none; transition:all 0.15s; }
+            .report-chip:hover { border-color:var(--accent1); background:rgba(0,212,255,0.08); }
+            .report-chip input { margin:0; cursor:pointer; }
+            .report-chip:has(input:checked) { background:rgba(0,212,255,0.15); border-color:var(--accent1); color:var(--text-main); }
+            #reportStatus.ok { background:rgba(16,185,129,0.15); border:1px solid #10b981; color:#6ee7b7; }
+            #reportStatus.err { background:rgba(239,68,68,0.15); border:1px solid #ef4444; color:#fca5a5; }
+            #reportStatus.info { background:rgba(0,212,255,0.10); border:1px solid var(--accent1); color:var(--accent1); }
+        </style>
 
         <!-- ATAJOS DE TECLADO MODAL -->
         <div class="shortcuts-modal" id="shortcutsModal" role="dialog" aria-modal="true" aria-label="Atajos de teclado" onclick="if(event.target===this)toggleShortcuts()">
@@ -15350,6 +15483,11 @@ FinProceso</textarea>
                 if (findW && findW.style.display !== 'none' && findW.style.display !== '') {
                     return close(window.closeFindReplace);
                 }
+                // 0.5) Modal de reportes
+                const repModal = document.getElementById('reportModal');
+                if (repModal && repModal.classList.contains('open')) {
+                    return close(window.closeReportModal);
+                }
                 // 1) Autocompletado
                 const acPopup = document.getElementById('autocompletePopup');
                 if (acPopup && acPopup.classList.contains('open')) {
@@ -19026,6 +19164,84 @@ FinProceso</textarea>
                 setTimeout(attachListeners, 500);
                 setTimeout(attachListeners, 2000);
             })();
+
+            // ── Formulario de reportes (bug/sugerencia) ─────────────────────
+            window.openReportModal = function() {
+                const m = document.getElementById('reportModal');
+                if (!m) return;
+                m.classList.add('open');
+                // Auto-rellenar metadatos del cliente
+                try {
+                    document.getElementById('reportUA').value = navigator.userAgent || '';
+                    document.getElementById('reportScreen').value = (screen.width + 'x' + screen.height + ' / ' + window.innerWidth + 'x' + window.innerHeight);
+                    document.getElementById('reportLang').value = navigator.language || '';
+                    document.getElementById('reportDate').value = new Date().toLocaleString('es-CO', { dateStyle: 'medium', timeStyle: 'short' });
+                } catch(_) {}
+                setTimeout(() => { try { m.querySelector('input[type="radio"]').focus(); } catch(_) {} }, 60);
+            };
+            window.closeReportModal = function() {
+                const m = document.getElementById('reportModal');
+                if (m) m.classList.remove('open');
+            };
+            window.onReportTypeChange = function(value) {
+                const sev = document.getElementById('reportSeverityWrap');
+                if (sev) sev.style.display = (value === '🐛 Bug') ? 'block' : 'none';
+                // Subject template más útil
+                const subj = document.getElementById('reportSubjectAuto');
+                if (subj) subj.value = '[PSeInt Academy] ' + value;
+            };
+            window.copyEditorToReport = function() {
+                const editors = ['playgroundEditor','exampleEditor','challengeEditor'];
+                let best = null;
+                for (const id of editors) {
+                    const el = document.getElementById(id);
+                    if (el && el.value && el.value.trim()) {
+                        // Priorizar el editor con foco; sino el playground; sino el primero con contenido
+                        if (document.activeElement === el) { best = el; break; }
+                        if (!best) best = el;
+                    }
+                }
+                if (best) {
+                    const target = document.querySelector('#reportForm textarea[name="CodigoPseInt"]');
+                    if (target) {
+                        target.value = best.value.substring(0, 4000); // cap defensivo
+                        if (typeof showToast === 'function') showToast('📋 Código copiado al reporte');
+                    }
+                } else {
+                    if (typeof showToast === 'function') showToast('No hay código en los editores');
+                }
+            };
+            // Submit AJAX (sin redirección) — FormSubmit acepta fetch con _captcha=false
+            document.addEventListener('submit', function(e) {
+                const form = e.target;
+                if (!form || form.id !== 'reportForm') return;
+                e.preventDefault();
+                const btn = document.getElementById('reportSubmitBtn');
+                const status = document.getElementById('reportStatus');
+                btn.disabled = true;
+                btn.textContent = '⏳ Enviando...';
+                status.style.display = 'block';
+                status.className = 'info';
+                status.textContent = 'Enviando reporte...';
+                fetch(form.action, {
+                    method: 'POST',
+                    body: new FormData(form),
+                    headers: { 'Accept': 'application/json' }
+                }).then(r => r.ok ? r.json().catch(() => ({})) : Promise.reject(r))
+                  .then(() => {
+                    status.className = 'ok';
+                    status.innerHTML = '✅ <b>¡Reporte enviado!</b> Gracias por ayudar a mejorar la app. Si dejaste tu email, recibirás respuesta cuando lo revise.';
+                    form.reset();
+                    document.getElementById('reportSeverityWrap').style.display = 'none';
+                    setTimeout(() => { window.closeReportModal(); btn.disabled = false; btn.textContent = '📤 Enviar reporte'; status.style.display = 'none'; }, 3500);
+                  })
+                  .catch(() => {
+                    status.className = 'err';
+                    status.innerHTML = '⚠️ No se pudo enviar. Intenta de nuevo o <a href="https://github.com/ldikay99/pseint-academy/issues/new" target="_blank" style="color:inherit;text-decoration:underline">abre un issue en GitHub</a>.';
+                    btn.disabled = false;
+                    btn.textContent = '📤 Enviar reporte';
+                  });
+            });
 
             if (document.readyState === "loading") {
                 document.addEventListener("DOMContentLoaded", () => { safeInit(); showWelcomeIfNeeded(); });
