@@ -4597,12 +4597,12 @@ FinProceso</textarea>
                     <p style="font-size:0.86rem;color:var(--text-muted);margin-bottom:14px">
                         Llena el formulario y enviamos tu reporte directo al autor. Es <b>anónimo por defecto</b> — solo deja tu email si quieres respuesta.
                     </p>
-                    <form id="reportForm" action="javascript:void(0)" method="POST" style="display:flex;flex-direction:column;gap:12px">
-                        <!-- FormSubmit config: honeypot, no captcha (lo añadimos visualmente), redirect, subject template -->
-                        <input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off"/>
-                        <input type="hidden" name="_captcha" value="false"/>
-                        <input type="hidden" name="_template" value="table"/>
-                        <input type="hidden" name="_subject" id="reportSubjectAuto" value="[PSeInt Academy] Reporte"/>
+                    <form id="reportForm" action="https://api.web3forms.com/submit" method="POST" style="display:flex;flex-direction:column;gap:12px">
+                        <!-- Web3Forms config: access_key autenticación + honeypot anti-spam (botcheck) -->
+                        <input type="hidden" name="access_key" value="89f0464f-94b6-4acc-8463-73bcb8b420eb"/>
+                        <input type="hidden" name="from_name" value="PSeInt Academy"/>
+                        <input type="hidden" name="subject" id="reportSubjectAuto" value="[PSeInt Academy] Reporte"/>
+                        <input type="checkbox" name="botcheck" style="display:none" tabindex="-1" autocomplete="off"/>
                         <input type="hidden" name="Pagina" value="https://ldikay99.github.io/pseint-academy/"/>
                         <input type="hidden" name="Version" value="v1"/>
                         <input type="hidden" name="UserAgent" id="reportUA" value=""/>
@@ -19290,8 +19290,9 @@ FinProceso</textarea>
                     + '&body=' + encodeURIComponent(body);
             }
 
-            // Submit: usa mailto: como método principal (100% gratis, sin servicios externos)
-            // El usuario solo hace clic en "Enviar" en su cliente de correo.
+            // Submit: enviar vía Web3Forms (gratis, ilimitado, sin servidor propio)
+            // El reportador solo llena el form y le da Enviar — los datos llegan
+            // directamente al correo solopvppro@gmail.com sin pasos extra.
             document.addEventListener('submit', function(e) {
                 const form = e.target;
                 if (!form || form.id !== 'reportForm') return;
@@ -19299,37 +19300,76 @@ FinProceso</textarea>
                 const btn = document.getElementById('reportSubmitBtn');
                 const status = document.getElementById('reportStatus');
                 btn.disabled = true;
-                btn.textContent = '⏳ Preparando...';
+                btn.textContent = '⏳ Enviando...';
                 status.style.display = 'block';
                 status.className = 'info';
-                status.textContent = 'Preparando reporte...';
+                status.textContent = 'Enviando reporte al autor...';
 
-                // Construir el mailto: con todo el contenido formateado
-                const mailtoLink = _buildReportMailto(form);
-                const body = _buildReportBody(form);
+                // FormData → JSON (Web3Forms acepta ambos, JSON es más limpio)
+                const formData = new FormData(form);
+                const jsonData = {};
+                formData.forEach((value, key) => {
+                    // Si una clave ya existe, convertir a array (para checkboxes multi)
+                    if (jsonData[key]) {
+                        jsonData[key] = Array.isArray(jsonData[key])
+                            ? [...jsonData[key], value]
+                            : [jsonData[key], value];
+                    } else {
+                        jsonData[key] = value;
+                    }
+                });
 
-                // Intentar abrir el cliente de correo del usuario
-                let clientOpened = false;
-                try {
-                    window.location.href = mailtoLink;
-                    clientOpened = true;
-                } catch(_) {}
+                fetch('https://api.web3forms.com/submit', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(jsonData)
+                }).then(async (r) => {
+                    let data = null;
+                    try { data = await r.json(); } catch(_) {}
+                    return { ok: r.ok, status: r.status, data };
+                }).then(({ok, data}) => {
+                    const success = data && (data.success === true || data.success === 'true');
 
-                // Mostrar confirmación y alternativas
-                setTimeout(() => {
-                    status.className = 'ok';
-                    status.innerHTML = '✅ <b>Reporte preparado.</b><br>'
-                        + 'Se abrió tu cliente de correo con el reporte listo para enviar. '
-                        + 'Solo dale clic a <b>Enviar</b> en tu correo.<br><br>'
-                        + '<b>¿No se abrió?</b> Usa una de estas opciones:<br>'
-                        + '• <a href="' + mailtoLink + '" style="color:var(--accent1);text-decoration:underline">📧 Reintentar abrir cliente de correo</a><br>'
-                        + '• <button type="button" onclick="_copyReportToClipboard()" style="background:none;border:none;color:var(--accent1);text-decoration:underline;cursor:pointer;padding:0;font:inherit">📋 Copiar reporte al portapapeles</button> (pégalo en cualquier correo a <b>solopvppro@gmail.com</b>)<br>'
-                        + '• <a href="https://github.com/ldikay99/pseint-academy/issues/new" target="_blank" style="color:var(--accent1);text-decoration:underline">🐙 Abrir issue en GitHub</a>';
-                    // Guardar el body para copiar al portapapeles
-                    window._lastReportBody = body;
+                    if (ok && success) {
+                        status.className = 'ok';
+                        status.innerHTML = '✅ <b>¡Reporte enviado!</b> Gracias por ayudar a mejorar la app.<br>'
+                            + 'Si dejaste tu email, recibirás respuesta cuando lo revise.';
+                        form.reset();
+                        const sev = document.getElementById('reportSeverityWrap');
+                        if (sev) sev.style.display = 'none';
+                        setTimeout(() => {
+                            window.closeReportModal();
+                            btn.disabled = false;
+                            btn.textContent = '📤 Enviar reporte';
+                            status.style.display = 'none';
+                        }, 3500);
+                        return;
+                    }
+                    // Error de validación o servidor
+                    const msg = (data && (data.message || JSON.stringify(data))) || 'Error desconocido';
+                    const mailtoLink = _buildReportMailto(form);
+                    status.className = 'err';
+                    status.innerHTML = '⚠️ <b>No se pudo enviar el reporte.</b><br>'
+                        + '<small style="opacity:0.85">Detalle: ' + String(msg).substring(0, 200) + '</small><br><br>'
+                        + 'Alternativas:<br>'
+                        + '• <a href="' + mailtoLink + '" style="color:#fde68a;text-decoration:underline">📧 Enviar por correo</a><br>'
+                        + '• <a href="https://github.com/ldikay99/pseint-academy/issues/new" target="_blank" style="color:#fde68a;text-decoration:underline">🐙 Abrir issue en GitHub</a>';
                     btn.disabled = false;
                     btn.textContent = '📤 Enviar reporte';
-                }, 400);
+                }).catch(() => {
+                    // Network error o CORS
+                    const mailtoLink = _buildReportMailto(form);
+                    status.className = 'err';
+                    status.innerHTML = '⚠️ <b>Error de red.</b> No se pudo conectar con el servidor.<br>'
+                        + 'Alternativas:<br>'
+                        + '• <a href="' + mailtoLink + '" style="color:#fde68a;text-decoration:underline">📧 Enviar por correo</a><br>'
+                        + '• <a href="https://github.com/ldikay99/pseint-academy/issues/new" target="_blank" style="color:#fde68a;text-decoration:underline">🐙 Abrir issue en GitHub</a>';
+                    btn.disabled = false;
+                    btn.textContent = '📤 Enviar reporte';
+                });
             });
 
             window._copyReportToClipboard = function() {
