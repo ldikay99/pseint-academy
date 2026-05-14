@@ -9528,7 +9528,14 @@ FinProceso`,
                             throw new Error("⏱ Tiempo máximo (30s) excedido. Probable bucle infinito en 'Mientras " + condStr + "'.");
                         // CEDER control al event loop cada 500 iteraciones — sin esto, el
                         // thread del navegador queda bloqueado y la página se congela.
-                        if (iters % 100 === 0) await new Promise(r => setTimeout(r, 0));
+                        // Yield al event loop sincronizado con el repaint del browser.
+                        // RAF + setTimeout encadenados permiten que la consola se vea
+                        // actualizando en tiempo real (no se ve "trabada hasta el timeout").
+                        if (iters % 25 === 0) await new Promise(r => {
+                            if (typeof requestAnimationFrame !== 'undefined')
+                                requestAnimationFrame(() => setTimeout(r, 0));
+                            else setTimeout(r, 0);
+                        });
                         let savedMain = this.lines, savedPos = this.pos;
                         this.lines = bodyLines;
                         this.pos = 0;
@@ -9569,7 +9576,14 @@ FinProceso`,
                             throw new Error("Límite de pasos alcanzado (" + this.maxSteps + "). Revisa la condición 'Hasta Que " + condStr + "'.");
                         if (Date.now() - this.startTime > this.maxRunMs)
                             throw new Error("⏱ Tiempo máximo (30s) excedido. Probable bucle infinito en 'Repetir...Hasta Que " + condStr + "'.");
-                        if (iters % 100 === 0) await new Promise(r => setTimeout(r, 0));
+                        // Yield al event loop sincronizado con el repaint del browser.
+                        // RAF + setTimeout encadenados permiten que la consola se vea
+                        // actualizando en tiempo real (no se ve "trabada hasta el timeout").
+                        if (iters % 25 === 0) await new Promise(r => {
+                            if (typeof requestAnimationFrame !== 'undefined')
+                                requestAnimationFrame(() => setTimeout(r, 0));
+                            else setTimeout(r, 0);
+                        });
                         let savedMain = this.lines, savedPos = this.pos;
                         this.lines = bodyLines;
                         this.pos = 0;
@@ -9620,7 +9634,14 @@ FinProceso`,
                             throw new Error("Límite de pasos alcanzado (" + this.maxSteps + ").");
                         if (Date.now() - this.startTime > this.maxRunMs)
                             throw new Error("⏱ Tiempo máximo (30s) excedido en el bucle 'Para " + varN + "'.");
-                        if (iters % 100 === 0) await new Promise(r => setTimeout(r, 0));
+                        // Yield al event loop sincronizado con el repaint del browser.
+                        // RAF + setTimeout encadenados permiten que la consola se vea
+                        // actualizando en tiempo real (no se ve "trabada hasta el timeout").
+                        if (iters % 25 === 0) await new Promise(r => {
+                            if (typeof requestAnimationFrame !== 'undefined')
+                                requestAnimationFrame(() => setTimeout(r, 0));
+                            else setTimeout(r, 0);
+                        });
                         let savedMain = this.lines, savedPos = this.pos;
                         this.lines = bodyLines;
                         this.pos = 0;
@@ -10474,10 +10495,14 @@ FinProceso`,
                 // FIX: aplicar trim si la consola se llenó demasiado
                 _trimConsoleIfNeeded(el);
 
+                // Auto-scroll al final — siempre, incluso durante bucles
                 el.scrollTop = el.scrollHeight;
                 // Sync con el panel del fullscreen si está abierto en console
                 if (elId === 'playgroundConsole' && window._fsSyncConsole) {
                     window._fsSyncConsole();
+                    // También scroll del panel fullscreen si está visible
+                    const fsPane = document.querySelector('.fs-bottom-content.fs-pane-console');
+                    if (fsPane) fsPane.scrollTop = fsPane.scrollHeight;
                 }
             }
 
@@ -12486,6 +12511,22 @@ FinProceso`,
                         if (/^repetir$/i.test(t2)) continue;
                         if (/^sino$/i.test(t2)) continue;
                         if (/^(de\s+otro\s+modo|otro)\s*:/i.test(t2)) continue;
+                        // FIX importante: PSeInt acepta múltiples patrones avanzados que
+                        // confunden a un analyzer line-by-line:
+                        //   • Múltiples statements separados por ';' en la misma línea
+                        //   • Si X Entonces STMT  (sin FinSi en esta línea — separado)
+                        //   • SiNo STMT FinSi    (rama partida en otra línea)
+                        //   • Etiqueta de Segun con statement inline:  1: Escribir "x"
+                        // Para evitar FALSOS POSITIVOS en estos casos, skip-eamos el
+                        // análisis profundo de palabras reservadas-como-valor.
+                        // El intérprete los ejecuta correctamente; aquí solo evitamos
+                        // alarmas que no son reales.
+                        const _noStrForSemicolon = t2.replace(/"[^"]*"/g, '""');
+                        const hasMultiStmt = _noStrForSemicolon.includes(';');
+                        const hasInlineCtrl = /^(si|sino)\s+.+\s+entonces\s+\S/i.test(t2)
+                                           || /^sino\s+\S/i.test(t2) && !/^sino\s*$/i.test(t2);
+                        const hasSegunLabelInline = /^([^:]+):\s*\S/.test(t2) && !/^(de\s+otro\s+modo)\s*:/i.test(t2);
+                        if (hasMultiStmt || hasInlineCtrl || hasSegunLabelInline) continue;
                         // ── FIX: Si INLINE — extraer solo la condición y el RHS de la asignación
                         // interna, NO toda la expresión que incluiría 'FinSi'.
                         // Patrón: Si COND Entonces STMT FinSi  (y con SiNo opcional)
@@ -13795,7 +13836,11 @@ FinProceso`,
                                     if (pn) {
                                         subprocParamNames.add(pn.toLowerCase());
                                         declared.set(pn.toLowerCase(), ln);
-                                        assigned.set(pn.toLowerCase(), ln);
+                                        // FIX CRÍTICO: marcar como asignado en línea 0 (lo más
+                                        // temprano posible) para que NUNCA dispare "usada antes
+                                        // de asignar". Los parámetros se reciben con un valor
+                                        // del caller — no necesitan asignación local.
+                                        assigned.set(pn.toLowerCase(), 0);
                                     }
                                 });
                             }
@@ -13825,7 +13870,7 @@ FinProceso`,
                         if (mLeer) {
                             mLeer[1].split(',').forEach(v => {
                                 const vn = v.trim().replace(/\[.*$/, '').toLowerCase();
-                                if (vn) assigned.set(vn, ln);
+                                if (vn && !subprocParamNames.has(vn)) assigned.set(vn, ln);
                                 if (vn && !declared.has(vn)) declared.set(vn, ln);
                             });
                             continue;
@@ -13856,7 +13901,13 @@ FinProceso`,
                             const lhsName = lhs.match(/^(\w+)/);
                             if (lhsName) {
                                 const vn = lhsName[1].toLowerCase();
-                                assigned.set(vn, ln);
+                                // Si la variable es PARÁMETRO de algún SubProceso,
+                                // NO sobreescribir su línea de asignación (mantener 0).
+                                // Esto evita falsos positivos "usada antes de asignar"
+                                // cuando se mezclan scopes en el análisis line-by-line.
+                                if (!subprocParamNames.has(vn)) {
+                                    assigned.set(vn, ln);
+                                }
                                 if (!declared.has(vn)) declared.set(vn, ln);
                             }
                             // RHS: lecturas
