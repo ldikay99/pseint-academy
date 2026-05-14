@@ -4233,7 +4233,7 @@ FinProceso</textarea>
                             <button type="button" class="fg-toggle-btn" onclick="cycleFlowMode()" aria-label="Alternar guías visuales" title="Líneas de indent / Flechas de flujo / Off" style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;background:var(--bg-card2);color:var(--text-main);border:1px solid var(--border);border-radius:8px;font-size:0.78rem;font:inherit;cursor:pointer">
                                 <span aria-hidden="true">🧭</span>
                                 <span>Guías:</span>
-                                <span class="fg-mode-label" style="font-weight:700;color:var(--accent1)">Líneas</span>
+                                <span class="fg-mode-label" style="font-weight:700;color:var(--accent1)">Tabs</span>
                             </button>
                             <div class="theme-picker-wrap" style="position:relative;display:inline-block">
                                 <button type="button" class="theme-picker-btn" onclick="toggleThemePicker(this)" aria-label="Seleccionar tema del editor" aria-haspopup="true" aria-expanded="false" style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;background:var(--bg-card2);color:var(--text-main);border:1px solid var(--border);border-radius:8px;font-size:0.78rem;font:inherit;cursor:pointer">
@@ -4298,8 +4298,8 @@ FinProceso</textarea>
                         <button class="fs-icon-btn" onclick="toggleShortcuts()" title="Atajos de teclado">⌨ Atajos</button>
                         <button class="fs-icon-btn" onclick="openFlowchart()" title="Ver diagrama de flujo (F7)">🔀 Diagrama</button>
                         <!-- Toggle Flow Guides en fullscreen -->
-                        <button type="button" class="fs-icon-btn fg-toggle-btn" onclick="cycleFlowMode()" title="Alternar guías visuales (líneas / flechas / off)">
-                            🧭 <span class="fg-mode-label">Líneas</span>
+                        <button type="button" class="fs-icon-btn fg-toggle-btn" onclick="cycleFlowMode()" title="Alternar guías visuales (tabs / guías / off)">
+                            🧭 <span class="fg-mode-label">Tabs</span>
                         </button>
                         <!-- Theme picker en pantalla completa -->
                         <div class="theme-picker-wrap" style="position:relative;display:inline-block">
@@ -15424,7 +15424,7 @@ FinProceso`,
 		  <span>📝 Ejemplo ejecutable</span>
 		  <div style="display:inline-flex;gap:6px;flex-wrap:wrap">
 		    <button type="button" class="fg-toggle-btn" onclick="cycleFlowMode()" title="Alternar guías" style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:var(--bg-card2);color:var(--text-main);border:1px solid var(--border);border-radius:6px;font-size:0.72rem;font:inherit;cursor:pointer">
-		      🧭 <span class="fg-mode-label" style="font-weight:700;color:var(--accent1)">Líneas</span>
+		      🧭 <span class="fg-mode-label" style="font-weight:700;color:var(--accent1)">Tabs</span>
 		    </button>
 		    <div class="theme-picker-wrap" style="position:relative;display:inline-block">
 		      <button type="button" class="theme-picker-btn" onclick="toggleThemePicker(this)" aria-label="Seleccionar tema" aria-haspopup="true" aria-expanded="false" style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;background:var(--bg-card2);color:var(--text-main);border:1px solid var(--border);border-radius:6px;font-size:0.72rem;font:inherit;cursor:pointer">
@@ -15466,7 +15466,7 @@ FinProceso`,
 		  <span>✏️ Tu solución</span>
 		  <div style="display:inline-flex;gap:6px;flex-wrap:wrap">
 		    <button type="button" class="fg-toggle-btn" onclick="cycleFlowMode()" title="Alternar guías" style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:var(--bg-card2);color:var(--text-main);border:1px solid var(--border);border-radius:6px;font-size:0.72rem;font:inherit;cursor:pointer">
-		      🧭 <span class="fg-mode-label" style="font-weight:700;color:var(--accent1)">Líneas</span>
+		      🧭 <span class="fg-mode-label" style="font-weight:700;color:var(--accent1)">Tabs</span>
 		    </button>
 		    <div class="theme-picker-wrap" style="position:relative;display:inline-block">
 		      <button type="button" class="theme-picker-btn" onclick="toggleThemePicker(this)" aria-label="Seleccionar tema" aria-haspopup="true" aria-expanded="false" style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;background:var(--bg-card2);color:var(--text-main);border:1px solid var(--border);border-radius:6px;font-size:0.72rem;font:inherit;cursor:pointer">
@@ -21459,18 +21459,61 @@ document.addEventListener('keydown', (e) => {
     function _renderArrows(ta, svg) {
         const { lh, charW, padTop, padLeft } = _measure(ta);
         const blocks = _parseBlocks(ta.value);
-        let out = '';
-        // Marcador de flecha (defs reutilizable)
-        out += '<defs>';
-        for (let i = 0; i < COLORS.length; i++) {
-            out += '<marker id="fg-arr-' + i + '" viewBox="0 0 10 10" refX="5" refY="5" ' +
-                   'markerWidth="6" markerHeight="6" orient="auto-start-reverse">' +
-                   '<path d="M 0 0 L 10 5 L 0 10 z" fill="' + COLORS[i] + '" opacity="' + currentOpacity + '"/>' +
-                   '</marker>';
-        }
-        out += '</defs>';
-        // Indent guides muy sutiles de fondo
         const lines = ta.value.split('\n');
+        let out = '';
+
+        // Para cada bloque:
+        //   1) Línea vertical desde la apertura hasta el cierre
+        //   2) Para cada línea de contenido (no vacía, no comentario solo):
+        //      una línea HORIZONTAL corta desde la vertical hasta justo antes
+        //      del primer caracter no-blanco — apunta al contenido SIN tocarlo.
+        // SIN cabezas de flecha puntiagudas; solo líneas limpias.
+        for (let b = 0; b < blocks.length; b++) {
+            const block = blocks[b];
+            const color = COLORS[b % COLORS.length];
+            const lvl = Math.floor(block.indent / TAB_SIZE);
+            // Posición X de la vertical: justo en la columna del bloque + medio char
+            const xVert = padLeft + (lvl * TAB_SIZE + 0.5) * charW;
+            const yStart = padTop + (block.startLine + 1) * lh;
+            const yEnd = padTop + block.endLine * lh + lh * 0.5;
+            if (yEnd <= yStart) continue;
+
+            // 1) Línea vertical principal del bloque
+            out += '<line x1="' + xVert.toFixed(1) + '" y1="' + yStart.toFixed(1) +
+                   '" x2="' + xVert.toFixed(1) + '" y2="' + yEnd.toFixed(1) +
+                   '" stroke="' + color + '" stroke-width="1.5" opacity="' + currentOpacity +
+                   '" stroke-linecap="round"/>';
+
+            // 2) Codos horizontales hacia el contenido de cada línea hija
+            for (let i = block.startLine + 1; i < block.endLine; i++) {
+                const raw = lines[i];
+                if (!raw) continue;
+                // Calcular indent visual y posición del primer non-whitespace
+                let indent = 0;
+                let firstNonWs = -1;
+                for (let k = 0; k < raw.length; k++) {
+                    if (raw[k] === '\t') indent = Math.floor(indent / TAB_SIZE) * TAB_SIZE + TAB_SIZE;
+                    else if (raw[k] === ' ') indent++;
+                    else { firstNonWs = k; break; }
+                }
+                if (firstNonWs < 0) continue; // línea vacía
+                // Quitar comentario puro
+                const trimmed = raw.slice(firstNonWs).trim();
+                if (!trimmed || trimmed.startsWith('//')) continue;
+                // X final del codo: justo antes del primer carácter visible
+                const xEndH = padLeft + indent * charW - 2;
+                // Solo dibujar si el codo se aleja hacia la DERECHA de la vertical
+                if (xEndH <= xVert + 2) continue;
+                const yMid = padTop + i * lh + lh * 0.5;
+                // Codo: línea horizontal corta
+                out += '<line x1="' + (xVert).toFixed(1) + '" y1="' + yMid.toFixed(1) +
+                       '" x2="' + xEndH.toFixed(1) + '" y2="' + yMid.toFixed(1) +
+                       '" stroke="' + color + '" stroke-width="1.2" opacity="' + (currentOpacity * 0.85) +
+                       '" stroke-linecap="round"/>';
+            }
+        }
+
+        // Indent guides MUY sutiles de fondo en cada nivel (donde NO hay bloque coloreado encima)
         for (let i = 0; i < lines.length; i++) {
             const raw = lines[i];
             let indent = 0;
@@ -21485,27 +21528,10 @@ document.addEventListener('keydown', (e) => {
                 const x = padLeft + (l * TAB_SIZE + 0.5) * charW;
                 out += '<line x1="' + x.toFixed(1) + '" y1="' + y.toFixed(1) +
                        '" x2="' + x.toFixed(1) + '" y2="' + (y + lh).toFixed(1) +
-                       '" stroke="rgba(127,127,127,0.15)" stroke-width="1"/>';
+                       '" stroke="rgba(127,127,127,0.10)" stroke-width="1"/>';
             }
         }
-        // Cada bloque: línea coloreada vertical con flecha en apertura y cierre
-        for (let b = 0; b < blocks.length; b++) {
-            const block = blocks[b];
-            const color = COLORS[b % COLORS.length];
-            const lvl = Math.floor(block.indent / TAB_SIZE);
-            const x = padLeft + (lvl * TAB_SIZE + 0.5) * charW;
-            const yStart = padTop + (block.startLine + 1) * lh - 4;
-            const yEnd = padTop + block.endLine * lh + 4;
-            if (yEnd <= yStart) continue;
-            // Línea principal del bloque
-            out += '<line x1="' + x.toFixed(1) + '" y1="' + yStart.toFixed(1) +
-                   '" x2="' + x.toFixed(1) + '" y2="' + yEnd.toFixed(1) +
-                   '" stroke="' + color + '" stroke-width="1.5" opacity="' + currentOpacity + '" ' +
-                   'marker-end="url(#fg-arr-' + (b % COLORS.length) + ')"/>';
-            // Pequeño dot en la apertura
-            out += '<circle cx="' + x.toFixed(1) + '" cy="' + yStart.toFixed(1) +
-                   '" r="2.5" fill="' + color + '" opacity="' + currentOpacity + '"/>';
-        }
+
         svg.innerHTML = out;
         svg.style.color = '';
     }
@@ -21568,9 +21594,9 @@ document.addEventListener('keydown', (e) => {
             _rerenderAll();
             // Update labels
             document.querySelectorAll('.fg-mode-label').forEach(el => {
-                el.textContent = m === 'arrows' ? 'Flechas' : m === 'off' ? 'Off' : 'Líneas';
+                el.textContent = m === 'arrows' ? 'Guías' : m === 'off' ? 'Off' : 'Tabs';
             });
-            if (typeof showToast === 'function') showToast('🧭 Guías: ' + (m === 'arrows' ? 'Flechas de flujo' : m === 'off' ? 'Desactivadas' : 'Líneas de indentación'));
+            if (typeof showToast === 'function') showToast('🧭 ' + (m === 'arrows' ? 'Guías de bloque activadas' : m === 'off' ? 'Sin guías visuales' : 'Líneas de tabs'));
         },
         setOpacity: function(o) {
             o = parseFloat(o);
@@ -21589,7 +21615,7 @@ document.addEventListener('keydown', (e) => {
         _rerenderAll();
         // Sincronizar labels de los botones toggle con el modo actual
         document.querySelectorAll('.fg-mode-label').forEach(el => {
-            el.textContent = currentMode === 'arrows' ? 'Flechas' : currentMode === 'off' ? 'Off' : 'Líneas';
+            el.textContent = currentMode === 'arrows' ? 'Guías' : currentMode === 'off' ? 'Off' : 'Tabs';
         });
     }
     if (document.readyState === 'loading') {
