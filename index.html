@@ -21656,57 +21656,91 @@ document.addEventListener('keydown', (e) => {
         // Helper de clamping
         const inView = (y) => (y >= -lh && y <= viewH + lh);
 
-        // ── CAPA DE VARIABLES: conexiones de variables que se usan en control flow ──
-        // Cada variable que aparece en Si/Mientras/Para/Segun/Hasta Que se
-        // conecta visualmente con sus asignaciones (Leer/<-) mediante un
-        // "carril" coloreado en el margen IZQUIERDO del editor.
-        // FIX: el padLeft varía entre playground (~48px con gutter) y editores
-        // de lecciones (~14px sin gutter). Ajustamos dinámicamente el tamaño
-        // de los carriles para que quepan los necesarios sin invadir el texto.
+        // ── CAPA DE VARIABLES: conexiones de variables usadas en control flow ──
+        // Cada variable (usada en Si/Mientras/Para/Segun/Hasta Que) recibe
+        // un CARRIL vertical sólido con su color único, que cubre desde la
+        // PRIMERA aparición hasta la ÚLTIMA. Sin círculos — solo barras
+        // continuas que destacan visualmente.
+        // FIX: aseguramos espacio suficiente añadiendo padding extra al
+        // textarea cuando hay variables, para que el contenido NO se choque
+        // con los carriles ni con las verticales de bloques.
         const cfVars = _findControlFlowVars(ta.value);
-        const availSpace = Math.max(8, padLeft - 4); // espacio total para carriles
-        let RAIL_WIDTH, RAIL_GAP, RAIL_OFFSET_X;
-        if (padLeft >= 30) {
-            // Playground: hay mucho espacio
-            RAIL_WIDTH = 3; RAIL_GAP = 2; RAIL_OFFSET_X = 4;
-        } else {
-            // Lecciones: padLeft chico, carriles más delgados y juntos
-            RAIL_WIDTH = 2; RAIL_GAP = 1; RAIL_OFFSET_X = 2;
+        // Espacio reservado a la izquierda para carriles + emojis ✓/✗.
+        // Por defecto playground tiene ~48px (gutter), lecciones ~14px.
+        // Forzamos un mínimo aplicando padding-left si hace falta.
+        const RAIL_WIDTH = 4;
+        const RAIL_GAP = 2;
+        const RAIL_EDGE = 4; // padding entre el borde del editor y el primer carril
+        const EMOJI_RESERVE = 14; // espacio para ✓/✗ a la izquierda
+        const railsNeeded = Math.min(cfVars.length, 6); // máximo 6 carriles visibles
+        const railsSpace = railsNeeded > 0 ? (RAIL_EDGE + railsNeeded * (RAIL_WIDTH + RAIL_GAP)) : 0;
+        const neededLeft = railsSpace + EMOJI_RESERVE + 4;
+        // Si el padLeft del editor es menor que lo necesario, lo ampliamos
+        // dinámicamente (solo si está activo el modo Guías y hay variables).
+        if (cfVars.length > 0 && padLeft < neededLeft) {
+            const newPad = neededLeft + 'px';
+            if (ta._fg_origPadLeft === undefined) ta._fg_origPadLeft = ta.style.paddingLeft || '';
+            ta.style.paddingLeft = newPad;
+            // El highlight overlay también debe ajustarse
+            const highlightId = (ta.id === 'playgroundEditor') ? 'playgroundHighlight'
+                              : (ta.id === 'exampleEditor') ? 'exampleHighlight'
+                              : (ta.id === 'challengeEditor') ? 'challengeHighlight' : null;
+            if (highlightId) {
+                const hl = document.getElementById(highlightId);
+                if (hl) hl.style.paddingLeft = newPad;
+            }
+        } else if (cfVars.length === 0 && ta._fg_origPadLeft !== undefined) {
+            // Restaurar padding original si ya no hay variables
+            ta.style.paddingLeft = ta._fg_origPadLeft;
+            const highlightId = (ta.id === 'playgroundEditor') ? 'playgroundHighlight'
+                              : (ta.id === 'exampleEditor') ? 'exampleHighlight'
+                              : (ta.id === 'challengeEditor') ? 'challengeHighlight' : null;
+            if (highlightId) {
+                const hl = document.getElementById(highlightId);
+                if (hl) hl.style.paddingLeft = ta._fg_origPadLeft;
+            }
+            ta._fg_origPadLeft = undefined;
         }
+
         for (let v = 0; v < cfVars.length; v++) {
             const variable = cfVars[v];
             const color = _colorForVar(variable.name);
-            const railX = RAIL_OFFSET_X + v * (RAIL_WIDTH + RAIL_GAP);
-            // Si el carril se saldría del espacio disponible, lo saltamos
-            if (railX + RAIL_WIDTH > availSpace) continue;
-            // Combinar todas las líneas (assign + use) y conectarlas con un segmento
-            // por cada par consecutivo, indicando claramente el flujo.
-            const allLines = [];
-            for (const a of variable.assignLines) allLines.push({ line: a, kind: 'a' });
-            for (const u of variable.useLines)    allLines.push({ line: u, kind: 'u' });
-            allLines.sort((x, y) => x.line - y.line);
-            for (let k = 0; k < allLines.length - 1; k++) {
-                const a = allLines[k], b = allLines[k+1];
-                const y1 = padTop + a.line * lh + lh * 0.5 - scrollTop;
-                const y2 = padTop + b.line * lh + lh * 0.5 - scrollTop;
-                if (y2 < 0 || y1 > viewH) continue;
-                const cy1 = Math.max(0, y1);
-                const cy2 = Math.min(viewH, y2);
-                if (cy2 <= cy1) continue;
-                out += '<line x1="' + railX.toFixed(1) + '" y1="' + cy1.toFixed(1) +
-                       '" x2="' + railX.toFixed(1) + '" y2="' + cy2.toFixed(1) +
-                       '" stroke="' + color + '" stroke-width="' + RAIL_WIDTH + '" opacity="' + (currentOpacity * 0.9) +
-                       '" stroke-linecap="round"/>';
+            const railX = RAIL_EDGE + v * (RAIL_WIDTH + RAIL_GAP);
+            if (railX + RAIL_WIDTH > padLeft - EMOJI_RESERVE - 2) continue;
+
+            // Encontrar la línea más temprana y más tardía
+            const allLines = [
+                ...variable.assignLines.map(l => ({ line: l, kind: 'a' })),
+                ...variable.useLines.map(l => ({ line: l, kind: 'u' }))
+            ].sort((a, b) => a.line - b.line);
+            if (allLines.length === 0) continue;
+
+            // Carril CONTINUO desde la primera hasta la última aparición
+            const firstLine = allLines[0].line;
+            const lastLine = allLines[allLines.length - 1].line;
+            const yTop = padTop + firstLine * lh + lh * 0.3 - scrollTop;
+            const yBot = padTop + lastLine * lh + lh * 0.7 - scrollTop;
+            if (yBot >= 0 && yTop <= viewH) {
+                const cyTop = Math.max(0, yTop);
+                const cyBot = Math.min(viewH, yBot);
+                if (cyBot > cyTop) {
+                    out += '<rect x="' + railX.toFixed(1) + '" y="' + cyTop.toFixed(1) +
+                           '" width="' + RAIL_WIDTH + '" height="' + (cyBot - cyTop).toFixed(1) +
+                           '" fill="' + color + '" opacity="' + (currentOpacity * 0.85) +
+                           '" rx="' + (RAIL_WIDTH/2) + '">' +
+                           '<title>Variable "' + variable.name + '" (' + allLines.length + ' aparicione(s))</title></rect>';
+                }
             }
-            // Punto en cada línea (asignación o uso) — con tooltip nativo SVG
+
+            // Pequeñas marcas perpendiculares en cada aparición (sin círculos)
             for (const ln of allLines) {
                 const y = padTop + ln.line * lh + lh * 0.5 - scrollTop;
                 if (!inView(y)) continue;
-                const tooltip = (ln.kind === 'a' ? 'Asigna' : 'Usa') + ' variable "' + variable.name + '"';
-                out += '<circle cx="' + (railX + RAIL_WIDTH/2).toFixed(1) + '" cy="' + y.toFixed(1) +
-                       '" r="' + (ln.kind === 'a' ? 3 : 2.5) + '" fill="' + color +
-                       '" opacity="' + currentOpacity + '">' +
-                       '<title>' + tooltip + '</title></circle>';
+                // Línea horizontal corta a la derecha del carril (apunta al código)
+                const tickW = (ln.kind === 'a') ? 5 : 3;
+                out += '<rect x="' + (railX + RAIL_WIDTH).toFixed(1) + '" y="' + (y - 1).toFixed(1) +
+                       '" width="' + tickW + '" height="2" fill="' + color +
+                       '" opacity="' + currentOpacity + '"/>';
             }
         }
 
@@ -21761,22 +21795,23 @@ document.addEventListener('keydown', (e) => {
                            '" stroke="' + COLOR_FALSE + '" stroke-width="1.8" opacity="' + currentOpacity +
                            '" stroke-linecap="round"/>';
                 }
-                // Badges ✓/✗ — pequeños círculos con fondo opaco para legibilidad,
-                // posicionados DEBAJO del header del Si/SiNo (no encima del texto).
+                // Badges ✓/✗ — colocados en el GUTTER IZQUIERDO del editor
+                // (no sobre el texto). xBadge fijo cerca del borde izquierdo.
                 const badgeR = 6;
-                const badgeY1 = yStart - lh * 0.4; // un poco arriba del primer contenido
-                const badgeY2 = sinoMidY;          // exactamente al medio del SiNo
+                const xBadge = Math.max(badgeR + 2, padLeft - badgeR - 4);
+                const badgeY1 = padTop + (block.startLine + 1) * lh + lh * 0.5 - scrollTop;
+                const badgeY2 = padTop + block.sinoLine * lh + lh * 0.5 - scrollTop;
                 if (inView(badgeY1)) {
-                    out += '<circle cx="' + xVert.toFixed(1) + '" cy="' + badgeY1.toFixed(1) +
+                    out += '<circle cx="' + xBadge.toFixed(1) + '" cy="' + badgeY1.toFixed(1) +
                            '" r="' + badgeR + '" fill="' + COLOR_TRUE + '" opacity="0.95"/>';
-                    out += '<text x="' + xVert.toFixed(1) + '" y="' + (badgeY1 + 3).toFixed(1) +
-                           '" font-size="9" font-weight="900" fill="#ffffff" text-anchor="middle">✓</text>';
+                    out += '<text x="' + xBadge.toFixed(1) + '" y="' + (badgeY1 + 3.5).toFixed(1) +
+                           '" font-size="10" font-weight="900" fill="#ffffff" text-anchor="middle">✓</text>';
                 }
                 if (inView(badgeY2)) {
-                    out += '<circle cx="' + xVert.toFixed(1) + '" cy="' + badgeY2.toFixed(1) +
+                    out += '<circle cx="' + xBadge.toFixed(1) + '" cy="' + badgeY2.toFixed(1) +
                            '" r="' + badgeR + '" fill="' + COLOR_FALSE + '" opacity="0.95"/>';
-                    out += '<text x="' + xVert.toFixed(1) + '" y="' + (badgeY2 + 3).toFixed(1) +
-                           '" font-size="9" font-weight="900" fill="#ffffff" text-anchor="middle">✗</text>';
+                    out += '<text x="' + xBadge.toFixed(1) + '" y="' + (badgeY2 + 3.5).toFixed(1) +
+                           '" font-size="10" font-weight="900" fill="#ffffff" text-anchor="middle">✗</text>';
                 }
             } else {
                 // Línea vertical normal de un solo color, clampeada al viewport
@@ -21852,6 +21887,23 @@ document.addEventListener('keydown', (e) => {
         svg.style.color = '';
     }
 
+    function _restorePadding(ta) {
+        // Restaurar el padding original del textarea y de su highlight overlay.
+        // Necesario cuando salimos del modo "Guías" (Tabs/Off) para que el
+        // editor recupere su layout normal.
+        if (ta._fg_origPadLeft !== undefined) {
+            ta.style.paddingLeft = ta._fg_origPadLeft;
+            const highlightId = (ta.id === 'playgroundEditor') ? 'playgroundHighlight'
+                              : (ta.id === 'exampleEditor') ? 'exampleHighlight'
+                              : (ta.id === 'challengeEditor') ? 'challengeHighlight' : null;
+            if (highlightId) {
+                const hl = document.getElementById(highlightId);
+                if (hl) hl.style.paddingLeft = ta._fg_origPadLeft;
+            }
+            ta._fg_origPadLeft = undefined;
+        }
+    }
+
     function _renderForEditor(ta) {
         if (!ta) return;
         const mode = currentMode;
@@ -21859,8 +21911,10 @@ document.addEventListener('keydown', (e) => {
         if (!svg) return;
         if (mode === 'off') {
             svg.style.display = 'none';
+            _restorePadding(ta);
             return;
         }
+        if (mode !== 'arrows') _restorePadding(ta);
         svg.style.display = '';
         // FIX: el SVG cubre exactamente el área visible del textarea (no se mueve).
         // Las coordenadas de los elementos SVG ya restan scrollTop/scrollLeft del
