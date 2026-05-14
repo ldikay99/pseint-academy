@@ -21659,20 +21659,26 @@ document.addEventListener('keydown', (e) => {
         // ── CAPA DE VARIABLES: conexiones de variables que se usan en control flow ──
         // Cada variable que aparece en Si/Mientras/Para/Segun/Hasta Que se
         // conecta visualmente con sus asignaciones (Leer/<-) mediante un
-        // "carril" coloreado en el margen IZQUIERDO del editor (en el área
-        // del padding, antes del texto). Los carriles están bien separados
-        // para que con múltiples variables se distingan claramente.
+        // "carril" coloreado en el margen IZQUIERDO del editor.
+        // FIX: el padLeft varía entre playground (~48px con gutter) y editores
+        // de lecciones (~14px sin gutter). Ajustamos dinámicamente el tamaño
+        // de los carriles para que quepan los necesarios sin invadir el texto.
         const cfVars = _findControlFlowVars(ta.value);
-        const RAIL_WIDTH = 2.5;
-        const RAIL_GAP = 2.5;
-        const RAIL_OFFSET_X = 3; // píxeles desde el borde izquierdo del editor
+        const availSpace = Math.max(8, padLeft - 4); // espacio total para carriles
+        let RAIL_WIDTH, RAIL_GAP, RAIL_OFFSET_X;
+        if (padLeft >= 30) {
+            // Playground: hay mucho espacio
+            RAIL_WIDTH = 3; RAIL_GAP = 2; RAIL_OFFSET_X = 4;
+        } else {
+            // Lecciones: padLeft chico, carriles más delgados y juntos
+            RAIL_WIDTH = 2; RAIL_GAP = 1; RAIL_OFFSET_X = 2;
+        }
         for (let v = 0; v < cfVars.length; v++) {
             const variable = cfVars[v];
             const color = _colorForVar(variable.name);
-            // Carril X — solo dentro del padLeft (no invade el texto)
             const railX = RAIL_OFFSET_X + v * (RAIL_WIDTH + RAIL_GAP);
-            // Si el carril se acercaría al texto, lo saltamos (max ~9 variables visibles)
-            if (railX + RAIL_WIDTH > padLeft - 2) continue;
+            // Si el carril se saldría del espacio disponible, lo saltamos
+            if (railX + RAIL_WIDTH > availSpace) continue;
             // Combinar todas las líneas (assign + use) y conectarlas con un segmento
             // por cada par consecutivo, indicando claramente el flujo.
             const allLines = [];
@@ -21692,14 +21698,15 @@ document.addEventListener('keydown', (e) => {
                        '" stroke="' + color + '" stroke-width="' + RAIL_WIDTH + '" opacity="' + (currentOpacity * 0.9) +
                        '" stroke-linecap="round"/>';
             }
-            // Punto en cada línea (asignación o uso)
+            // Punto en cada línea (asignación o uso) — con tooltip nativo SVG
             for (const ln of allLines) {
                 const y = padTop + ln.line * lh + lh * 0.5 - scrollTop;
                 if (!inView(y)) continue;
-                // Punto centrado en el carril, ligeramente más grande en asignaciones
+                const tooltip = (ln.kind === 'a' ? 'Asigna' : 'Usa') + ' variable "' + variable.name + '"';
                 out += '<circle cx="' + (railX + RAIL_WIDTH/2).toFixed(1) + '" cy="' + y.toFixed(1) +
                        '" r="' + (ln.kind === 'a' ? 3 : 2.5) + '" fill="' + color +
-                       '" opacity="' + currentOpacity + '"/>';
+                       '" opacity="' + currentOpacity + '">' +
+                       '<title>' + tooltip + '</title></circle>';
             }
         }
 
@@ -21754,13 +21761,22 @@ document.addEventListener('keydown', (e) => {
                            '" stroke="' + COLOR_FALSE + '" stroke-width="1.8" opacity="' + currentOpacity +
                            '" stroke-linecap="round"/>';
                 }
-                if (inView(yStart)) {
-                    out += '<text x="' + (xVert - 4).toFixed(1) + '" y="' + (yStart + 9).toFixed(1) +
-                           '" font-size="10" fill="' + COLOR_TRUE + '" font-weight="700" text-anchor="end" opacity="' + (currentOpacity + 0.2) + '">✓</text>';
+                // Badges ✓/✗ — pequeños círculos con fondo opaco para legibilidad,
+                // posicionados DEBAJO del header del Si/SiNo (no encima del texto).
+                const badgeR = 6;
+                const badgeY1 = yStart - lh * 0.4; // un poco arriba del primer contenido
+                const badgeY2 = sinoMidY;          // exactamente al medio del SiNo
+                if (inView(badgeY1)) {
+                    out += '<circle cx="' + xVert.toFixed(1) + '" cy="' + badgeY1.toFixed(1) +
+                           '" r="' + badgeR + '" fill="' + COLOR_TRUE + '" opacity="0.95"/>';
+                    out += '<text x="' + xVert.toFixed(1) + '" y="' + (badgeY1 + 3).toFixed(1) +
+                           '" font-size="9" font-weight="900" fill="#ffffff" text-anchor="middle">✓</text>';
                 }
-                if (inView(sinoY + lh)) {
-                    out += '<text x="' + (xVert - 4).toFixed(1) + '" y="' + (sinoY + lh + 9).toFixed(1) +
-                           '" font-size="10" fill="' + COLOR_FALSE + '" font-weight="700" text-anchor="end" opacity="' + (currentOpacity + 0.2) + '">✗</text>';
+                if (inView(badgeY2)) {
+                    out += '<circle cx="' + xVert.toFixed(1) + '" cy="' + badgeY2.toFixed(1) +
+                           '" r="' + badgeR + '" fill="' + COLOR_FALSE + '" opacity="0.95"/>';
+                    out += '<text x="' + xVert.toFixed(1) + '" y="' + (badgeY2 + 3).toFixed(1) +
+                           '" font-size="9" font-weight="900" fill="#ffffff" text-anchor="middle">✗</text>';
                 }
             } else {
                 // Línea vertical normal de un solo color, clampeada al viewport
