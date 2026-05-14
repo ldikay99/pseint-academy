@@ -9990,6 +9990,15 @@ FinProceso`,
                             "Variable '" + expr + "' no está definida. Recuerda declararla con 'Definir' o asignarle un valor.",
                         );
                     }
+                    // FIX: si llegamos aquí y la expresión contiene operadores
+                    // (significa que evalBinary no pudo procesarla), está mal formada.
+                    // Antes devolvía el string raw, lo cual hacía que `Escribir x +`
+                    // imprimiera literalmente "x +" sin error.
+                    if (/[+\-*\/^%<>=,]/.test(expr)) {
+                        throw new Error(
+                            "Expresión inválida: '" + expr + "'. Está incompleta — falta un valor a la izquierda o derecha de un operador, o sobran/faltan paréntesis."
+                        );
+                    }
                     return expr;
                 }
 
@@ -12705,6 +12714,93 @@ FinProceso`,
                                 msg: `Símbolo suelto: '${c}' en columna ${k+1}. No es un carácter válido en código PSeInt fuera de comentarios o strings.`
                             });
                             break;
+                        }
+                    }
+                }
+
+                // ════════════════════════════════════════════════════════
+                // DETECCIÓN DE EXPRESIONES INCOMPLETAS
+                // Una línea no puede terminar con un operador binario
+                // colgando (Escribir x +, x <- a -, Si y > Entonces, etc.).
+                // Causa un comportamiento confuso en el intérprete (imprime
+                // basura literal en vez de lanzar error claro).
+                // ════════════════════════════════════════════════════════
+                for (let i = 0; i < lines.length; i++) {
+                    const raw = lines[i];
+                    // Aislar parte de código sin comentario
+                    let ci = -1, inStr = false;
+                    for (let j = 0; j < raw.length - 1; j++) {
+                        if (raw[j] === '"') inStr = !inStr;
+                        if (!inStr && raw[j] === '/' && raw[j+1] === '/') { ci = j; break; }
+                    }
+                    const codePart = (ci >= 0 ? raw.slice(0, ci) : raw);
+                    // Quitar contenido entre comillas (sin afectar offsets)
+                    const masked = codePart.replace(/"[^"]*"/g, m => '"' + ' '.repeat(Math.max(0, m.length - 2)) + '"');
+                    const trimmed = masked.replace(/\s+$/, '');
+                    if (!trimmed.trim()) continue;
+                    // ¿Termina con operador binario o coma colgante?
+                    const lastChar = trimmed.slice(-1);
+                    const lastTwo  = trimmed.slice(-2);
+                    // <- es asignación abierta sin RHS
+                    const endsAssign = (lastTwo === '<-');
+                    // Operadores binarios solos al final
+                    const endsOp = /[+\-*/^%=<>,]$/.test(lastChar) && !endsAssign;
+                    // Excepción: líneas que SON solo un operador (raro), o son comentarios puros
+                    if (!endsOp && !endsAssign) continue;
+                    // No marcar si la línea es solo una etiqueta de Segun (termina en `:`)
+                    if (lastChar === ':') continue;
+                    const ln = i + 1;
+                    // Calcular columna exacta del operador colgante
+                    const opStart = trimmed.length - (endsAssign ? 2 : 1);
+                    const opEnd = trimmed.length;
+                    if (endsAssign) {
+                        errors.push({
+                            line: ln,
+                            msg: `Asignación incompleta: '<-' al final sin valor a la derecha. Escribe el valor que quieres asignar (ej: 'x <- 5').`
+                        });
+                    } else {
+                        const op = lastChar;
+                        let opName = 'operador';
+                        if (op === '+') opName = "suma '+'";
+                        else if (op === '-') opName = "resta '-'";
+                        else if (op === '*') opName = "multiplicación '*'";
+                        else if (op === '/') opName = "división '/'";
+                        else if (op === '^') opName = "potencia '^'";
+                        else if (op === '%') opName = "módulo '%'";
+                        else if (op === '=') opName = "comparación '='";
+                        else if (op === '<' || op === '>') opName = "comparación '" + op + "'";
+                        else if (op === ',') opName = "coma ','";
+                        errors.push({
+                            line: ln,
+                            msg: `Expresión incompleta: la línea termina con ${opName} sin valor a la derecha. Completa la expresión o quita el operador.`
+                        });
+                    }
+                    _pushRange(i, opStart, opEnd, 'error');
+                }
+
+                // PASA FINAL: para cada palabra reservada usada como variable,
+                // empujar un rango específico en cada aparición exacta del token
+                // dentro del código. Sin esto, el highlighter pinta toda la línea
+                // de rojo plano (porque la línea está en _errorLineSet pero no
+                // en _errorLinesWithRange). Con _pushRange, solo se pinta el
+                // subrayado wavy en la palabra exacta.
+                if (window._reservedAsVarNames && window._reservedAsVarNames.size > 0) {
+                    // Normalizar a versiones únicas (lowercase para iteración eficiente)
+                    const uniqueLow = new Set();
+                    for (const n of window._reservedAsVarNames) uniqueLow.add(n.toLowerCase());
+                    for (let i = 0; i < lines.length; i++) {
+                        const rawL = lines[i];
+                        if (!rawL || !rawL.trim()) continue;
+                        for (const nameLow of uniqueLow) {
+                            if (!nameLow) continue;
+                            let searchFrom = 0;
+                            // _findTokenCol es case-insensitive y respeta comillas y comentarios
+                            while (searchFrom < rawL.length) {
+                                const loc = _findTokenCol(rawL, nameLow, searchFrom);
+                                if (!loc) break;
+                                _pushRange(i, loc.start, loc.end, 'error');
+                                searchFrom = loc.end;
+                            }
                         }
                     }
                 }
