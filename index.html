@@ -278,7 +278,11 @@
 
             html {
                 scroll-behavior: smooth;
-                font-size: 16px;
+                /* FIX responsive: tipografía fluida — escala con el viewport.
+                   En móvil baja a 14px, en escritorio 16px, en 1440p+ 17px.
+                   Esto hace que TODAS las medidas en rem (paddings, gaps, fontes)
+                   escalen automáticamente. No necesitamos breakpoints por componente. */
+                font-size: clamp(14px, 0.85vw + 10px, 17px);
             }
 
             body {
@@ -287,6 +291,17 @@
                 font-family: var(--font-body);
                 min-height: 100vh;
                 overflow-x: hidden;
+                /* No reflowee texto a anchos absurdos en monitores muy grandes */
+                max-width: 100vw;
+            }
+
+            /* Container helper: secciones con max-width fluido y padding interno */
+            .container, .section-container {
+                width: 100%;
+                max-width: min(1400px, 95vw);
+                margin: 0 auto;
+                padding-left: clamp(12px, 3vw, 24px);
+                padding-right: clamp(12px, 3vw, 24px);
             }
 
             a {
@@ -627,8 +642,10 @@
             .section {
                 position: relative;
                 z-index: 1;
-                padding: 80px 24px;
-                max-width: 1200px;
+                padding: clamp(40px, 6vw, 80px) clamp(16px, 3vw, 24px);
+                /* FIX responsive: ancho fluido que aprovecha viewport */
+                width: 100%;
+                max-width: min(1400px, 95vw);
                 margin: 0 auto;
             }
 
@@ -1020,15 +1037,17 @@
             .tip-box strong { color: #34d399; }
 
             .warn-box {
-                background: rgba(245, 158, 11, 0.08);
-                border: 1px solid rgba(245, 158, 11, 0.3);
+                background: rgba(245, 158, 11, 0.10);
+                border: 1px solid rgba(245, 158, 11, 0.45);
                 border-radius: 10px;
                 padding: 14px 16px;
                 margin-bottom: 16px;
-                font-size: 0.85rem;
-                color: #fcd34d;
-                line-height: 1.6;
+                font-size: 0.92rem;
+                /* FIX contraste: text-main + acento amber solo en strong */
+                color: var(--text-main);
+                line-height: 1.65;
             }
+            .warn-box strong { color: var(--color-warn-strong); }
 
             .keyword-grid {
                 display: grid;
@@ -1334,8 +1353,10 @@
             #playground {
                 position: relative;
                 z-index: 1;
-                padding: 80px 24px;
-                max-width: 1200px;
+                padding: clamp(40px, 6vw, 80px) clamp(16px, 3vw, 24px);
+                /* FIX responsive: ancho fluido */
+                width: 100%;
+                max-width: min(1400px, 95vw);
                 margin: 0 auto;
             }
 
@@ -1948,7 +1969,9 @@
                 position: absolute;
                 top: calc(100% + 6px);
                 right: 0;
-                min-width: 280px;
+                /* FIX responsive: ancho fluido — nunca excede el viewport */
+                min-width: min(280px, 92vw);
+                max-width: 92vw;
                 background: var(--bg-card);
                 border: 1px solid var(--border);
                 border-radius: 8px;
@@ -3143,7 +3166,8 @@
             .error-item {
                 padding: 7px 14px;
                 font-size: 0.78rem;
-                color: #fca5a5;
+                /* FIX contraste: variable semantica theme-aware */
+                color: var(--color-error);
                 font-family: var(--font-mono);
                 border-bottom: 1px solid rgba(239,68,68,0.08);
                 display: flex;
@@ -3156,7 +3180,7 @@
             .error-item:hover { background: rgba(239,68,68,0.1); }
             .error-line-num {
                 background: rgba(239,68,68,0.2);
-                color: #f87171;
+                color: var(--color-error-strong);
                 border-radius: 4px;
                 padding: 1px 6px;
                 font-size: 0.7rem;
@@ -3168,8 +3192,9 @@
             .error-msg { flex: 1; line-height: 1.5; }
             .warn-item {
                 padding: 6px 14px;
-                font-size: 0.76rem;
-                color: #fde68a;
+                font-size: 0.78rem;
+                /* FIX contraste: variable semántica theme-aware */
+                color: var(--color-warn);
                 font-family: var(--font-mono);
                 line-height: 1.5;
                 border-bottom: 1px solid rgba(245,158,11,0.08);
@@ -3179,7 +3204,7 @@
             .warn-item:last-child { border-bottom: none; }
             .warn-item:hover { background: rgba(245,158,11,0.1); }
             .warn-item .warn-line-jump {
-                color: #fbbf24;
+                color: var(--color-warn-strong);
                 font-weight: 700;
                 margin-right: 6px;
                 background: rgba(245,158,11,0.15);
@@ -3202,7 +3227,8 @@
                 top: 0;
                 right: 0;
                 bottom: 0;
-                width: 280px;
+                /* FIX responsive: ancho fluido entre 220 y 300px según viewport */
+                width: clamp(220px, 22vw, 300px);
                 z-index: 5;
                 display: flex;
                 flex-direction: column;
@@ -3854,6 +3880,41 @@
                 .cheat-panel:not(.collapsed) { width: 240px; }
             }
 
+            /* FIX responsive: pantallas muy grandes — limitar ancho para legibilidad */
+            @media (min-width: 1600px) {
+                .playground-grid, .lessons-grid, .ref-grid, #playground, .section {
+                    max-width: 1400px;
+                    margin-left: auto;
+                    margin-right: auto;
+                }
+            }
+
+            /* FIX responsive: mobile (<480px) — extras */
+            @media (max-width: 480px) {
+                /* Botones a ancho completo */
+                .btn-primary, .btn-ghost, .btn-run, .btn-clear, .btn-solution {
+                    width: 100%;
+                    margin: 4px 0;
+                }
+                /* Headers más compactos */
+                .hero-title { font-size: 1.7rem !important; }
+                /* Modal a casi viewport */
+                .modal { max-width: calc(100vw - 12px) !important; max-height: calc(100vh - 12px); }
+                /* Tabs scrollables */
+                .modal-tabs, .editor-actions { flex-wrap: wrap; }
+                /* Editor footer (acciones) en columna */
+                .editor-actions { flex-direction: column; align-items: stretch; }
+                .editor-actions > * { width: 100%; }
+                /* Sidebar de atajos oculto por default en mobile */
+                .cheat-panel { display: none !important; }
+                .big-editor-container.cheat-expanded > .big-editor,
+                .big-editor-container.cheat-collapsed > .big-editor,
+                .editor-container.cheat-expanded > .code-editor,
+                .editor-container.cheat-collapsed > .code-editor {
+                    width: 100% !important;
+                }
+            }
+
             @media (max-width: 900px) {
                 .playground-grid {
                     grid-template-columns: 1fr;
@@ -4101,7 +4162,7 @@
             <div class="animate-in">
                 <h2
                     class="section-title"
-                    style="max-width: 1200px; margin: 0 auto 8px"
+                    style="max-width: min(1400px, 95vw); margin: 0 auto 8px"
                 >
                     ⚡ Editor libre
                 </h2>
@@ -4387,9 +4448,9 @@ FinProceso</textarea>
                             </div>
                         </div>
                         <div class="big-console" id="playgroundConsole" role="log" aria-live="polite" aria-atomic="false" aria-label="Consola del playground">
-                            <span class="cout-line cout-info" style="color:var(--text-dim)">// 💡 Presiona F5 o el botón ▶ Ejecutar para ver la salida aquí.</span><br>
-                            <span class="cout-line cout-info" style="color:var(--text-dim)">// 📋 Tu código se guarda automáticamente en el navegador.</span><br>
-                            <span class="cout-line cout-info" style="color:var(--text-dim)">// ⌨ Ctrl+Space activa el autocompletado.</span>
+                            <span class="cout-line cout-info" style="color:var(--text-muted)">// 💡 Presiona F5 o el botón ▶ Ejecutar para ver la salida aquí.</span><br>
+                            <span class="cout-line cout-info" style="color:var(--text-muted)">// 📋 Tu código se guarda automáticamente en el navegador.</span><br>
+                            <span class="cout-line cout-info" style="color:var(--text-muted)">// ⌨ Ctrl+Space activa el autocompletado.</span>
                         </div>
                     </div>
                 </div>
@@ -4920,7 +4981,7 @@ FinProceso</textarea>
             onclick="openReportModal()"
             aria-label="Reportar bug o sugerencia"
             title="Reportar bug o sugerencia"
-            style="position:fixed;bottom:20px;right:20px;width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,#10b981,#34d399);color:#fff;border:none;cursor:pointer;font-size:1.6rem;box-shadow:0 4px 16px rgba(16,185,129,0.45);z-index:300;transition:transform 0.2s, box-shadow 0.2s;display:flex;align-items:center;justify-content:center"
+            style="position:fixed;bottom:max(20px, env(safe-area-inset-bottom));right:max(20px, env(safe-area-inset-right));width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,#10b981,#34d399);color:#fff;border:none;cursor:pointer;font-size:1.6rem;box-shadow:0 4px 16px rgba(16,185,129,0.45);z-index:300;transition:transform 0.2s, box-shadow 0.2s;display:flex;align-items:center;justify-content:center"
             onmouseover="this.style.transform='scale(1.1)';this.style.boxShadow='0 6px 24px rgba(16,185,129,0.6)'"
             onmouseout="this.style.transform='scale(1)';this.style.boxShadow='0 4px 16px rgba(16,185,129,0.45)'"
         >
@@ -4928,7 +4989,7 @@ FinProceso</textarea>
         </button>
 
         <!-- Menú GLOBAL del theme picker (flotante, position:fixed para escapar de overflow:hidden de padres) -->
-        <div id="themePickerMenu" role="menu" aria-label="Lista de temas" style="position:fixed;display:none;flex-direction:column;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:6px;min-width:260px;box-shadow:0 8px 32px rgba(0,0,0,0.6);z-index:2147483647"></div>
+        <div id="themePickerMenu" role="menu" aria-label="Lista de temas" style="position:fixed;display:none;flex-direction:column;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:6px;min-width:min(260px, 92vw);max-width:92vw;box-shadow:0 8px 32px rgba(0,0,0,0.6);z-index:2147483647"></div>
 
         <!-- MODAL DE LECCIÓN -->
         <div
@@ -16251,7 +16312,7 @@ FinProceso`,
 		<button class="btn-clear" onclick="document.getElementById('exampleEditor').value='';clearConsole('exampleConsole');syncHighlight('exampleEditor','exampleHighlight')">🗑 Limpiar</button>
 	 </div>
 	 <div class="console-label" style="margin-top:12px;">💻 Salida:</div>
-	 <div class="console-out" id="exampleConsole" role="log" aria-live="polite" aria-atomic="false" aria-label="Salida del ejemplo"><span class="cout-line cout-info" style="color:var(--text-dim)">// Ejecuta el código para ver la salida...</span></div>
+	 <div class="console-out" id="exampleConsole" role="log" aria-live="polite" aria-atomic="false" aria-label="Salida del ejemplo"><span class="cout-line cout-info" style="color:var(--text-muted)">// Ejecuta el código para ver la salida...</span></div>
   `;
                 setTimeout(() => attachHighlighter('exampleEditor', 'exampleHighlight'), 0);
 
@@ -16296,7 +16357,7 @@ FinProceso</textarea>
 	 </div>
 	 <div id="verdict" class="verdict"></div>
 	 <div class="console-label">💻 Salida:</div>
-	 <div class="console-out" id="challengeConsole" role="log" aria-live="polite" aria-atomic="false" aria-label="Salida del reto"><span style="color:var(--text-dim)">// Escribe tu solución y ejecútala...</span></div>
+	 <div class="console-out" id="challengeConsole" role="log" aria-live="polite" aria-atomic="false" aria-label="Salida del reto"><span style="color:var(--text-muted)">// Escribe tu solución y ejecútala...</span></div>
   `;
                 setTimeout(() => {
                     attachHighlighter('challengeEditor', 'challengeHighlight');
