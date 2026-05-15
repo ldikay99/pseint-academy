@@ -642,10 +642,11 @@
             .section {
                 position: relative;
                 z-index: 1;
-                padding: clamp(40px, 6vw, 80px) clamp(16px, 3vw, 24px);
-                /* FIX responsive: ancho fluido que aprovecha viewport */
+                padding: clamp(40px, 6vw, 80px) clamp(16px, 3vw, 48px);
+                /* FIX responsive: sin cap — secciones llenan viewport.
+                   El cap por legibilidad lo aplican children específicos
+                   (texto largo en hero, descripciones), no la sección entera. */
                 width: 100%;
-                max-width: min(1400px, 95vw);
                 margin: 0 auto;
             }
 
@@ -1343,7 +1344,7 @@
             .verdict.wrong {
                 background: rgba(239, 68, 68, 0.12);
                 border: 1px solid var(--accent5);
-                color: #fca5a5;
+                color: var(--color-error);
                 display: block;
             }
             /* ============================================================
@@ -1353,10 +1354,12 @@
             #playground {
                 position: relative;
                 z-index: 1;
-                padding: clamp(40px, 6vw, 80px) clamp(16px, 3vw, 24px);
-                /* FIX responsive: ancho fluido */
+                padding: clamp(40px, 6vw, 80px) clamp(16px, 3vw, 48px);
+                /* FIX responsive: SIN cap fijo — el playground llena el viewport.
+                   Editor + consola en 1fr 1fr se reparten todo el espacio
+                   horizontal disponible. Sin esto, al hacer zoom-out quedaban
+                   columnas estrechas con huecos a los lados. */
                 width: 100%;
-                max-width: min(1400px, 95vw);
                 margin: 0 auto;
             }
 
@@ -1465,7 +1468,7 @@
             }
             .fs-topbar .fs-exit-btn {
                 background: rgba(239,68,68,0.12);
-                color: #fca5a5;
+                color: var(--color-error);
                 border: 1px solid rgba(239,68,68,0.35);
                 padding: 6px 14px;
                 border-radius: 6px;
@@ -1621,7 +1624,7 @@
                 text-align: center;
             }
             .fs-bottombar .fs-tab-btn.has-errors {
-                color: #fca5a5;
+                color: var(--color-error);
             }
             .fs-bottombar .fs-tab-btn.has-errors .fs-tab-count {
                 background: rgba(239,68,68,0.3);
@@ -1629,7 +1632,7 @@
                 font-weight: 700;
             }
             .fs-bottombar .fs-tab-btn.has-warns {
-                color: #fcd34d;
+                color: var(--color-warn);
             }
             .fs-bottombar .fs-tab-btn.has-warns .fs-tab-count {
                 background: rgba(245,158,11,0.3);
@@ -1811,14 +1814,14 @@
                 background: rgba(255,255,255,0.03);
             }
             .fs-bottom-content .fs-error-line {
-                color: #fca5a5;
+                color: var(--color-error);
                 font-family: var(--font-mono);
                 font-weight: 700;
                 flex-shrink: 0;
                 min-width: 50px;
             }
             .fs-bottom-content .fs-warn-item .fs-error-line {
-                color: #fcd34d;
+                color: var(--color-warn);
             }
             .fs-bottom-content .fs-error-msg {
                 color: var(--text-main);
@@ -2335,7 +2338,7 @@
             }
             .fc-tool-btn.fc-close-btn {
                 background: rgba(239, 68, 68, 0.15);
-                color: #fca5a5;
+                color: var(--color-error);
                 border-color: rgba(239, 68, 68, 0.4);
             }
             .fc-tool-btn.fc-close-btn:hover {
@@ -2994,7 +2997,7 @@
             /* Variable usada sin declarar: ERROR (rojo) — visualmente claro y sin
                ambigüedad con tipos válidos (que son verdes/azules/dorados). */
             .kw-undeclared {
-                color: #fca5a5 !important;
+                color: var(--color-error) !important;
                 text-decoration: underline wavy #ef4444;
                 text-decoration-thickness: 2px;
                 text-underline-offset: 3px;
@@ -3880,13 +3883,15 @@
                 .cheat-panel:not(.collapsed) { width: 240px; }
             }
 
-            /* FIX responsive: pantallas muy grandes — limitar ancho para legibilidad */
+            /* FIX responsive: pantallas muy grandes — el editor/consola llenan
+               el viewport. Para legibilidad de TEXTO LARGO (descripciones del
+               hero, párrafos de teoría) los hijos limitan su propio ancho con
+               max-width local. Las grids (editor, consola, lessons) no se topean. */
             @media (min-width: 1600px) {
-                .playground-grid, .lessons-grid, .ref-grid, #playground, .section {
-                    max-width: 1400px;
-                    margin-left: auto;
-                    margin-right: auto;
-                }
+                /* Aumentar gap visual en pantallas grandes para que el editor
+                   y consola no parezcan apretados */
+                .playground-grid { gap: 32px; }
+                .section, #playground { padding-left: clamp(24px, 4vw, 80px); padding-right: clamp(24px, 4vw, 80px); }
             }
 
             /* FIX responsive: mobile (<480px) — extras */
@@ -4926,7 +4931,7 @@ FinProceso</textarea>
             .report-chip input { margin:0; cursor:pointer; }
             .report-chip:has(input:checked) { background:rgba(0,212,255,0.15); border-color:var(--accent1); color:var(--text-main); }
             #reportStatus.ok { background:rgba(16,185,129,0.15); border:1px solid #10b981; color:#6ee7b7; }
-            #reportStatus.err { background:rgba(239,68,68,0.15); border:1px solid #ef4444; color:#fca5a5; }
+            #reportStatus.err { background:rgba(239,68,68,0.15); border:1px solid #ef4444; color:var(--color-error); }
             #reportStatus.info { background:rgba(0,212,255,0.10); border:1px solid var(--accent1); color:var(--accent1); }
         </style>
 
@@ -20837,7 +20842,7 @@ FinProceso</textarea>
                     status.innerHTML = '🚫 <b>Cuota mensual agotada.</b><br>'
                         + 'Se enviaron los ' + REPORT_CONFIG.MONTHLY_QUOTA + ' reportes permitidos este mes. '
                         + 'El contador se reinicia el día 1 del próximo mes.<br><br>'
-                        + 'Mientras tanto, usa <a href="https://github.com/ldikay99/pseint-academy/issues/new" target="_blank" style="color:#fde68a;text-decoration:underline">GitHub Issues</a> para reportar.';
+                        + 'Mientras tanto, usa <a href="https://github.com/ldikay99/pseint-academy/issues/new" target="_blank" style="color:var(--color-warn-strong);text-decoration:underline">GitHub Issues</a> para reportar.';
                     return;
                 }
                 if (stats.cooldownLeft > 0) {
@@ -20846,7 +20851,7 @@ FinProceso</textarea>
                     status.innerHTML = '⏱ <b>Espera un poco antes de enviar otro reporte.</b><br>'
                         + 'Puedes enviar el siguiente en <b>' + _formatDuration(stats.cooldownLeft) + '</b>.<br><br>'
                         + 'Esto evita spam y abuso del sistema. Para reportes urgentes adicionales usa '
-                        + '<a href="https://github.com/ldikay99/pseint-academy/issues/new" target="_blank" style="color:#fde68a;text-decoration:underline">GitHub Issues</a>.';
+                        + '<a href="https://github.com/ldikay99/pseint-academy/issues/new" target="_blank" style="color:var(--color-warn-strong);text-decoration:underline">GitHub Issues</a>.';
                     return;
                 }
 
@@ -20925,8 +20930,8 @@ FinProceso</textarea>
                     status.innerHTML = '⚠️ <b>No se pudo enviar el reporte.</b><br>'
                         + '<small style="opacity:0.85">Detalle: ' + String(msg).substring(0, 200) + '</small><br><br>'
                         + 'Alternativas:<br>'
-                        + '• <a href="' + mailtoLink + '" style="color:#fde68a;text-decoration:underline">📧 Enviar por correo</a><br>'
-                        + '• <a href="https://github.com/ldikay99/pseint-academy/issues/new" target="_blank" style="color:#fde68a;text-decoration:underline">🐙 Abrir issue en GitHub</a>';
+                        + '• <a href="' + mailtoLink + '" style="color:var(--color-warn-strong);text-decoration:underline">📧 Enviar por correo</a><br>'
+                        + '• <a href="https://github.com/ldikay99/pseint-academy/issues/new" target="_blank" style="color:var(--color-warn-strong);text-decoration:underline">🐙 Abrir issue en GitHub</a>';
                     btn.disabled = false;
                     btn.textContent = '📤 Enviar reporte';
                 }).catch((err) => {
@@ -20966,8 +20971,8 @@ FinProceso</textarea>
                         status.innerHTML = '⚠️ <b>No se pudo conectar al servidor.</b><br>'
                             + '<small style="opacity:0.85">Detalle: ' + String(errMsg).substring(0, 150) + '</small><br><br>'
                             + 'Alternativas:<br>'
-                            + '• <a href="' + mailtoLink + '" style="color:#fde68a;text-decoration:underline">📧 Enviar por correo</a><br>'
-                            + '• <a href="https://github.com/ldikay99/pseint-academy/issues/new" target="_blank" style="color:#fde68a;text-decoration:underline">🐙 Abrir issue en GitHub</a>';
+                            + '• <a href="' + mailtoLink + '" style="color:var(--color-warn-strong);text-decoration:underline">📧 Enviar por correo</a><br>'
+                            + '• <a href="https://github.com/ldikay99/pseint-academy/issues/new" target="_blank" style="color:var(--color-warn-strong);text-decoration:underline">🐙 Abrir issue en GitHub</a>';
                         btn.disabled = false;
                         btn.textContent = '📤 Enviar reporte';
                     }
