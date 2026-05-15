@@ -16572,6 +16572,90 @@ FinProceso</textarea>
                 window.addEventListener('scroll', window.closeThemePicker, { passive: true });
                 window.addEventListener('resize', window.closeThemePicker);
 
+                // ── Picker de tema de página (independiente del editor) ──
+                const PAGE_THEMES = [
+                    { id: 'default',  name: 'Default',  desc: 'Azul navy oscuro (por defecto)',
+                      preview: { bg: '#0a0e1a', card: '#1a2236', text: '#e2e8f0' } },
+                    { id: 'midnight', name: 'Midnight', desc: 'Índigo profundo',
+                      preview: { bg: '#0a0a1f', card: '#1d1d3d', text: '#e9e6ff' } },
+                    { id: 'slate',    name: 'Slate',    desc: 'Gris azulado medio',
+                      preview: { bg: '#1e293b', card: '#475569', text: '#f1f5f9' } },
+                    { id: 'paper',    name: 'Paper',    desc: 'Claro estilo papel',
+                      preview: { bg: '#faf7f2', card: '#f0ece4', text: '#2d2a26' } },
+                    { id: 'sunrise',  name: 'Sunrise',  desc: 'Calidez rosa/melocotón',
+                      preview: { bg: '#fff7f0', card: '#ffe8d6', text: '#3d2a1f' } }
+                ];
+                function applyPageTheme(id) {
+                    if (id === 'default') {
+                        document.documentElement.removeAttribute('data-page-theme');
+                    } else {
+                        document.documentElement.setAttribute('data-page-theme', id);
+                    }
+                    const meta = PAGE_THEMES.find(t => t.id === id) || PAGE_THEMES[0];
+                    document.querySelectorAll('.page-theme-label').forEach(l => l.textContent = meta.name);
+                }
+                function buildPageThemeMenu() {
+                    const menu = document.getElementById('pageThemePickerMenu');
+                    if (!menu || menu._built) return;
+                    menu._built = true;
+                    PAGE_THEMES.forEach(t => {
+                        const opt = document.createElement('button');
+                        opt.type = 'button';
+                        opt.dataset.theme = t.id;
+                        opt.style.cssText = 'display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid transparent;border-radius:8px;cursor:pointer;background:transparent;color:var(--text-main);font:inherit;text-align:left;width:100%';
+                        opt.innerHTML =
+                            '<div style="width:36px;height:28px;border-radius:5px;background:' + t.preview.bg + ';border:1px solid rgba(255,255,255,.1);position:relative;flex-shrink:0">' +
+                                '<div style="position:absolute;left:3px;top:3px;right:3px;bottom:3px;background:' + t.preview.card + ';border-radius:3px"></div>' +
+                            '</div>' +
+                            '<div style="flex:1;min-width:0">' +
+                                '<div style="font-weight:700;font-size:0.85rem">' + t.name + '</div>' +
+                                '<div style="font-size:0.72rem;opacity:0.7">' + t.desc + '</div>' +
+                            '</div>';
+                        opt.addEventListener('mouseover', () => { opt.style.background = 'rgba(0,212,255,0.08)'; opt.style.borderColor = 'var(--accent1)'; });
+                        opt.addEventListener('mouseout', () => { opt.style.background = 'transparent'; opt.style.borderColor = 'transparent'; });
+                        opt.addEventListener('click', () => {
+                            applyPageTheme(t.id);
+                            try { localStorage.setItem('pseinc_page_theme', t.id); } catch(_) {}
+                            if (typeof showToast === 'function') showToast('🖼️ Tema de página: ' + t.name);
+                            window.closePageThemePicker();
+                        });
+                        menu.appendChild(opt);
+                    });
+                }
+                window.togglePageThemePicker = function(triggerBtn) {
+                    buildPageThemeMenu();
+                    const menu = document.getElementById('pageThemePickerMenu');
+                    if (!menu) return;
+                    const isOpen = menu.style.display === 'flex';
+                    if (isOpen) { menu.style.display = 'none'; triggerBtn && triggerBtn.setAttribute('aria-expanded','false'); return; }
+                    const btn = triggerBtn || document.getElementById('pageThemeBtn');
+                    if (!btn) return;
+                    const rect = btn.getBoundingClientRect();
+                    menu.style.display = 'flex';
+                    let left = rect.right - 240;
+                    if (left < 10) left = 10;
+                    menu.style.left = left + 'px';
+                    menu.style.top = (rect.bottom + 6) + 'px';
+                    btn.setAttribute('aria-expanded','true');
+                };
+                window.closePageThemePicker = function() {
+                    const menu = document.getElementById('pageThemePickerMenu');
+                    if (menu) menu.style.display = 'none';
+                    const btn = document.getElementById('pageThemeBtn');
+                    if (btn) btn.setAttribute('aria-expanded','false');
+                };
+                document.addEventListener('click', (e) => {
+                    if (e.target.closest('#pageThemeBtn') || e.target.closest('#pageThemePickerMenu')) return;
+                    window.closePageThemePicker();
+                });
+                window.addEventListener('scroll', window.closePageThemePicker, { passive: true });
+                window.addEventListener('resize', window.closePageThemePicker);
+                // Aplicar tema persistido al cargar
+                try {
+                    const saved = localStorage.getItem('pseinc_page_theme');
+                    if (saved) applyPageTheme(saved);
+                } catch(_) {}
+
                 // Función helper: inyectar un theme picker en cualquier contenedor
                 window.injectThemePicker = function(container) {
                     if (!container || container.querySelector('.theme-picker-wrap')) return;

@@ -26,7 +26,19 @@
                 <a href="#/progreso" aria-label="Progreso">🏆 Progreso</a>
                 <a href="#/sobre" aria-label="Sobre">👤 Sobre</a>
                 <a href="#/licencia" aria-label="Licencia">📜 Licencia</a>
+                <button
+                    type="button"
+                    id="pageThemeBtn"
+                    onclick="window.togglePageThemePicker(this)"
+                    aria-label="Tema de la página"
+                    aria-haspopup="true"
+                    aria-expanded="false"
+                    title="Elegir tema de página (afecta navbar, fondo, tarjetas — no toca colores del editor)"
+                    style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;background:var(--bg-card2);color:var(--text-main);border:1px solid var(--border);border-radius:8px;font-size:0.78rem;cursor:pointer;font-family:inherit">
+                    <span aria-hidden="true">🖼️</span><span class="page-theme-label">Página</span><span aria-hidden="true" style="font-size:0.7rem;opacity:0.7">▾</span>
+                </button>
             </div>
+            <div id="pageThemePickerMenu" role="menu" aria-label="Tema de página" style="position:fixed;display:none;flex-direction:column;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:6px;min-width:min(240px, 92vw);max-width:92vw;box-shadow:0 8px 32px rgba(0,0,0,0.6);z-index:2147483647"></div>
             <button
                 class="nav-burger"
                 id="navBurger"

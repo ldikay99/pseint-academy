@@ -143,6 +143,66 @@
             html[data-theme="ocean"] .kw-logic   { color: #f9a8d4 !important; }
             html[data-theme="ocean"] .kw-sinsaltar { color: #6ee7b7 !important; }
 
+            /* ============================================================
+               TEMAS DE PÁGINA — 5 paletas adicionales (data-page-theme)
+               Estos override SOLO los colores de shell (nav/body/cards/text)
+               sin tocar las clases .kw-* del editor. Permite combinar un
+               tema de página (estética general) con un tema de editor
+               (paleta de sintaxis) de forma independiente.
+            ============================================================ */
+            /* PÁGINA: Default (dark navy — coincide con data-theme="dark") */
+            html[data-page-theme="default"] {
+                --bg-dark: #0a0e1a;
+                --bg-card: #111827;
+                --bg-card2: #1a2236;
+                --text-main: #e2e8f0;
+                --text-muted: #a1afc4;
+                --text-dim: #6b7280;
+                --border: #1e2d45;
+            }
+            /* PÁGINA: Midnight (índigo profundo) */
+            html[data-page-theme="midnight"] {
+                --bg-dark: #0a0a1f;
+                --bg-card: #14142b;
+                --bg-card2: #1d1d3d;
+                --text-main: #e9e6ff;
+                --text-muted: #a8a5cc;
+                --text-dim: #6b6b8f;
+                --border: #2a2a55;
+            }
+            /* PÁGINA: Slate (gris azulado medio) */
+            html[data-page-theme="slate"] {
+                --bg-dark: #1e293b;
+                --bg-card: #334155;
+                --bg-card2: #475569;
+                --text-main: #f1f5f9;
+                --text-muted: #cbd5e1;
+                --text-dim: #94a3b8;
+                --border: #64748b;
+            }
+            /* PÁGINA: Paper (claro estilo papel/crema) */
+            html[data-page-theme="paper"] {
+                --bg-dark: #faf7f2;
+                --bg-card: #ffffff;
+                --bg-card2: #f0ece4;
+                --text-main: #2d2a26;
+                --text-muted: #5a5650;
+                --text-dim: #8a8580;
+                --border: #d6d0c4;
+                --shadow: 0 4px 32px rgba(0, 0, 0, 0.06);
+            }
+            /* PÁGINA: Sunrise (calidez rosada/melocotón claro) */
+            html[data-page-theme="sunrise"] {
+                --bg-dark: #fff7f0;
+                --bg-card: #ffffff;
+                --bg-card2: #ffe8d6;
+                --text-main: #3d2a1f;
+                --text-muted: #7a5c4e;
+                --text-dim: #a8907f;
+                --border: #f5d4b8;
+                --shadow: 0 4px 32px rgba(244, 114, 87, 0.10);
+            }
+
             /* ── FIX: <select> y <option> heredan colores del tema actual ──
                Sin esto, al cambiar de tema (especialmente Light), las opciones
                del dropdown se ven blanco-sobre-blanco. Forzamos colores legibles
