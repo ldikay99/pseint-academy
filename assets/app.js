@@ -6275,6 +6275,8 @@ FinProceso`,
                 { title: "Mientras", desc: "Ciclo mientras", code: "Proceso CicloMientras\n\tDefinir i Como Entero\n\ti <- 1\n\tMientras i <= 10 Hacer\n\t\tEscribir i\n\t\ti <- i + 1\n\tFinMientras\nFinProceso" },
                 { title: "Repetir / Hasta Que", desc: "Ciclo post-condición", code: "Proceso CicloRepetir\n\tDefinir n Como Entero\n\tRepetir\n\t\tEscribir \"Número positivo:\"\n\t\tLeer n\n\tHasta Que n > 0\n\tEscribir \"Ingresaste: \", n\nFinProceso" },
                 { title: "Para / FinPara", desc: "Ciclo con contador", code: "Proceso CicloPara\n\tDefinir i Como Entero\n\tPara i <- 1 Hasta 10 Hacer\n\t\tEscribir \"Iteración: \", i\n\tFinPara\nFinProceso" },
+                { title: "Para con paso", desc: "Para con incremento personalizado", code: "Proceso CicloParaConPaso\n\tDefinir i Como Entero\n\tPara i <- 0 Hasta 100 Con Paso 10 Hacer\n\t\tEscribir \"Valor: \", i\n\tFinPara\nFinProceso" },
+                { title: "Para descendente", desc: "Con paso negativo", code: "Proceso CuentaRegresiva\n\tDefinir i Como Entero\n\tPara i <- 10 Hasta 1 Con Paso -1 Hacer\n\t\tEscribir i\n\tFinPara\n\tEscribir \"¡Despegue!\"\nFinProceso" },
                 { title: "Arreglo 1D", desc: "Array unidimensional", code: "Proceso Arreglo\n\tDefinir arr Como Entero\n\tDefinir i Como Entero\n\tDimension arr[5]\n\tPara i <- 1 Hasta 5 Hacer\n\t\tarr[i] <- i * 2\n\tFinPara\n\tPara i <- 1 Hasta 5 Hacer\n\t\tEscribir arr[i]\n\tFinPara\nFinProceso" },
                 { title: "SubProceso", desc: "Función/procedimiento", code: "SubProceso resultado <- Doble(n)\n\tresultado <- n * 2\nFinSubProceso\n\nProceso UsarSubProceso\n\tDefinir x Como Entero\n\tDefinir r Como Entero\n\tx <- 5\n\tr <- Doble(x)\n\tEscribir \"Doble de \", x, \" = \", r\nFinProceso" },
                 { title: "FizzBuzz", desc: "Ejemplo clásico", code: "Proceso FizzBuzz\n\tDefinir i Como Entero\n\tPara i <- 1 Hasta 20 Hacer\n\t\tSi i MOD 15 = 0 Entonces\n\t\t\tEscribir \"FizzBuzz\"\n\t\tSiNo\n\t\t\tSi i MOD 3 = 0 Entonces\n\t\t\t\tEscribir \"Fizz\"\n\t\t\tSiNo\n\t\t\t\tSi i MOD 5 = 0 Entonces\n\t\t\t\t\tEscribir \"Buzz\"\n\t\t\t\tSiNo\n\t\t\t\t\tEscribir i\n\t\t\t\tFinSi\n\t\t\tFinSi\n\t\tFinSi\n\tFinPara\nFinProceso" },
@@ -7624,6 +7626,50 @@ FinProceso`,
                     }
                     // Para — con o sin Con Paso (sin FinPara en la misma línea)
                     if (/^para\s+\w+\s*<-\s*.+\s+hasta\s+.+\s+hacer$/i.test(t) && !/finpara/i.test(t)) {
+                        // FIX bug reportado: validar la sintaxis del Para.
+                        // Detectamos casos invalidos comunes que el regex base
+                        // dejaba pasar (porque usa .+) y que luego rompen en runtime:
+                        //   - "Hasta 10  20 Hacer" (dos valores sin 'Con Paso')
+                        //   - "Hasta 10, 20 Hacer" (coma como separador)
+                        // Extraemos lo que hay entre 'Hasta' y 'Hacer' (o 'Con Paso')
+                        // y validamos que sea UNA sola expresion aritmetica.
+                        const mPara = t.match(/^para\s+\w+\s*<-\s*(.+?)\s+hasta\s+(.+?)(?:\s+con\s+paso\s+(.+?))?\s+hacer$/i);
+                        if (mPara) {
+                            const toExpr = mPara[2].trim();
+                            // Coma a nivel top (fuera de parens y strings) → invalido
+                            // (la coma solo es valida dentro de funciones, ej. Aleatorio(1,10))
+                            let depth = 0, inStr = false, hasTopComma = false;
+                            for (let i = 0; i < toExpr.length; i++) {
+                                const c = toExpr[i];
+                                if (c === '"') inStr = !inStr;
+                                if (inStr) continue;
+                                if (c === '(' || c === '[') depth++;
+                                else if (c === ')' || c === ']') depth--;
+                                else if (c === ',' && depth === 0) { hasTopComma = true; break; }
+                            }
+                            if (hasTopComma) {
+                                errors.push({
+                                    line: ln,
+                                    msg: "Sintaxis Para invalida: el limite superior tiene una coma. Si quieres especificar paso, usa 'Con Paso N' antes de 'Hacer'. Ej: 'Para i <- 1 Hasta 10 Con Paso 2 Hacer'."
+                                });
+                                continue;
+                            }
+                            // Detectar valores consecutivos sin operador: "10 20", "10  20"
+                            // Si el expr (sin strings) tiene 2+ tokens que NO son operadores → invalido
+                            const maskedExpr = toExpr.replace(/"[^"]*"/g, '""');
+                            // Tokens que se ven como "numero o identificador" sin operador entre ellos
+                            // Test simple: ¿hay un patron "[num/ident] [num/ident]" a nivel top?
+                            const badPattern = /(?:\b\d+(?:\.\d+)?\b|\b[a-zA-ZáéíóúÁÉÍÓÚñÑ_][\wáéíóúÁÉÍÓÚñÑ]*\b)\s+(?:\b\d+(?:\.\d+)?\b|\b[a-zA-ZáéíóúÁÉÍÓÚñÑ_][\wáéíóúÁÉÍÓÚñÑ]*\b)/;
+                            // Lista de palabras que SI pueden aparecer entre tokens como conectores
+                            const okWordsBetween = /\b(MOD|DIV|Y|O|NO|AND|OR|NOT)\b/i;
+                            if (badPattern.test(maskedExpr) && !okWordsBetween.test(maskedExpr)) {
+                                errors.push({
+                                    line: ln,
+                                    msg: "Sintaxis Para invalida: parece haber dos valores en el limite superior sin un operador entre ellos. Para especificar paso, usa 'Con Paso N'. Ej: 'Para i <- 1 Hasta 10 Con Paso 2 Hacer'."
+                                });
+                                continue;
+                            }
+                        }
                         stack.push({kw: 'para', line: ln});
                         continue;
                     }
@@ -13050,13 +13096,17 @@ FinProceso</textarea>
                 let btnW = document.getElementById('fsTabWarns');
                 if (btnE) {
                     btnE.classList.toggle('has-errors', errs > 0);
-                    // Mostrar el tab Errores solo cuando hay errores
-                    btnE.style.display = errs > 0 ? 'inline-flex' : 'none';
+                    // FIX UX mobile: SIEMPRE visibles los 3 tabs. Sin esto, en mobile
+                    // el usuario no sabia que existian Errores/Sugerencias hasta que
+                    // aparecian — y con los gutter dots queria saber QUE decia el error
+                    // pero no podia abrir el panel. Ahora el panel es siempre accesible.
+                    btnE.style.display = 'inline-flex';
+                    btnE.classList.toggle('fs-tab-empty', errs === 0);
                 }
                 if (btnW) {
                     btnW.classList.toggle('has-warns', warns > 0);
-                    // Mostrar el tab Sugerencias solo cuando hay sugerencias
-                    btnW.style.display = warns > 0 ? 'inline-flex' : 'none';
+                    btnW.style.display = 'inline-flex';
+                    btnW.classList.toggle('fs-tab-empty', warns === 0);
                 }
                 // Si el panel estaba abierto en un tab que ya no tiene contenido, cerrarlo
                 if (_fsActiveTab === 'errors' && errs === 0) {

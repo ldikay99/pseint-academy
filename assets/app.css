@@ -1608,6 +1608,22 @@
                 font-size: 0.74rem;
                 font-weight: 600;
                 cursor: pointer;
+                position: relative;
+                /* FIX UX: pulso sutil cuando hay errores nuevos para llamar atencion */
+            }
+            .fs-bottombar .fs-tab-btn.fs-tab-empty {
+                opacity: 0.5;
+            }
+            .fs-bottombar .fs-tab-btn.has-errors:not(.active) {
+                animation: fsTabPulse 1.5s ease-in-out 3;
+            }
+            @keyframes fsTabPulse {
+                0%, 100% { background: transparent; }
+                50% { background: rgba(239, 68, 68, 0.18); }
+            }
+            @media (prefers-reduced-motion: reduce) {
+                .fs-bottombar .fs-tab-btn.has-errors { animation: none; }
+            }
                 transition: all 0.12s;
                 display: inline-flex;
                 align-items: center;
