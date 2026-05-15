@@ -10550,21 +10550,21 @@ FinProceso`,
                             return Number(a) * Number(b);
                         case "/":
                             if (Number(b) === 0)
-                                throw new Error("División por cero");
+                                throw new Error("División por cero: no se puede dividir entre 0. Antes de dividir, verifica con un Si que el divisor sea distinto de 0 (ej: 'Si divisor <> 0 Entonces resultado <- num / divisor FinSi').");
                             return Number(a) / Number(b);
                         case "^":
                             return Math.pow(Number(a), Number(b));
                         case "MOD":
                         case "%":
                             if (Number(b) === 0)
-                                throw new Error("MOD por cero");
+                                throw new Error("MOD por cero: no se puede calcular el resto de una división entre 0. Verifica el divisor antes de usar MOD.");
                             return (
                                 ((Number(a) % Number(b)) + Number(b)) %
                                 Number(b)
                             );
                         case "DIV":
                             if (Number(b) === 0)
-                                throw new Error("División entera por cero");
+                                throw new Error("División entera por cero: no se puede dividir entre 0 con DIV. Verifica el divisor antes.");
                             // FIX: usar Math.floor (división euclídea) para que
                             // -7 DIV 2 = -4 (consistente con MOD), no -3 que daba Math.trunc.
                             return Math.floor(Number(a) / Number(b));
