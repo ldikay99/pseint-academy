@@ -120,7 +120,9 @@ Es un **único archivo HTML autocontenido** (~1.2 MB) con CSS y JS inline. Sin b
 
 **Jonathan C.** — [@ldikay99](https://github.com/ldikay99) · ✉ heydikay@gmail.com
 
-Estudiante de un técnico en programación. Construí esto porque me hubiera servido a mí cuando estaba aprendiendo algoritmos y no tenía PSeInt instalado. Lee la historia completa en `#/sobre` dentro de la app.
+Estudiante de un técnico en programación. Construí esta plataforma porque me hubiera servido cuando estaba aprendiendo algoritmos y no tenía PSeInt instalado. La historia completa está dentro de la app en la sección "Sobre el proyecto".
+
+> Si reutilizas, modificas o redistribuyes esta plataforma (lo cual está permitido por la licencia MIT), por favor **mantén la atribución al autor original**.
 
 ---
 
