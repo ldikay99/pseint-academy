@@ -45,6 +45,9 @@ CLAUDE.md
 .claude-code/
 claude.md
 *.claude.md
+ANALYZER.md
+INSTRUCTIONS.md
+docs/internal/
 
 # Scripts de prueba locales
 test_*.js

@@ -12234,6 +12234,64 @@ FinProceso`,
                         if (/^[^:]+:\s*\S/.test(t) && !/<-/.test(t)) continue;
                     }
 
+                    // ── VALIDACIÓN DE Si INLINE (cuerpo de cada rama) ──────────
+                    // Captura tres formas:
+                    //   A) `Si COND Entonces STMT [SiNo STMT2] FinSi`  (full inline)
+                    //   B) `Si COND Entonces STMT`                    (hybrid: SiNo en línea siguiente)
+                    //   C) `SiNo STMT [FinSi]`                        (rama SiNo inline)
+                    // Cada STMT debe ser una instrucción REAL. Cuerpos como
+                    // `"texto", monto` o `monto` (expr suelta) son ERROR — al
+                    // usuario le falta el Escribir.
+                    {
+                        const _isValidStmt = (s) => {
+                            const stmtKW = /^(escribir|leer|si|sino|mientras|para|repetir|segun|según|retornar|devolver|salir|salirpara|interrumpir|borrar|limpiar|esperar|definir|dimension|finsi|finmientras|finpara|finsegun)\b/i;
+                            const x = s.trim().replace(/;+\s*$/, '').trim();
+                            if (!x) return false;
+                            if (stmtKW.test(x)) return true;
+                            if (x.includes('<-')) return true;
+                            if (/^[a-zA-ZáéíóúÁÉÍÓÚñÑ_][\wáéíóúÁÉÍÓÚñÑ]*\s*\([^)]*\)\s*$/.test(x)) return true;
+                            return false;
+                        };
+                        let inlineHandled = false;
+                        // (A) Full inline
+                        const mA = t.match(/^Si\s+(.+?)\s+Entonces\s+(.+?)(?:\s+SiNo\s+(.+?))?\s+FinSi\s*$/i);
+                        if (mA) {
+                            const branches = [mA[2]];
+                            if (mA[3]) branches.push(mA[3]);
+                            for (const br of branches) {
+                                if (!_isValidStmt(br)) {
+                                    errors.push({line: ln, msg: `Si inline: el cuerpo '${br.trim()}' no es una instrucción válida. ¿Falta 'Escribir' antes? Ej: 'Si cond Entonces Escribir ${br.trim()} FinSi'.`});
+                                    inlineHandled = true;
+                                    break;
+                                }
+                            }
+                            if (inlineHandled) continue;
+                            inlineHandled = true; // ya validado, no caer en aperturas
+                        }
+                        // (B) Hybrid `Si X Entonces STMT` (sin FinSi, Entonces NO al final)
+                        if (!inlineHandled) {
+                            const mB = t.match(/^Si\s+(.+?)\s+Entonces\s+(.+)$/i);
+                            if (mB && !/\bentonces\s*$/i.test(t) && !/\bfinsi\s*$/i.test(t) && !/^sino\s+si/i.test(t)) {
+                                const body = mB[2].trim();
+                                // No es 'Si X Entonces FinSi' (vacío)
+                                if (body && !_isValidStmt(body)) {
+                                    errors.push({line: ln, msg: `Si: el cuerpo después de 'Entonces' ('${body}') no es una instrucción válida. ¿Falta 'Escribir' antes? Ej: 'Si cond Entonces Escribir ${body}'.`});
+                                    continue;
+                                }
+                            }
+                        }
+                        // (C) Rama `SiNo STMT [FinSi]` (sin ser "SiNo" solo ni "SiNo Si ...")
+                        if (!inlineHandled) {
+                            if (/^sino\s+\S/i.test(t) && !/^sino\s+si\b/i.test(t)) {
+                                let body = t.replace(/^sino\s+/i, '').replace(/\s+finsi\s*$/i, '').trim();
+                                if (body && !_isValidStmt(body)) {
+                                    errors.push({line: ln, msg: `SiNo: el cuerpo '${body}' no es una instrucción válida. ¿Falta 'Escribir' antes? Ej: 'SiNo Escribir ${body}'.`});
+                                    continue;
+                                }
+                            }
+                        }
+                    }
+
                     // ── REGLAS DE ERRORES PUNTUALES ───────────────────
                     // Definir syntax
                     if (/^definir\s+/i.test(t) && !/^definir\s+\S+.*\s+como\s+\w+/i.test(t)) {
@@ -12499,6 +12557,15 @@ FinProceso`,
                     // si aparecen pegados a operadores aritméticos ("x + y") son variables.
                     const reservedVars = new Set(['proceso','finproceso','algoritmo','finalgoritmo','subproceso','finsubproceso','funcion','función','finfuncion','finfunción','procedimiento','finprocedimiento','definir','como','dimension','arreglo','leer','escribir','si','entonces','sino','finsi','segun','según','hacer','finsegun','finsegún','mientras','finmientras','repetir','hasta','que','para','finpara','con','paso','sin','saltar','de','otro','modo','retornar','devolver','salir','salirpara','interrumpir','borrar','limpiar','pantalla','esperar','tecla','segundos','no','and','or','not','y','o','verdadero','falso','true','false','mod','div','entero','real','texto','cadena','caracter','char','logico','numerico','var','ref','por','referencia','valor','byref','parametros','parámetros','raiz','rc','abs','trunc','redon','sen','cos','tan','asen','acos','atan','log','ln','exp','e','pi','piso','techo','floor','ceil','round','sqrt','potencia','pow','signo','sign','max','min','maximo','minimo','aleatorio','azar','random','longitud','largo','subcadena','trozo','substr','mayusculas','tomayusculas','amayusculas','mayuscula','minusculas','tominusculas','aminusculas','minuscula','convertiratexto','numerotexto','textonumero','numerotextoa','convertirencadena','numeroatexto','concatenar','recortar','trim','contiene','reemplazar','replace','posicioncaracter','posicion','indice','caracterenposicion','caracter','numeroacadena','cadenaanumero','textoanumero','convertiranumero','valor','invertir','reverse','asc','chr','log10']);
                     let declaredVars = new Set();
+                    // FIX casing-consistency: mapa lower → primera ocurrencia canónica
+                    // (con el casing exacto que el usuario eligió al declarar).
+                    // PSeInt en escritorio es case-INSENSITIVE para identificadores,
+                    // pero como editor educativo queremos que el usuario sea
+                    // consistente con su propio estilo: declarar `hola` y usar
+                    // `Hola` después debe avisarse.
+                    let declaredCanonical = new Map(); // lower → original
+                    let declaredLineFirst = new Map(); // lower → 1-based line del primer Definir
+                    let duplicateReported = new Set(); // lower keys ya reportados como duplicados
 
                     // Registrar nombre del Proceso/Algoritmo principal (no es variable)
                     let procNames = new Set();
@@ -12507,51 +12574,232 @@ FinProceso`,
                         if (mProc) procNames.add(mProc[1].toLowerCase());
                     }
 
+                    // Helper: registra un nombre declarado y devuelve true si
+                    // ya estaba con OTRO casing (duplicado case-insensitive) o
+                    // EXACTO mismo casing (redeclaración real).
+                    // Marca canonical = primera vez vista.
+                    function _registerDecl(name, lineIdx, isExplicitDefinir) {
+                        if (!name) return;
+                        declaredVars.add(name);
+                        const lo = name.toLowerCase();
+                        if (!declaredCanonical.has(lo)) {
+                            declaredCanonical.set(lo, name);
+                            declaredLineFirst.set(lo, lineIdx + 1);
+                        } else if (isExplicitDefinir) {
+                            // Solo el explicit Definir cuenta como "duplicado declarado"
+                            // (las asignaciones autodefinen pero no son redeclaración).
+                            if (!duplicateReported.has(lo)) {
+                                const firstName = declaredCanonical.get(lo);
+                                const firstLine = declaredLineFirst.get(lo);
+                                const sameCase = (firstName === name);
+                                const msg = sameCase
+                                    ? `Variable '${name}' ya fue declarada en la línea ${firstLine}. No se puede redeclarar.`
+                                    : `Variable '${name}' duplica a '${firstName}' (línea ${firstLine}) — PSeInt no distingue mayúsculas/minúsculas en nombres. Renombra una de las dos.`;
+                                errors.push({line: lineIdx + 1, msg});
+                                duplicateReported.add(lo);
+                            }
+                        }
+                    }
+
                     // declaredVars guarda el nombre EXACTO (case-sensitive).
                     // Variables de usuario son case-sensitive: "y" != "Y".
-                    for (let ln of lines) {
+                    for (let li = 0; li < lines.length; li++) {
+                        let ln = lines[li];
                         // Definir x, y Como Tipo
                         let dm = ln.match(/^\s*Definir\s+(.+?)\s+Como\s+\w+/i);
                         if (dm) {
                             dm[1].split(',').forEach(v => {
                                 let vn = v.trim();
-                                if (vn) declaredVars.add(vn);
+                                if (vn) _registerDecl(vn, li, true);
                             });
                         }
                         // Dimension arr[...]
                         let dim = ln.match(/^\s*Dimension\s+(.+)$/i);
                         if (dim) {
                             let re2 = /(\w+)\s*\[/g, mm2;
-                            while ((mm2 = re2.exec(dim[1]))) declaredVars.add(mm2[1]);
+                            while ((mm2 = re2.exec(dim[1]))) _registerDecl(mm2[1], li, false);
                         }
                         // Para i <- ...
                         let pm = ln.match(/^\s*Para\s+(\w+)\s*<-/i);
-                        if (pm) declaredVars.add(pm[1]);
+                        if (pm) _registerDecl(pm[1], li, false);
                         // Leer x, y, z
                         let lm = ln.match(/^\s*Leer\s+(.+)$/i);
                         if (lm) {
                             lm[1].split(',').forEach(v => {
                                 let vn = v.trim().replace(/\[.*$/, '');
-                                if (vn) declaredVars.add(vn);
+                                if (vn) _registerDecl(vn, li, false);
                             });
                         }
                         // Asignación directa: x <- expr (case original)
                         let am = ln.match(/^\s*([a-zA-ZáéíóúÁÉÍÓÚñÑ_][\wáéíóúÁÉÍÓÚñÑ]*)\s*<-/i);
-                        if (am) declaredVars.add(am[1]);
+                        if (am) _registerDecl(am[1], li, false);
                         // SubProceso / Funcion / Procedimiento — nombre y parámetros
                         let sm = ln.match(/^\s*(?:SubProceso|Funcion|Función|Procedimiento)\s+(?:\w+\s*<-\s*)?(\w+)\s*(?:\(([^)]*)\))?/i);
                         if (sm) {
-                            if (sm[1]) declaredVars.add(sm[1]);
+                            if (sm[1]) _registerDecl(sm[1], li, false);
                             if (sm[2]) {
                                 sm[2].split(',').forEach(p => {
-                                    let pn = p.replace(/^\s*(var|ref)\s+/i,'').replace(/\s+(por\s+referencia|por\s+valor|byref)\b.*$/i,'').trim();
-                                    if (pn) declaredVars.add(pn);
+                                    let pRaw = p.trim();
+                                    // FIX: rechazar `var X` — no es sintaxis válida de PSeInt.
+                                    // PSeInt usa `Por Referencia` / `Por Valor` (o nada).
+                                    if (/^var\s+/i.test(pRaw)) {
+                                        errors.push({
+                                            line: li + 1,
+                                            msg: `Parámetro inválido: '${pRaw}'. PSeInt no acepta 'var' aquí. Usa 'Por Referencia' o 'Por Valor' después del nombre, o solo el nombre. Ej: 'saldo Por Referencia' o simplemente 'saldo'.`
+                                        });
+                                    }
+                                    let pn = pRaw.replace(/^\s*(var|ref)\s+/i,'').replace(/\s+(por\s+referencia|por\s+valor|byref)\b.*$/i,'').trim();
+                                    if (pn) _registerDecl(pn, li, false);
                                 });
                             }
                         }
                         // Variable de retorno de Funcion
                         let rm = ln.match(/^\s*(?:Funcion|Función)\s+(\w+)\s*<-/i);
-                        if (rm) declaredVars.add(rm[1]);
+                        if (rm) _registerDecl(rm[1], li, false);
+                    }
+
+                    // ── PASA 1.5: TIPADO DE VARIABLES ─────────────────────────
+                    // Recolectar tipos declarados (Definir x Como Tipo) y detectar
+                    // asignaciones que cambian el tipo sin función de conversión.
+                    // PSeInt es de tipado dinámico en runtime, pero como editor
+                    // educativo avisamos para acercarnos al espíritu del lenguaje.
+                    {
+                        // type canónicos: 'entero' 'real' 'numerico' 'texto' 'caracter' 'logico'
+                        // alias: cadena→texto, char→caracter, lógico→logico, numérico→numerico
+                        const _typeAlias = (s) => {
+                            if (!s) return null;
+                            s = s.toLowerCase()
+                                .replace(/^cadena$/, 'texto')
+                                .replace(/^char$/, 'caracter')
+                                .replace(/^lógico$/, 'logico')
+                                .replace(/^numérico$/, 'numerico');
+                            return s;
+                        };
+                        const _isNumType = (t) => t === 'entero' || t === 'real' || t === 'numerico';
+                        const _isStrType = (t) => t === 'texto' || t === 'caracter';
+                        // Compatible: misma categoría
+                        const _compat = (declared, value) => {
+                            if (!declared || !value) return true;
+                            if (declared === value) return true;
+                            if (_isNumType(declared) && _isNumType(value)) return true;
+                            if (_isStrType(declared) && _isStrType(value)) return true;
+                            return false;
+                        };
+                        // Funciones que devuelven explícitamente un tipo (cast)
+                        const FN_RETURN_TYPE = {
+                            'convertiratexto': 'texto', 'numeroatexto': 'texto', 'numerotexto': 'texto',
+                            'convertirencadena': 'texto', 'cadena': 'texto',
+                            'convertiranumero': 'real', 'textoanumero': 'real', 'numero': 'real',
+                            'valor': 'real',
+                            'entero': 'entero', 'real': 'real',
+                            'caracter': 'caracter', 'char': 'caracter',
+                            'asc': 'entero', 'chr': 'caracter',
+                            'longitud': 'entero', 'largo': 'entero',
+                            'subcadena': 'texto', 'trozo': 'texto', 'substr': 'texto',
+                            'mayusculas': 'texto', 'minusculas': 'texto',
+                            'concatenar': 'texto', 'recortar': 'texto', 'trim': 'texto',
+                            'reemplazar': 'texto', 'replace': 'texto', 'invertir': 'texto',
+                            'raiz': 'real', 'rc': 'real', 'sqrt': 'real',
+                            'abs': 'real', 'trunc': 'entero', 'redon': 'entero', 'round': 'entero',
+                            'piso': 'entero', 'floor': 'entero', 'techo': 'entero', 'ceil': 'entero',
+                            'aleatorio': 'entero', 'azar': 'entero', 'random': 'real',
+                            'contiene': 'logico'
+                        };
+                        // Inferir tipo de una expresión RHS (best-effort, conservador)
+                        function _inferType(expr) {
+                            if (!expr) return null;
+                            const e = expr.trim();
+                            // String literal "..."
+                            if (/^"[^"]*"$/.test(e)) {
+                                // Caracter si exactamente 1 char (sin comillas)
+                                return e.length === 3 ? 'caracter' : 'texto';
+                            }
+                            // Concatenación de strings o que contiene string literal
+                            if (/"[^"]*"/.test(e) && /\+/.test(e)) return 'texto';
+                            // Numero entero
+                            if (/^-?\d+$/.test(e)) return 'entero';
+                            // Numero real
+                            if (/^-?\d+\.\d+$/.test(e)) return 'real';
+                            // Booleano
+                            if (/^(Verdadero|Falso|true|false)$/i.test(e)) return 'logico';
+                            // Llamada a función conocida: Nombre(...) — el outermost
+                            const fnCall = e.match(/^([a-zA-ZáéíóúÁÉÍÓÚñÑ_][\wáéíóúÁÉÍÓÚñÑ]*)\s*\(/);
+                            if (fnCall) {
+                                const fn = fnCall[1].toLowerCase();
+                                if (FN_RETURN_TYPE[fn]) return FN_RETURN_TYPE[fn];
+                            }
+                            // Comparación → logico
+                            if (/[<>]=?|<>|(?<![<>])=(?!=)/.test(e)) return 'logico';
+                            // Operadores lógicos
+                            if (/\b(Y|O|NO|AND|OR|NOT)\b/i.test(e)) return 'logico';
+                            // Aritmético con literales numéricos → numerico (conservador)
+                            if (/^[\d\s+\-*/().^%]+$/.test(e)) return 'real';
+                            // Acceso a variable conocida con tipo: usar su tipo
+                            if (/^[a-zA-ZáéíóúÁÉÍÓÚñÑ_][\wáéíóúÁÉÍÓÚñÑ]*$/.test(e)) {
+                                const lo = e.toLowerCase();
+                                if (declaredType.has(lo)) return declaredType.get(lo).type;
+                            }
+                            return null; // no inferible
+                        }
+
+                        // declaredType: lower → {type, line, name}
+                        var declaredType = new Map();
+                        // 1) Recoger Definir ... Como TIPO
+                        for (let li = 0; li < lines.length; li++) {
+                            const ln = lines[li];
+                            const m = ln.match(/^\s*Definir\s+(.+?)\s+Como\s+(\w+)/i);
+                            if (!m) continue;
+                            const tp = _typeAlias(m[2]);
+                            if (!tp) continue;
+                            m[1].split(',').forEach(v => {
+                                const vn = v.trim();
+                                if (!vn) return;
+                                const lo = vn.toLowerCase();
+                                if (!declaredType.has(lo)) {
+                                    declaredType.set(lo, {type: tp, line: li + 1, name: vn});
+                                }
+                            });
+                        }
+                        // 2) Recorrer asignaciones y comparar
+                        const _typeReported = new Set(); // line:name dedupe
+                        for (let li = 0; li < lines.length; li++) {
+                            const raw = lines[li];
+                            // Sin comentario
+                            let ci = -1, inS = false;
+                            for (let j = 0; j < raw.length - 1; j++) {
+                                if (raw[j] === '"') inS = !inS;
+                                if (!inS && raw[j] === '/' && raw[j+1] === '/') { ci = j; break; }
+                            }
+                            const t = (ci >= 0 ? raw.slice(0, ci) : raw).trim();
+                            if (!t || /^definir\s+/i.test(t)) continue;
+                            // Asignación simple: var <- expr (no Para ... <-)
+                            if (/^para\s+/i.test(t)) continue;
+                            const m = t.match(/^([a-zA-ZáéíóúÁÉÍÓÚñÑ_][\wáéíóúÁÉÍÓÚñÑ]*)\s*<-\s*(.+)$/);
+                            if (!m) continue;
+                            const vname = m[1];
+                            const lo = vname.toLowerCase();
+                            const decl = declaredType.get(lo);
+                            if (!decl) continue;
+                            const inferred = _inferType(m[2]);
+                            if (!inferred) continue;
+                            if (_compat(decl.type, inferred)) continue;
+                            // Conflicto. ¿Llamada de conversión? El _inferType ya
+                            // devuelve el tipo del cast, así que si no coincide
+                            // es real conflicto.
+                            const key = (li + 1) + ':' + lo;
+                            if (_typeReported.has(key)) continue;
+                            _typeReported.add(key);
+                            const friendly = {
+                                'entero':'Entero','real':'Real','numerico':'Numerico',
+                                'texto':'Texto','caracter':'Caracter','logico':'Logico'
+                            };
+                            const dT = friendly[decl.type] || decl.type;
+                            const iT = friendly[inferred] || inferred;
+                            errors.push({
+                                line: li + 1,
+                                msg: `Tipo incompatible: '${vname}' fue declarada Como ${dT} (línea ${decl.line}) y se le asigna un valor ${iT}. Usa una función de conversión (ConvertirATexto, ConvertirANumero, etc.) o cambia el tipo en Definir.`
+                            });
+                        }
                     }
 
                     // Pasa 2: detectar uso de variables no declaradas en expresiones
@@ -12840,6 +13088,23 @@ FinProceso`,
                             // Ahora sí aplicamos el filtro de variables declaradas:
                             // si el usuario la declaró, no es error.
                             if (declaredVars.has(tok)) continue;
+
+                            // FIX: si NO matchea exacto pero EXISTE el lowercase,
+                            // es un mismatch de mayúsculas/minúsculas. PSeInt en
+                            // escritorio lo aceptaría (case-insensitive) pero
+                            // nuestro editor exige consistencia para que el código
+                            // sea legible y portable.
+                            const tokLo2 = tok.toLowerCase();
+                            if (declaredCanonical.has(tokLo2)) {
+                                const canonical = declaredCanonical.get(tokLo2);
+                                reportedTokens.add(tok);
+                                errors.push({
+                                    line: ln2,
+                                    msg: `Variable '${tok}' usa mayúsculas/minúsculas distintas a su declaración '${canonical}'. PSeInt no distingue casing pero por consistencia usa siempre '${canonical}'.`
+                                });
+                                lineErrorCount++;
+                                continue;
+                            }
 
                             // Variable usada sin declarar (case-sensitive)
                             reportedTokens.add(tok);
