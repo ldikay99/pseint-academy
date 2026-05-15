@@ -14300,7 +14300,7 @@ FinProceso`,
                         if (mLeer) {
                             mLeer[1].split(',').forEach(v => {
                                 const vn = v.trim().replace(/\[.*$/, '').toLowerCase();
-                                if (vn && !subprocParamNames.has(vn)) assigned.set(vn, ln);
+                                if (vn && !subprocParamNames.has(vn) && !assigned.has(vn)) assigned.set(vn, ln);
                                 if (vn && !declared.has(vn)) declared.set(vn, ln);
                             });
                             continue;
@@ -14309,7 +14309,7 @@ FinProceso`,
                         let mPara = t.match(/^Para\s+(\w+)\s*<-\s*(.+?)\s+Hasta\s+(.+?)(?:\s+Con\s+Paso\s+(.+?))?\s+Hacer$/i);
                         if (mPara) {
                             const vn = mPara[1].toLowerCase();
-                            assigned.set(vn, ln);
+                            if (!assigned.has(vn)) assigned.set(vn, ln);
                             if (!declared.has(vn)) declared.set(vn, ln);
                             // Y los valores en `inicio`, `fin`, `paso` cuentan como lectura de identificadores
                             const rhs = (mPara[2] + ' ' + mPara[3] + ' ' + (mPara[4]||'')).replace(/"[^"]*"/g,'""');
@@ -14331,11 +14331,11 @@ FinProceso`,
                             const lhsName = lhs.match(/^(\w+)/);
                             if (lhsName) {
                                 const vn = lhsName[1].toLowerCase();
-                                // Si la variable es PARÁMETRO de algún SubProceso,
-                                // NO sobreescribir su línea de asignación (mantener 0).
-                                // Esto evita falsos positivos "usada antes de asignar"
-                                // cuando se mezclan scopes en el análisis line-by-line.
-                                if (!subprocParamNames.has(vn)) {
+                                // FIX CRÍTICO: guardar la PRIMERA asignación, no la última.
+                                // Antes: cada `<-` sobreescribía la línea, así que si una var
+                                // se reasignaba dentro de un bucle se reportaba como "usada
+                                // antes de asignar" en la condición del bucle.
+                                if (!subprocParamNames.has(vn) && !assigned.has(vn)) {
                                     assigned.set(vn, ln);
                                 }
                                 if (!declared.has(vn)) declared.set(vn, ln);
@@ -14350,8 +14350,51 @@ FinProceso`,
                             });
                             continue;
                         }
-                        // Escribir/Si/Mientras/Hasta/Retornar/Devolver — extraen expresión con vars leídas
+                        // Escribir/Si/Mientras/Hasta/Retornar/Devolver/Segun — extraen expresión con vars leídas
                         let exprPart = null;
+                        // FIX: line label de Segun (1:, 2:, "a":, De Otro Modo:) puede llevar
+                        // un stmt inline. Strip del prefijo `LABEL:` y reprocesar como si fuera línea normal.
+                        let workT = t;
+                        const caseInline = t.match(/^(?:\d+(?:\s*,\s*\d+)*|"[^"]*"|de\s+otro\s+modo|otro|[a-zA-ZáéíóúÁÉÍÓÚñÑ_][\wáéíóúÁÉÍÓÚñÑ]*)\s*:\s*(.+)$/i);
+                        if (caseInline) {
+                            workT = caseInline[1].trim();
+                            // Si el stmt inline es una asignación o Escribir/Leer/etc.,
+                            // procesarlo como tal: split por ';' por si hay múltiples
+                            const subStmts = workT.split(/;+/).map(s => s.trim()).filter(Boolean);
+                            for (const ss of subStmts) {
+                                // Asignación
+                                if (ss.includes('<-')) {
+                                    const lp = ss.split('<-');
+                                    const lhsM = lp[0].trim().match(/^(\w+)/);
+                                    if (lhsM) {
+                                        const vn = lhsM[1].toLowerCase();
+                                        if (!subprocParamNames.has(vn) && !assigned.has(vn)) assigned.set(vn, ln);
+                                        if (!declared.has(vn)) declared.set(vn, ln);
+                                    }
+                                    const rhsMasked = lp.slice(1).join('<-').replace(/"[^"]*"/g, '""');
+                                    const toks = rhsMasked.match(/\b[a-zA-ZáéíóúÁÉÍÓÚñÑ_][a-zA-ZáéíóúÁÉÍÓÚñÑ_0-9]*\b/g) || [];
+                                    toks.forEach(tk => {
+                                        const k = tk.toLowerCase();
+                                        if (!_BP_RESERVED.has(k) && !procNames.has(k) && !usedRead.has(k)) usedRead.set(k, ln);
+                                    });
+                                } else if (/^Leer\s+/i.test(ss)) {
+                                    ss.replace(/^Leer\s+/i,'').split(',').forEach(v => {
+                                        const vn = v.trim().replace(/\[.*$/, '').toLowerCase();
+                                        if (vn && !subprocParamNames.has(vn) && !assigned.has(vn)) assigned.set(vn, ln);
+                                        if (vn && !declared.has(vn)) declared.set(vn, ln);
+                                    });
+                                } else if (/^Escribir(\s+Sin\s+Saltar)?\s+/i.test(ss)) {
+                                    const exp = ss.replace(/^Escribir(?:\s+Sin\s+Saltar)?\s+/i, '');
+                                    const m = exp.replace(/"[^"]*"/g, '""');
+                                    const toks = m.match(/\b[a-zA-ZáéíóúÁÉÍÓÚñÑ_][a-zA-ZáéíóúÁÉÍÓÚñÑ_0-9]*\b/g) || [];
+                                    toks.forEach(tk => {
+                                        const k = tk.toLowerCase();
+                                        if (!_BP_RESERVED.has(k) && !procNames.has(k) && !usedRead.has(k)) usedRead.set(k, ln);
+                                    });
+                                }
+                            }
+                            continue;
+                        }
                         if (/^Escribir(\s+Sin\s+Saltar)?\s+/i.test(t)) {
                             exprPart = t.replace(/^Escribir(?:\s+Sin\s+Saltar)?\s+/i, '');
                         } else if (/^Si\s+.+\s+Entonces$/i.test(t)) {
@@ -14362,6 +14405,12 @@ FinProceso`,
                             exprPart = t.replace(/^Hasta\s+Que\s+/i, '');
                         } else if (/^(Retornar|Devolver)\s+/i.test(t)) {
                             exprPart = t.replace(/^(Retornar|Devolver)\s+/i, '');
+                        } else if (/^Segun\s+.+\s+Hacer$/i.test(t)) {
+                            // FIX: Segun lee su variable de control
+                            exprPart = t.replace(/^Segun\s+/i, '').replace(/\s+Hacer$/i, '');
+                        } else if (/^Segun\s+\S+\s*$/i.test(t)) {
+                            // Segun sin Hacer (PSeInt lo permite)
+                            exprPart = t.replace(/^Segun\s+/i, '');
                         }
                         if (exprPart) {
                             const masked = exprPart.replace(/"[^"]*"/g, '""');
@@ -15276,7 +15325,8 @@ FinProceso`,
                                 : cat.items;
                             if (q && matchedItems.length === 0) return;
                             const wrap = document.createElement('div');
-                            wrap.className = 'cheat-cat' + (q ? ' open' : (ci === 0 ? ' open' : ''));
+                            // Todas las categorías inician COLAPSADAS (excepto al filtrar con búsqueda).
+                            wrap.className = 'cheat-cat' + (q ? ' open' : '');
                             const head = document.createElement('button');
                             head.className = 'cheat-cat-head';
                             head.type = 'button';
