@@ -1952,6 +1952,16 @@
                     gap: 4px;
                     font-size: 0.7rem;
                 }
+                /* FIX mobile fullscreen: asegurar que la bottombar SIEMPRE
+                   se vea (con sus 3 tabs visibles aunque no haya errores). */
+                .playground-grid.fullscreen .fs-bottombar {
+                    display: flex !important;
+                    visibility: visible !important;
+                    flex-shrink: 0 !important;
+                }
+                .playground-grid.fullscreen .fs-tab-btn {
+                    display: inline-flex !important;
+                }
                 .fs-bottombar .fs-tab-btn {
                     /* FIX touch target: minimo 36x36 px tappable comodo */
                     padding: 8px 12px !important;
@@ -4487,15 +4497,50 @@
                 /* Editor footer (acciones) en columna */
                 .editor-actions { flex-direction: column; align-items: stretch; }
                 .editor-actions > * { width: 100%; }
-                /* Sidebar de atajos oculto por default en mobile */
-                .cheat-panel { display: none !important; }
+                /* Sidebar de atajos: en mobile aparece SOLO al activar via
+                   boton flotante (.cheat-panel.mobile-open). Por default
+                   oculto para no robar ancho al editor. */
+                .cheat-panel:not(.mobile-open) { display: none !important; }
+                .cheat-panel.mobile-open {
+                    display: flex !important;
+                    position: fixed !important;
+                    top: 50px !important;
+                    left: 8px !important;
+                    right: 8px !important;
+                    bottom: 8px !important;
+                    width: auto !important;
+                    z-index: 2147483600 !important;
+                    border-radius: 10px !important;
+                    box-shadow: 0 12px 40px rgba(0,0,0,0.6) !important;
+                }
                 .big-editor-container.cheat-expanded > .big-editor,
                 .big-editor-container.cheat-collapsed > .big-editor,
                 .editor-container.cheat-expanded > .code-editor,
                 .editor-container.cheat-collapsed > .code-editor {
                     width: 100% !important;
                 }
+                /* Botón flotante "Atajos" para abrir el cheat panel en mobile */
+                .cheat-mobile-toggle {
+                    position: fixed;
+                    bottom: max(86px, env(safe-area-inset-bottom));
+                    right: max(20px, env(safe-area-inset-right));
+                    z-index: 250;
+                    width: 48px;
+                    height: 48px;
+                    border-radius: 50%;
+                    background: linear-gradient(135deg, var(--accent2), #a78bfa);
+                    color: #fff;
+                    border: none;
+                    font-size: 1.3rem;
+                    cursor: pointer;
+                    box-shadow: 0 4px 14px rgba(124, 58, 237, 0.5);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }
             }
+            /* Botón flotante oculto por default; solo aparece en mobile */
+            .cheat-mobile-toggle { display: none; }
 
             @media (max-width: 900px) {
                 .playground-grid {

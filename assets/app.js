@@ -7378,6 +7378,32 @@ FinProceso`,
                 if (panel) panel.style.display = 'none';
             };
 
+            // Toggle del cheat panel para mobile (via boton flotante).
+            // En mobile el CSS oculta el panel por defecto; al togglear
+            // la clase .mobile-open se muestra como bottom-sheet.
+            window.toggleCheatPanelMobile = function() {
+                // Encuentra el editor activo (playground o el visible en lecciones)
+                let editorId = 'playgroundEditor';
+                const ae = document.activeElement;
+                if (ae && ae.tagName === 'TEXTAREA' &&
+                    (ae.id === 'exampleEditor' || ae.id === 'challengeEditor')) {
+                    editorId = ae.id;
+                }
+                const panel = document.querySelector('.cheat-panel[data-for="' + editorId + '"]')
+                           || document.querySelector('.cheat-panel');
+                if (!panel) {
+                    if (typeof showToast === 'function') {
+                        showToast('Panel de atajos no disponible aún. Selecciona un editor primero.');
+                    }
+                    return;
+                }
+                const isOpen = panel.classList.toggle('mobile-open');
+                // Expandir tambien (no colapsado) si abrimos
+                if (isOpen) {
+                    panel.classList.remove('collapsed');
+                }
+            };
+
             window._debugHighlightLine = function(n) {
                 window._debugCurrentLine = n;
                 // Resaltar la linea n en el editor: posicionar cursor allí y

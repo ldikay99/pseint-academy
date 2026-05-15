@@ -1244,6 +1244,17 @@ FinProceso</textarea>
             📨
         </button>
 
+        <!-- Boton flotante "Atajos" SOLO mobile (CSS controla visibilidad) -->
+        <button
+            id="cheatMobileToggle"
+            class="cheat-mobile-toggle"
+            onclick="window.toggleCheatPanelMobile()"
+            aria-label="Abrir panel de atajos y símbolos"
+            title="Atajos y símbolos"
+        >
+            ⌨
+        </button>
+
         <!-- Menú GLOBAL del theme picker (flotante, position:fixed para escapar de overflow:hidden de padres) -->
         <div id="themePickerMenu" role="menu" aria-label="Lista de temas" style="position:fixed;display:none;flex-direction:column;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:6px;min-width:min(260px, 92vw);max-width:92vw;box-shadow:0 8px 32px rgba(0,0,0,0.6);z-index:2147483647"></div>
 
