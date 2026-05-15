@@ -1668,12 +1668,34 @@
                 border-radius: 0 !important;
                 background: var(--bg-dark) !important;
             }
-            /* Ocultar TODO lo que sobra del editor panel original */
+            /* Ocultar TODO lo que sobra del editor panel original
+               EXCEPTO el diag-panel: el usuario en mobile/fullscreen necesita
+               ver errores y sugerencias. El panel queda flotante arriba del
+               editor con z-index alto. */
             .playground-grid.fullscreen .playground-editor-panel > .panel-header,
             .playground-grid.fullscreen .playground-editor-panel > .snippets-panel,
             .playground-grid.fullscreen .playground-editor-panel > .editor-status-bar,
-            .playground-grid.fullscreen .playground-editor-panel > .diag-panel,
             .playground-grid.fullscreen .playground-editor-panel > .playground-toolbar {
+                display: none !important;
+            }
+            /* FIX bug mobile/fullscreen: diag-panel VISIBLE pero compacto */
+            .playground-grid.fullscreen .playground-editor-panel > .diag-panel,
+            .playground-grid.fullscreen .ide-diag-host {
+                position: fixed !important;
+                top: 48px !important;
+                left: 8px !important;
+                right: 8px !important;
+                z-index: 2147481000 !important;
+                max-height: 35vh !important;
+                overflow-y: auto !important;
+                background: var(--bg-card) !important;
+                border-radius: 8px !important;
+                box-shadow: 0 8px 32px rgba(0,0,0,0.5) !important;
+                pointer-events: auto !important;
+            }
+            /* Cuando no hay errores ni warns, ocultar */
+            .playground-grid.fullscreen .ide-diag-host:empty,
+            .playground-grid.fullscreen .playground-editor-panel > .diag-panel:empty {
                 display: none !important;
             }
             /* Editor container ocupa todo el panel */
@@ -4112,6 +4134,92 @@
                 border-radius: 2px;
                 margin: 0 auto 32px;
             }
+
+            /* Status banner "proyecto en construccion" — glass effect */
+            .status-banner {
+                display: flex;
+                align-items: center;
+                gap: 16px;
+                background: linear-gradient(135deg, rgba(245,158,11,0.10), rgba(124,58,237,0.06));
+                backdrop-filter: blur(8px);
+                -webkit-backdrop-filter: blur(8px);
+                border: 1px solid rgba(245,158,11,0.35);
+                border-radius: 14px;
+                padding: 18px 22px;
+                box-shadow: 0 6px 20px rgba(245,158,11,0.08);
+                transition: transform 0.2s, box-shadow 0.2s;
+            }
+            .status-banner:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 10px 28px rgba(245,158,11,0.18);
+            }
+            .status-banner-icon {
+                font-size: clamp(1.8rem, 3vw, 2.4rem);
+                flex-shrink: 0;
+                animation: floatY 3s ease-in-out infinite;
+            }
+            @keyframes floatY {
+                0%, 100% { transform: translateY(0); }
+                50%      { transform: translateY(-4px); }
+            }
+            @media (prefers-reduced-motion: reduce) {
+                .status-banner-icon { animation: none; }
+            }
+            .status-banner-content { flex: 1; line-height: 1.55; }
+            .status-banner-title {
+                font-weight: 700;
+                font-size: clamp(0.95rem, 1.6vw, 1.05rem);
+                color: var(--text-main);
+                margin-bottom: 4px;
+            }
+            .status-banner-text {
+                font-size: clamp(0.85rem, 1.4vw, 0.95rem);
+                color: var(--text-main);
+                opacity: 0.85;
+            }
+
+            /* Feature pills — chip-style, no clickable */
+            .features-showcase {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 12px;
+                justify-content: center;
+            }
+            .feature-pill {
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                background: var(--bg-card);
+                backdrop-filter: blur(6px);
+                -webkit-backdrop-filter: blur(6px);
+                border: 1px solid var(--border);
+                border-radius: 999px;
+                padding: 10px 18px;
+                font-size: clamp(0.85rem, 1.4vw, 0.95rem);
+                color: var(--text-main);
+                font-weight: 600;
+                transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s, background 0.2s;
+                cursor: default;
+            }
+            .feature-pill:hover {
+                transform: translateY(-2px);
+                border-color: var(--accent1);
+                background: linear-gradient(135deg, var(--bg-card), rgba(0,212,255,0.08));
+                box-shadow: 0 8px 20px rgba(0,212,255,0.18);
+            }
+            .feature-pill-icon { font-size: 1.1em; }
+
+            /* Glass effect helper para cards/modals */
+            .glass {
+                backdrop-filter: blur(12px) saturate(140%);
+                -webkit-backdrop-filter: blur(12px) saturate(140%);
+                background: linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01));
+            }
+            /* Aplicar glass sutil a about-card */
+            .about-card {
+                backdrop-filter: blur(4px);
+                -webkit-backdrop-filter: blur(4px);
+            }
             .quick-card-icon { font-size: 2.2rem; margin-bottom: 10px; }
             .quick-card-title {
                 font-weight: 700;
@@ -4402,28 +4510,49 @@
                 </div>
             </div>
 
-            <!-- Quick navigation cards: cada uno lleva a su pagina funcional -->
-            <div class="quick-cards reveal" style="margin-top:48px">
-                <a href="#/lecciones" class="quick-card">
-                    <div class="quick-card-icon">📚</div>
-                    <div class="quick-card-title">Lecciones interactivas</div>
-                    <div class="quick-card-desc">56 lecciones con teoría, ejemplo y reto. Desde lo básico hasta proyectos completos.</div>
-                </a>
-                <a href="#/playground" class="quick-card">
-                    <div class="quick-card-icon">⚡</div>
-                    <div class="quick-card-title">Editor libre</div>
-                    <div class="quick-card-desc">Escribe tu propio pseudocódigo y ejecútalo al instante. Con resaltado, autocompletado y diagrama de flujo.</div>
-                </a>
-                <a href="#/referencia" class="quick-card">
-                    <div class="quick-card-icon">📖</div>
-                    <div class="quick-card-title">Referencia rápida</div>
-                    <div class="quick-card-desc">Todas las palabras clave de PSeInt con ejemplos listos para copiar.</div>
-                </a>
-                <a href="#/progreso" class="quick-card">
-                    <div class="quick-card-icon">🏆</div>
-                    <div class="quick-card-title">Tu progreso</div>
-                    <div class="quick-card-desc">Observa cuánto has avanzado por nivel. Cada lección tiene 3 estados de completitud.</div>
-                </a>
+            <!-- Banner "Proyecto en construcción activa" -->
+            <div class="status-banner reveal" style="margin-top:48px">
+                <div class="status-banner-icon">🚧</div>
+                <div class="status-banner-content">
+                    <div class="status-banner-title">Proyecto en construcción activa</div>
+                    <div class="status-banner-text">PSeInt Academy se mejora constantemente. Si encuentras un bug o tienes una sugerencia, <button onclick="document.getElementById('reportModal').classList.add('open')" style="background:none;border:none;color:var(--accent1);font-weight:600;cursor:pointer;text-decoration:underline;font-size:inherit;padding:0">reportarla aquí</button> o abre un <a href="https://github.com/ldikay99/pseint-academy/issues" target="_blank" rel="noopener" style="color:var(--accent1);font-weight:600">issue en GitHub</a>.</div>
+                </div>
+            </div>
+
+            <!-- Features showcase (NO clickable — el nav ya redirige) -->
+            <div class="features-showcase reveal" style="margin-top:56px">
+                <div class="feature-pill">
+                    <span class="feature-pill-icon">📚</span>
+                    <span>56 lecciones</span>
+                </div>
+                <div class="feature-pill">
+                    <span class="feature-pill-icon">⚡</span>
+                    <span>Editor con resaltado</span>
+                </div>
+                <div class="feature-pill">
+                    <span class="feature-pill-icon">🔍</span>
+                    <span>Análisis estático</span>
+                </div>
+                <div class="feature-pill">
+                    <span class="feature-pill-icon">🎨</span>
+                    <span>5 temas</span>
+                </div>
+                <div class="feature-pill">
+                    <span class="feature-pill-icon">📊</span>
+                    <span>Diagrama de flujo</span>
+                </div>
+                <div class="feature-pill">
+                    <span class="feature-pill-icon">⌨️</span>
+                    <span>Atajos VSCode</span>
+                </div>
+                <div class="feature-pill">
+                    <span class="feature-pill-icon">📦</span>
+                    <span>Offline 100%</span>
+                </div>
+                <div class="feature-pill">
+                    <span class="feature-pill-icon">🆓</span>
+                    <span>Open source MIT</span>
+                </div>
             </div>
 
             <!-- ════════ SOBRE EL PROYECTO (inline, ancla #/sobre) ════════ -->
@@ -4438,22 +4567,27 @@
 
                 <div class="about-card">
                     <h3>🎓 Quién soy</h3>
-                    <p>Hola, soy <strong>Jonathan C.</strong> (<a href="https://github.com/ldikay99" target="_blank" rel="noopener" style="color:var(--accent1)">@ldikay99</a>) — estudiante de un técnico en programación y desarrollo de software. Como muchos de los que estamos comenzando, mi primera materia de algoritmos fue con <strong>PSeInt</strong>: ese lenguaje pseudo-código en español que enseña a pensar en términos de variables, condicionales, ciclos y funciones antes de pasar a la sintaxis de un lenguaje "de verdad".</p>
-                    <p>Cuando estaba aprendiendo, me encontré varias veces con un problema: el editor de PSeInt para Windows es genial, pero no siempre se puede instalar (computadores compartidos, equipos antiguos, dispositivos móviles). Y cuando se necesita revisar un concepto rápido, abrir un IDE pesado es una fricción enorme.</p>
+                    <p>Soy <strong>Jonathan C.</strong> (<a href="https://github.com/ldikay99" target="_blank" rel="noopener" style="color:var(--accent1)">@ldikay99</a>), <strong>Técnico en Desarrollo de Software</strong> en formación. Me apasiona la programación, las herramientas modernas de desarrollo y el uso aplicado de inteligencias artificiales para acelerar el aprendizaje y la productividad. Trabajo con HTML, CSS, JavaScript, manejo flujos asistidos por IA y disfruto construyendo plataformas web que resuelvan problemas reales.</p>
+                    <p>Mi primer contacto con la programación fue, como el de muchos estudiantes, a través de <strong>PSeInt</strong>: ese lenguaje pseudo-código en español que enseña a pensar en términos de variables, condicionales, ciclos y funciones antes de pasar a un lenguaje de producción.</p>
                 </div>
 
                 <div class="about-card">
-                    <h3>💡 Por qué construí esto</h3>
-                    <p>Quise tener una plataforma que cumpliera tres cosas a la vez:</p>
-                    <p>1. <strong>Que funcione en cualquier dispositivo</strong> con un navegador. Sin instalar nada, sin cuenta, sin esperar actualizaciones.</p>
-                    <p>2. <strong>Que enseñe activamente</strong>, no que sea solo un editor. Por eso cada lección tiene teoría, un ejemplo ejecutable y un reto con validación automática.</p>
-                    <p>3. <strong>Que sea fiel a PSeInt</strong>. Si copias tu código aquí, debe ejecutarse igual que en PSeInt de escritorio. Por eso el analizador es estricto: prefiero mostrar el error antes de ejecutar.</p>
+                    <h3>💡 Por qué nació este proyecto</h3>
+                    <p>Comencé este proyecto durante mi formación en el instituto, al darme cuenta de que existía una necesidad clara: muchos estudiantes que se inician en programación necesitan una herramienta accesible, sin instalaciones, que les permita practicar pseudocódigo desde cualquier dispositivo y en cualquier momento.</p>
+                    <p>El editor oficial de PSeInt para Windows es excelente, pero no siempre se puede instalar (computadores compartidos, equipos antiguos, celulares). PSeInt Academy nació para cubrir ese vacío con tres principios:</p>
+                    <p>1. <strong>Cero fricción para empezar</strong>: abrir un enlace, escribir código, ejecutar. Sin cuentas, sin descargas.</p>
+                    <p>2. <strong>Enseñanza activa</strong>: cada lección tiene teoría, ejemplo ejecutable y un reto con validación automática — el estudiante aprende haciendo.</p>
+                    <p>3. <strong>Fidelidad al PSeInt oficial</strong>: el código que pasa el analizador aquí debe ejecutarse igual en PSeInt de escritorio. El analizador es estricto a propósito.</p>
                 </div>
 
                 <div class="about-card">
-                    <h3>🛠 Lo que me apasiona</h3>
-                    <p>Me obsesiona la <strong>experiencia del estudiante</strong>. Un error críptico, un autocompletado que falla o una página que no se ve bien en celular son fricciones que hacen abandonar antes de entender el concepto. Por eso este editor tiene resaltado por tipo de variable, sugerencias accionables, diagrama de flujo automático, autocompletado, soporte multi-tema y atajos de teclado estilo VSCode.</p>
-                    <p>También me gusta el lado de ingeniería interna: el intérprete está escrito en JavaScript puro, sin frameworks, con un parser de expresiones que respeta precedencia y un analizador estático con ~16 reglas de regresión que cubren bugs históricos. Todo en un solo archivo HTML offline.</p>
+                    <h3>🚧 Proyecto en construcción activa</h3>
+                    <p><strong>PSeInt Academy se sigue mejorando todos los días.</strong> Hay áreas funcionando perfectamente y otras en pulido constante. Las contribuciones, reportes de bugs y sugerencias son fundamentales para que la plataforma crezca.</p>
+                    <p>Si encuentras un problema, una falla del analizador, una lección que podría explicarse mejor o tienes una idea para una nueva funcionalidad, hazlo saber. Cada reporte ayuda a que la experiencia mejore para el siguiente estudiante.</p>
+                    <p style="margin-top:14px">
+                        <button onclick="document.getElementById('reportModal').classList.add('open')" class="btn-ghost" style="display:inline-block;text-decoration:none;margin-right:8px">🐛 Reportar bug o sugerencia</button>
+                        <a href="https://github.com/ldikay99/pseint-academy/issues" target="_blank" rel="noopener" class="btn-ghost" style="display:inline-block;text-decoration:none">⬢ Abrir issue en GitHub</a>
+                    </p>
                 </div>
 
                 <div class="about-grid reveal">
@@ -5167,33 +5301,51 @@ FinProceso</textarea>
 
                         <!-- FRONTEND -->
                         <div class="theory-block">
-                            <h3>🎨 Desarrolladores Frontend</h3>
+                            <h3>🎨 Frontend / UI</h3>
                             <ul style="list-style:none;display:flex;flex-direction:column;gap:6px;font-size:0.85rem;color:var(--text-muted)">
-                                <li>⬜ Tema claro (light mode) con selector persistente</li>
+                                <li>✅ Tema claro (light mode) con selector persistente — <strong>5 temas disponibles</strong></li>
+                                <li>✅ Resize del panel editor/consola con splitter draggable en fullscreen</li>
+                                <li>✅ SPA con rutas (#/home, #/lecciones, #/playground, #/referencia, #/progreso, #/sobre, #/licencia)</li>
+                                <li>✅ Responsive completo (mobile, tablet, desktop, 4K) con tipografía fluida</li>
+                                <li>✅ Glass effects + animaciones (reveal on scroll, hover shimmer, pulse)</li>
                                 <li>⬜ Múltiples pestañas de archivos en el editor</li>
                                 <li>⬜ Mini-mapa del código (scrollbar semántico)</li>
-                                <li>⬜ Drag & drop de bloques en el diagrama de flujo</li>
+                                <li>⬜ Drag &amp; drop de bloques en el diagrama de flujo</li>
                                 <li>⬜ Animación que resalta el bloque activo durante ejecución</li>
                                 <li>⬜ Exportar diagrama de flujo como PNG con fondo transparente</li>
                                 <li>⬜ Modo "Tour guiado" para nuevos usuarios (onboarding)</li>
                                 <li>⬜ Sistema de logros / badges gamificado</li>
                                 <li>⬜ Comparar solución propia con solución modelo (diff visual)</li>
-                                <li>⬜ Panel de variables en tiempo real (watch panel durante debug)</li>
-                                <li>⬜ Resize del panel del editor / consola con drag</li>
+                                <li>⬜ Find/Replace widget visual (hay binding Ctrl+F, falta UI)</li>
+                                <li>⬜ Code folding (colapsar bloques Si/FinSi, Para/FinPara)</li>
+                                <li>⬜ Indicadores de error en gutter (puntos rojos en números de línea)</li>
                             </ul>
                         </div>
 
                         <!-- BACKEND / INTÉRPRETE -->
                         <div class="theory-block">
-                            <h3>⚙️ Desarrolladores Backend / Intérprete</h3>
+                            <h3>⚙️ Intérprete / Analizador</h3>
                             <ul style="list-style:none;display:flex;flex-direction:column;gap:6px;font-size:0.85rem;color:var(--text-muted)">
-                                <li>⬜ Modo depuración paso a paso con breakpoints (F8 / F9)</li>
-                                <li>⬜ Breakpoints con clic en número de línea</li>
+                                <li>✅ Compatibilidad con PSeInt estricto (`<>`, `Por Referencia`, `Sin Saltar`)</li>
+                                <li>✅ Detección de casing inconsistente en identificadores</li>
+                                <li>✅ Detección de tipos incompatibles (asignar string a Entero, etc.)</li>
+                                <li>✅ Detección de redeclaración case-insensitive</li>
+                                <li>✅ Mensajes de error accionables (división por cero explica cómo prevenirlo)</li>
+                                <li>✅ Test harness con 16 casos analyzer + 33 casos interpreter (no se sube a git)</li>
+                                <li>✅ Auditoría automática de todas las lecciones</li>
+                                <li>✅ Timeout pausado durante Leer (input del usuario no cuenta para wall-clock)</li>
+                                <li>⬜ <strong>Modo depuración paso a paso (F9 Continue / F10 Step)</strong> ← solicitado por usuario</li>
+                                <li>⬜ <strong>Breakpoints clic en número de línea</strong></li>
+                                <li>⬜ <strong>Watch list (panel de variables en tiempo real)</strong></li>
+                                <li>⬜ <strong>Breakpoints condicionados (PSeInt escritorio no los tiene — sería diferencial)</strong></li>
+                                <li>⬜ <strong>Breakpoints on-change y on-value</strong></li>
+                                <li>⬜ Call stack visible al disparar error</li>
+                                <li>⬜ Click-to-jump al error desde el mensaje en consola</li>
                                 <li>⬜ Exportar código a Python / JavaScript equivalente</li>
                                 <li>⬜ Soporte para módulos / include de archivos externos</li>
-                                <li>⬜ Mejor detección de errores en tiempo de ejecución (stack trace)</li>
                                 <li>⬜ Límite de tiempo configurable por el usuario</li>
-                                <li>⬜ Soporte de entrada estándar sin popup (simulación terminal real)</li>
+                                <li>⬜ Historial de inputs (flecha-arriba en el campo Leer)</li>
+                                <li>⬜ Agrupación automática de líneas repetidas en la consola</li>
                             </ul>
                         </div>
 
@@ -9383,14 +9535,27 @@ FinProceso`,
                     this.pos = 0;
                     // Caps de seguridad MÁS ESTRICTOS — antes la página se crasheaba
                     // con bucles infinitos antes de llegar a los caps.
-                    this.maxSteps = 50000;        // pasos totales del programa
-                    this.maxLoopIters = 50000;    // iteraciones por loop individual
-                    this.maxOutputLines = 3000;   // cap del output (anti-spam de DOM)
+                    this.maxSteps = 100000;       // pasos totales del programa (bumped 50k->100k)
+                    this.maxLoopIters = 100000;   // iteraciones por loop individual (bumped 50k->100k)
+                    this.maxOutputLines = 10000;  // cap del output (anti-spam de DOM, bumped 3k->10k)
                     this.outputLineCount = 0;
                     this.steps = 0;
                     this.callStack = 0;
                     this.startTime = Date.now();
-                    this.maxRunMs = 10000;        // 10 seg de wall-clock máximo
+                    this.maxRunMs = 30000;        // FIX: 30 seg (los mensajes ya decían 30s)
+                    this.inputPauseStart = 0;     // tiempo pausado por Leer (no cuenta para timeout)
+                    this.totalInputPause = 0;
+                }
+                // Helpers para pausar el timer durante Leer
+                pauseTimerForInput() { this.inputPauseStart = Date.now(); }
+                resumeTimerAfterInput() {
+                    if (this.inputPauseStart > 0) {
+                        this.totalInputPause += Date.now() - this.inputPauseStart;
+                        this.inputPauseStart = 0;
+                    }
+                }
+                effectiveElapsed() {
+                    return Date.now() - this.startTime - this.totalInputPause;
                 }
 
                 tokenize(code) {
@@ -10314,7 +10479,7 @@ FinProceso`,
                         if (this.steps > this.maxSteps)
                             throw new Error("Límite de pasos alcanzado (" + this.maxSteps + "). Revisa si tu Mientras tiene una condición de salida válida.");
                         // Cap de wall-clock (30s) — evita colgar la pestaña indefinidamente
-                        if (Date.now() - this.startTime > this.maxRunMs)
+                        if (this.effectiveElapsed() > this.maxRunMs)
                             throw new Error("⏱ Tiempo máximo (30s) excedido. Probable bucle infinito en 'Mientras " + condStr + "'.");
                         // CEDER control al event loop cada 500 iteraciones — sin esto, el
                         // thread del navegador queda bloqueado y la página se congela.
@@ -10364,7 +10529,7 @@ FinProceso`,
                         this.steps++;
                         if (this.steps > this.maxSteps)
                             throw new Error("Límite de pasos alcanzado (" + this.maxSteps + "). Revisa la condición 'Hasta Que " + condStr + "'.");
-                        if (Date.now() - this.startTime > this.maxRunMs)
+                        if (this.effectiveElapsed() > this.maxRunMs)
                             throw new Error("⏱ Tiempo máximo (30s) excedido. Probable bucle infinito en 'Repetir...Hasta Que " + condStr + "'.");
                         // Yield al event loop sincronizado con el repaint del browser.
                         // RAF + setTimeout encadenados permiten que la consola se vea
@@ -10422,7 +10587,7 @@ FinProceso`,
                         this.steps++;
                         if (this.steps > this.maxSteps)
                             throw new Error("Límite de pasos alcanzado (" + this.maxSteps + ").");
-                        if (Date.now() - this.startTime > this.maxRunMs)
+                        if (this.effectiveElapsed() > this.maxRunMs)
                             throw new Error("⏱ Tiempo máximo (30s) excedido en el bucle 'Para " + varN + "'.");
                         // Yield al event loop sincronizado con el repaint del browser.
                         // RAF + setTimeout encadenados permiten que la consola se vea
@@ -11097,9 +11262,25 @@ FinProceso`,
              */
             function showInputModal(varName, promptText) {
                 const consoleId = _activeConsoleId || 'playgroundConsole';
+                // FIX timeout: pausar el wall-clock del intérprete durante el input.
+                // Sin esto, el usuario tardando >30s en escribir cualquier respuesta
+                // dispara el timeout, aunque el programa no haya consumido CPU.
+                if (window._currentInterpreter && typeof window._currentInterpreter.pauseTimerForInput === 'function') {
+                    window._currentInterpreter.pauseTimerForInput();
+                }
                 return new Promise((resolve, reject) => {
-                    inputResolve = resolve;
-                    inputAbort = reject;
+                    inputResolve = (v) => {
+                        if (window._currentInterpreter && typeof window._currentInterpreter.resumeTimerAfterInput === 'function') {
+                            window._currentInterpreter.resumeTimerAfterInput();
+                        }
+                        resolve(v);
+                    };
+                    inputAbort = (err) => {
+                        if (window._currentInterpreter && typeof window._currentInterpreter.resumeTimerAfterInput === 'function') {
+                            window._currentInterpreter.resumeTimerAfterInput();
+                        }
+                        reject(err);
+                    };
 
                     const consoleEl = document.getElementById(consoleId);
                     if (!consoleEl) { reject(new Error('Consola no encontrada')); return; }
@@ -11240,6 +11421,14 @@ FinProceso`,
             function appendConsole(elId, text, cls, noNewline) {
                 let el = document.getElementById(elId);
                 if (!el) return;
+                // FIX autoscroll inteligente: detectar si el usuario subió manualmente
+                if (!el._scrollListener) {
+                    el._scrollListener = true;
+                    el.addEventListener('scroll', () => {
+                        const nearBottom = (el.scrollHeight - el.scrollTop - el.clientHeight) < 80;
+                        el._userScrolledUp = !nearBottom;
+                    }, { passive: true });
+                }
                 let span = document.createElement("span");
                 span.className = "cout-line" + (cls ? " cout-" + cls : "");
 
@@ -11291,8 +11480,14 @@ FinProceso`,
                 // FIX: aplicar trim si la consola se llenó demasiado
                 _trimConsoleIfNeeded(el);
 
-                // Auto-scroll al final — siempre, incluso durante bucles
-                el.scrollTop = el.scrollHeight;
+                // FIX scroll inteligente: solo autoscroll si el usuario está ya
+                // cerca del final. Si está leyendo arriba (scrollTop manual), no
+                // saltar — antes era imposible leer output mientras el programa
+                // seguía imprimiendo.
+                const nearBottom = (el.scrollHeight - el.scrollTop - el.clientHeight) < 80;
+                if (nearBottom || !el._userScrolledUp) {
+                    el.scrollTop = el.scrollHeight;
+                }
                 // Sync con el panel del fullscreen si está abierto en console
                 if (elId === 'playgroundConsole' && window._fsSyncConsole) {
                     window._fsSyncConsole();
@@ -11502,14 +11697,20 @@ FinProceso`,
                         appendConsole(consoleId, text, cls, noNewline);
                         if (!cls) lastOutput = text;
                     },
-                    (varName) => {
-                        if (_execAborted) return Promise.reject(new Error("Ejecución cancelada"));
-                        let prompt = lastOutput
-                            ? lastOutput
-                            : 'Ingresa el valor para <strong>' + varName + '</strong>';
-                        return showInputModal(varName, prompt);
-                    },
                 );
+                window._currentInterpreter = interp;
+                // re-wrap para que el código siguiente vea `interp` correctamente
+                interp.output = (text, cls, noNewline) => {
+                    appendConsole(consoleId, text, cls, noNewline);
+                    if (!cls) lastOutput = text;
+                };
+                interp.input = (varName) => {
+                    if (_execAborted) return Promise.reject(new Error("Ejecución cancelada"));
+                    let prompt = lastOutput
+                        ? lastOutput
+                        : 'Ingresa el valor para <strong>' + varName + '</strong>';
+                    return showInputModal(varName, prompt);
+                };
                 _currentInterp = interp;
 
                 // Handle subproc calls with return in assignments
@@ -17530,12 +17731,27 @@ FinProceso</textarea>
                 function scrollToAnchor(anchorId) {
                     const el = document.getElementById(anchorId);
                     if (!el) return;
-                    // requestAnimationFrame para esperar el render del data-active
-                    requestAnimationFrame(() => {
-                        const rect = el.getBoundingClientRect();
-                        const top = window.scrollY + rect.top - navHeight();
-                        window.scrollTo({ top, behavior: 'smooth' });
-                    });
+                    // Doble RAF + delay: esperar a que la sección se monte
+                    // (data-active activa fade-in 0.25s). Sin esto, el cálculo
+                    // de posición se hace antes del layout final.
+                    requestAnimationFrame(() => requestAnimationFrame(() => {
+                        setTimeout(() => {
+                            const rect = el.getBoundingClientRect();
+                            const top = window.scrollY + rect.top - navHeight();
+                            window.scrollTo({ top, behavior: 'smooth' });
+                        }, 80);
+                    }));
+                }
+
+                function scrollToTopOfActive() {
+                    // Llevar al título de la sección activa, no al top puro del body
+                    requestAnimationFrame(() => requestAnimationFrame(() => {
+                        const active = document.querySelector('[data-route][data-active="true"]');
+                        if (!active) { window.scrollTo({ top: 0, behavior: 'auto' }); return; }
+                        const rect = active.getBoundingClientRect();
+                        const top = Math.max(0, window.scrollY + rect.top - navHeight() + 4);
+                        window.scrollTo({ top, behavior: 'auto' });
+                    }));
                 }
 
                 function parseRoute() {
@@ -17553,7 +17769,9 @@ FinProceso</textarea>
                     const route = parseRoute();
                     if (PAGE_ROUTES.includes(route)) {
                         showSection(route);
-                        window.scrollTo({ top: 0, behavior: 'auto' });
+                        // Scroll al top de la sección activa (no al body=0, que
+                        // dejaría el título tapado por el navbar fijo)
+                        scrollToTopOfActive();
                         // Highlight nav del link específico
                         document.querySelectorAll('.nav-links a').forEach(a => {
                             a.classList.toggle('active', a.getAttribute('href') === '#/' + route);
