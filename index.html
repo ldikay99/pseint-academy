@@ -21495,8 +21495,16 @@ function clearOcc() { _occEls.forEach(el => el.remove()); _occEls = []; _occWord
 
 function paintOcc(ta, word, originLineIdx, originStart) {
     clearOcc(); _occWord = word;
-    const cont = ta.closest('.big-editor-container') || ta.parentElement;
+    // FIX uniformidad: aceptar AMBOS contenedores (playground usa big-editor-container,
+    // lecciones usan editor-container). Sin esto, en lecciones se caía a parentElement
+    // que tenía positioning distinto y los recuadros aparecían offset.
+    const cont = ta.closest('.big-editor-container, .editor-container') || ta.parentElement;
     if (!cont) return;
+    // Asegurar position: relative en el contenedor para que los hijos absolute
+    // se posicionen relativo a él (no al viewport).
+    if (cont && getComputedStyle(cont).position === 'static') {
+        cont.style.position = 'relative';
+    }
     const { lh, padTop, padLeft, charW } = layout(ta);
     const taRect   = ta.getBoundingClientRect();
     const contRect = cont.getBoundingClientRect();
@@ -21649,8 +21657,9 @@ function attachIDE(ta) {
     if (!ta || ta._ideV3) return;
     ta._ideV3 = true;
 
-    const cont = ta.closest('.big-editor-container') || ta.parentElement;
-    const hlDiv = cont ? cont.querySelector('.big-editor-highlight') : null;
+    // FIX uniformidad: contenedor + highlight para ambos formatos (playground + lecciones)
+    const cont = ta.closest('.big-editor-container, .editor-container') || ta.parentElement;
+    const hlDiv = cont ? cont.querySelector('.big-editor-highlight, .editor-highlight') : null;
 
     // --- Occurrence: cursor move ---
     ta.addEventListener('keyup',   () => scheduleOcc(ta));
