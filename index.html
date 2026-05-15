@@ -471,6 +471,15 @@ FinProceso</textarea>
                                 ▶ Ejecutar
                             </button>
                             <button
+                                class="btn-debug"
+                                onclick="window.debugStart()"
+                                aria-label="Iniciar depuración paso a paso"
+                                title="Debug paso a paso (F10 = Paso, F9 = Continuar)"
+                                style="background:linear-gradient(135deg,#10b981,#34d399);color:#fff;border:none;padding:8px 14px;font-size:0.85rem;border-radius:8px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(16,185,129,0.35)"
+                            >
+                                🐛 Debug
+                            </button>
+                            <button
                                 class="btn-flowchart"
                                 onclick="openFlowchart()"
                                 aria-label="Ver diagrama de flujo (F7)"

@@ -3991,6 +3991,24 @@ FinProceso`,
 
                 async execLine(t) {
                     // ============================================================
+                    // DEPURADOR (debug mode) — F10 step, F9 continue
+                    // ============================================================
+                    // Si el modo debug esta activo, pausamos antes de ejecutar
+                    // cada linea y esperamos a que la UI nos despierte (con un
+                    // step o continue). Marcamos visualmente la linea actual.
+                    if (window._debugMode && !_execAborted) {
+                        const currentLine = (this.pos || 0); // 0-based del intérprete
+                        // Notificar UI: linea actual a resaltar (1-based para el editor)
+                        if (typeof window._debugHighlightLine === 'function') {
+                            try { window._debugHighlightLine(currentLine + 1); } catch(_) {}
+                        }
+                        // Pausar hasta que el usuario haga step o continue
+                        await new Promise((resolve) => {
+                            window._debugResume = resolve;
+                        });
+                        window._debugResume = null;
+                    }
+                    // ============================================================
                     // COMANDOS ESPECIALES (compatibilidad PSeInt Windows extendida)
                     // ============================================================
                     // Borrar Pantalla / Limpiar Pantalla — limpia la consola
@@ -7251,6 +7269,101 @@ FinProceso`,
             function escapeHtml(s) {
                 return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
             }
+
+            // ════════════════════════════════════════════════════════════
+            // DEPURADOR (debugger paso a paso)
+            //
+            // Ejecucion paso a paso del interprete via window._debugMode.
+            // Cuando esta activo, execLine() pausa antes de cada linea y
+            // espera a que el usuario haga step (F10) o continue (F9).
+            //
+            // API:
+            //   window.debugStart()      — empieza ejecucion en modo debug
+            //   window.debugStep()       — avanza una linea (F10)
+            //   window.debugContinue()   — desactiva debug, ejecuta hasta el final (F9)
+            //   window.debugStop()       — alias de stopExecution()
+            //   window._debugHighlightLine(n) — resalta visualmente la linea n (1-based)
+            // ════════════════════════════════════════════════════════════
+            window._debugMode = false;
+            window._debugResume = null;
+            window._debugCurrentLine = 0;
+
+            window._debugHighlightLine = function(n) {
+                window._debugCurrentLine = n;
+                // Resaltar la linea n en el editor: posicionar cursor allí y
+                // hacer scroll para que sea visible
+                const ta = document.getElementById('playgroundEditor');
+                if (!ta) return;
+                const lines = ta.value.split('\n');
+                let pos = 0;
+                for (let i = 0; i < Math.min(n - 1, lines.length); i++) pos += lines[i].length + 1;
+                // Posicionar cursor al inicio de la linea (sin alterar foco si está en input modal)
+                if (document.activeElement !== document.getElementById('inputModalField')) {
+                    ta.focus();
+                    ta.setSelectionRange(pos, pos);
+                }
+                // Reaplicar highlight de fila actual del editor
+                if (window._updateActiveLineHighlight) window._updateActiveLineHighlight(ta, n);
+                // Scroll para mantener la línea visible (centrada si es posible)
+                try {
+                    const cs = window.getComputedStyle(ta);
+                    let lh = parseFloat(cs.lineHeight) || (parseFloat(cs.fontSize) * 1.6);
+                    const targetY = Math.max(0, (n - 1) * lh - ta.clientHeight / 2);
+                    ta.scrollTop = targetY;
+                    // Sync gutter scroll
+                    const gln = document.getElementById('playgroundLineNums');
+                    if (gln) gln.scrollTop = targetY;
+                } catch(_) {}
+            };
+
+            window.debugStep = function() {
+                if (window._debugMode && typeof window._debugResume === 'function') {
+                    window._debugResume();
+                }
+            };
+
+            window.debugContinue = function() {
+                window._debugMode = false;
+                if (typeof window._debugResume === 'function') {
+                    window._debugResume();
+                }
+                window._debugResume = null;
+                // Quitar el highlight del debug
+                if (typeof showToast === 'function') showToast('▶ Continuando ejecución sin debug');
+            };
+
+            window.debugStart = function() {
+                // Activar modo debug y arrancar ejecucion
+                window._debugMode = true;
+                if (typeof showToast === 'function') {
+                    showToast('🐛 Debug iniciado · F10 = Paso · F9 = Continuar · Esc = Detener');
+                }
+                // Llamar al run normal — el modo debug se chequea en execLine
+                if (typeof runPlayground === 'function') runPlayground();
+            };
+
+            window.debugStop = function() {
+                window._debugMode = false;
+                if (typeof window._debugResume === 'function') {
+                    window._debugResume();
+                }
+                window._debugResume = null;
+                if (typeof stopExecution === 'function') stopExecution();
+            };
+
+            // Atajos de teclado: F9 continue, F10 step
+            document.addEventListener('keydown', (e) => {
+                // Solo activos si hay un debug en curso (modo debug activo o paused)
+                if (window._debugMode || window._debugResume) {
+                    if (e.key === 'F10') {
+                        e.preventDefault();
+                        window.debugStep();
+                    } else if (e.key === 'F9') {
+                        e.preventDefault();
+                        window.debugContinue();
+                    }
+                }
+            });
 
             function goToLine(lineNum, col) {
                 let ta = document.getElementById("playgroundEditor");
