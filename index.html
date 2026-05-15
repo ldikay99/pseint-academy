@@ -7209,8 +7209,8 @@ FinProceso`,
 		</div>
 		<div class="theory-block">
 		  <h3>Por referencia</h3>
-		  <p>Se pasa la variable original. Modificar el parámetro SÍ afecta la variable original. Se usa la palabra clave <span class="inline-code">var</span> o <span class="inline-code">por referencia</span> antes del parámetro.</p>
-		  <p>Uso: <span class="inline-code">SubProceso nombre(var param)</span></p>
+		  <p>Se pasa la variable original. Modificar el parámetro SÍ afecta la variable original. Se usa <span class="inline-code">Por Referencia</span> después del parámetro.</p>
+		  <p>Uso: <span class="inline-code">SubProceso nombre(param Por Referencia)</span></p>
 		</div>
 		<div class="tip-box">💡 Usa por referencia cuando el subproceso necesita devolver múltiples valores o modificar la variable original.</div>
 	 `,
@@ -7219,7 +7219,7 @@ FinProceso`,
 	Escribir "Dentro (valor): n = ", n
 FinSubProceso
 
-SubProceso DoblarPorReferencia(var n)
+SubProceso DoblarPorReferencia(n Por Referencia)
 	n <- n * 2
 	Escribir "Dentro (ref): n = ", n
 FinSubProceso
@@ -7230,14 +7230,14 @@ Proceso ParametrosDemo
 	a <- 10
 	b <- 10
 	DoblarPorValor(a)
-	Escribir "Después por valor: a = ", a
+	Escribir "Despues por valor: a = ", a
 	DoblarPorReferencia(b)
-	Escribir "Después por referencia: b = ", b
+	Escribir "Despues por referencia: b = ", b
 FinProceso`,
                     challenge: {
                         desc: "Crea un subproceso que intercambie (swap) dos variables usando paso por referencia. Verifica que la función realmente modifique las variables originales.",
                         expected: null,
-                        solution: `SubProceso Intercambiar(var x, var y)
+                        solution: `SubProceso Intercambiar(x Por Referencia, y Por Referencia)
 	Definir aux Como Real
 	aux <- x
 	x <- y
@@ -7251,7 +7251,7 @@ Proceso ProbarSwap
 	b <- 200
 	Escribir "Antes: a=", a, " b=", b
 	Intercambiar(a, b)
-	Escribir "Después: a=", a, " b=", b
+	Escribir "Despues: a=", a, " b=", b
 FinProceso`,
                     },
                 },
@@ -7768,7 +7768,7 @@ FinProceso`,
 		</div>
 		<div class="tip-box">💡 La clave es la validación: antes de cualquier operación, verifica que sea válida (monto positivo, saldo suficiente).</div>
 	 `,
-                    example: `SubProceso ok <- Depositar(var saldo, monto, var tipos, var montos, var numMov)
+                    example: `SubProceso ok <- Depositar(saldo Por Referencia, monto, tipos Por Referencia, montos Por Referencia, numMov Por Referencia)
 	Si monto > 0 Entonces
 		saldo <- saldo + monto
 		numMov <- numMov + 1
@@ -7780,7 +7780,7 @@ FinProceso`,
 	FinSi
 FinSubProceso
 
-SubProceso ok <- Retirar(var saldo, monto, var tipos, var montos, var numMov)
+SubProceso ok <- Retirar(saldo Por Referencia, monto, tipos Por Referencia, montos Por Referencia, numMov Por Referencia)
 	Si monto > 0 Y monto <= saldo Entonces
 		saldo <- saldo - monto
 		numMov <- numMov + 1
@@ -7793,10 +7793,7 @@ SubProceso ok <- Retirar(var saldo, monto, var tipos, var montos, var numMov)
 FinSubProceso
 
 Proceso BancoSimulador
-	Definir saldo Como Real
-	Definir monto Como Real
-	Definir tipos Como Texto
-	Definir montos Como Real
+	Definir saldo, monto Como Real
 	Definir numMov, opc, i Como Entero
 	Definir ok Como Logico
 	Dimension tipos[50]
@@ -7808,21 +7805,36 @@ Proceso BancoSimulador
 		Escribir "1.Depositar  2.Retirar  3.Historial  0.Salir"
 		Leer opc
 		Segun opc Hacer
-			1: Escribir "Monto a depositar:"; Leer monto
-			   ok <- Depositar(saldo, monto, tipos, montos, numMov)
-			   Si ok Entonces Escribir "✅ Depositado $", monto
-			   SiNo Escribir "❌ Monto inválido" FinSi
-			2: Escribir "Monto a retirar:"; Leer monto
-			   ok <- Retirar(saldo, monto, tipos, montos, numMov)
-			   Si ok Entonces Escribir "✅ Retirado $", monto
-			   SiNo Escribir "❌ Fondos insuficientes o monto inválido" FinSi
-			3: Escribir "=== HISTORIAL ==="
-			   Para i <- 1 Hasta numMov Hacer
-			     Escribir tipos[i], ": $", montos[i]
-			   FinPara
-			   Si numMov = 0 Entonces Escribir "Sin movimientos" FinSi
-			0: Escribir "Saldo final: $", saldo
-			De Otro Modo: Escribir "Opción inválida"
+			1:
+				Escribir "Monto a depositar:"
+				Leer monto
+				ok <- Depositar(saldo, monto, tipos, montos, numMov)
+				Si ok Entonces
+					Escribir "Depositado $", monto
+				SiNo
+					Escribir "Monto invalido"
+				FinSi
+			2:
+				Escribir "Monto a retirar:"
+				Leer monto
+				ok <- Retirar(saldo, monto, tipos, montos, numMov)
+				Si ok Entonces
+					Escribir "Retirado $", monto
+				SiNo
+					Escribir "Fondos insuficientes o monto invalido"
+				FinSi
+			3:
+				Escribir "=== HISTORIAL ==="
+				Para i <- 1 Hasta numMov Hacer
+					Escribir tipos[i], ": $", montos[i]
+				FinPara
+				Si numMov = 0 Entonces
+					Escribir "Sin movimientos"
+				FinSi
+			0:
+				Escribir "Saldo final: $", saldo
+			De Otro Modo:
+				Escribir "Opcion invalida"
 		FinSegun
 	Hasta Que opc = 0
 FinProceso`,
@@ -7831,31 +7843,62 @@ FinProceso`,
                         expected: null,
                         solution: `Proceso BancoMejorado
 	Definir saldo, monto, totDep, totRet Como Real
-	Definir tipos Como Texto
-	Definir montos Como Real
 	Definir numMov, opc, i Como Entero
-	Dimension tipos[50]; Dimension montos[50]
-	saldo<-1000; numMov<-0; totDep<-0; totRet<-0
+	Dimension tipos[50]
+	Dimension montos[50]
+	saldo <- 1000
+	numMov <- 0
+	totDep <- 0
+	totRet <- 0
 	Repetir
-		Escribir "Saldo: $",saldo," | 1.Dep 2.Ret 3.Hist 4.Interes 5.Reporte 0.Salir"
+		Escribir "Saldo: $", saldo, " | 1.Dep 2.Ret 3.Hist 4.Interes 5.Reporte 0.Salir"
 		Leer opc
 		Segun opc Hacer
-			1: Escribir "Monto:"; Leer monto
-			   Si monto>0 Entonces saldo<-saldo+monto; numMov<-numMov+1
-			     tipos[numMov]<-"Deposito"; montos[numMov]<-monto; totDep<-totDep+monto
-			     Escribir "OK $",monto SiNo Escribir "Inválido" FinSi
-			2: Escribir "Monto:"; Leer monto
-			   Si monto>0 Y monto<=saldo Entonces saldo<-saldo-monto; numMov<-numMov+1
-			     tipos[numMov]<-"Retiro"; montos[numMov]<-monto; totRet<-totRet+monto
-			     Escribir "OK -$",monto SiNo Escribir "Fondos insuficientes" FinSi
-			3: Para i<-1 Hasta numMov Hacer Escribir tipos[i]," $",montos[i] FinPara
-			4: Si saldo>500 Entonces saldo<-saldo*1.05; Escribir "Interés aplicado. Nuevo saldo: $",saldo
-			   SiNo Escribir "Saldo insuficiente para interés" FinSi
-			5: Escribir "Total depósitos: $",totDep
-			   Escribir "Total retiros: $",totRet
-			   Escribir "Balance neto: $",(totDep-totRet)
-			0: Escribir "Cierre. Saldo: $",saldo
-			De Otro Modo: Escribir "Inválido"
+			1:
+				Escribir "Monto:"
+				Leer monto
+				Si monto > 0 Entonces
+					saldo <- saldo + monto
+					numMov <- numMov + 1
+					tipos[numMov] <- "Deposito"
+					montos[numMov] <- monto
+					totDep <- totDep + monto
+					Escribir "OK $", monto
+				SiNo
+					Escribir "Invalido"
+				FinSi
+			2:
+				Escribir "Monto:"
+				Leer monto
+				Si monto > 0 Y monto <= saldo Entonces
+					saldo <- saldo - monto
+					numMov <- numMov + 1
+					tipos[numMov] <- "Retiro"
+					montos[numMov] <- monto
+					totRet <- totRet + monto
+					Escribir "OK -$", monto
+				SiNo
+					Escribir "Fondos insuficientes"
+				FinSi
+			3:
+				Para i <- 1 Hasta numMov Hacer
+					Escribir tipos[i], " $", montos[i]
+				FinPara
+			4:
+				Si saldo > 500 Entonces
+					saldo <- saldo * 1.05
+					Escribir "Interes aplicado. Nuevo saldo: $", saldo
+				SiNo
+					Escribir "Saldo insuficiente para interes"
+				FinSi
+			5:
+				Escribir "Total depositos: $", totDep
+				Escribir "Total retiros: $", totRet
+				Escribir "Balance neto: $", (totDep - totRet)
+			0:
+				Escribir "Cierre. Saldo: $", saldo
+			De Otro Modo:
+				Escribir "Invalido"
 		FinSegun
 	Hasta Que opc = 0
 FinProceso`,
@@ -7988,27 +8031,43 @@ FinProceso`,
                         desc: "Lee 8 números del usuario y calcula media, mediana y muestra cuántos están por encima y cuántos por debajo de la media.",
                         expected: null,
                         solution: `Proceso EstadisticaUsuario
-	Definir datos Como Real
-	Definir i,j Como Entero
-	Definir aux,suma,media Como Real
-	Definir arriba,abajo Como Entero
+	Definir i, j Como Entero
+	Definir aux, suma, media Como Real
+	Definir arriba, abajo Como Entero
 	Dimension datos[8]
-	Para i<-1 Hasta 8 Hacer Escribir "Num ",i,":"; Leer datos[i] FinPara
-	// Ordenar
-	Para i<-1 Hasta 7 Hacer
-		Para j<-1 Hasta 8-i Hacer
-			Si datos[j]>datos[j+1] Entonces aux<-datos[j];datos[j]<-datos[j+1];datos[j+1]<-aux FinSi
+	Para i <- 1 Hasta 8 Hacer
+		Escribir "Num ", i, ":"
+		Leer datos[i]
+	FinPara
+	// Ordenar (bubble sort)
+	Para i <- 1 Hasta 7 Hacer
+		Para j <- 1 Hasta 8 - i Hacer
+			Si datos[j] > datos[j+1] Entonces
+				aux <- datos[j]
+				datos[j] <- datos[j+1]
+				datos[j+1] <- aux
+			FinSi
 		FinPara
 	FinPara
-	suma<-0; Para i<-1 Hasta 8 Hacer suma<-suma+datos[i] FinPara
-	media<-suma/8
-	Escribir "Media: ",media
-	Escribir "Mediana: ",(datos[4]+datos[5])/2
-	arriba<-0; abajo<-0
-	Para i<-1 Hasta 8 Hacer
-		Si datos[i]>media Entonces arriba<-arriba+1 SiNo Si datos[i]<media Entonces abajo<-abajo+1 FinSi FinSi
+	suma <- 0
+	Para i <- 1 Hasta 8 Hacer
+		suma <- suma + datos[i]
 	FinPara
-	Escribir "Por encima: ",arriba," | Por debajo: ",abajo
+	media <- suma / 8
+	Escribir "Media: ", media
+	Escribir "Mediana: ", (datos[4] + datos[5]) / 2
+	arriba <- 0
+	abajo <- 0
+	Para i <- 1 Hasta 8 Hacer
+		Si datos[i] > media Entonces
+			arriba <- arriba + 1
+		SiNo
+			Si datos[i] < media Entonces
+				abajo <- abajo + 1
+			FinSi
+		FinSi
+	FinPara
+	Escribir "Por encima: ", arriba, " | Por debajo: ", abajo
 FinProceso`,
                     },
                 },
@@ -8245,24 +8304,25 @@ FinProceso`,
                     challenge: {
                         desc: "Modifica Hanói para que también cuente y muestre el número de movimientos realizados (usando una variable por referencia pasada al SubProceso).",
                         expected: null,
-                        solution: `SubProceso HanoiCount(n, origen, destino, auxiliar, var cont)
-	Si n=1 Entonces
-		cont<-cont+1
-		Escribir "Mov ",cont,": ",origen," → ",destino
+                        solution: `SubProceso HanoiCount(n, origen, destino, auxiliar, cont Por Referencia)
+	Si n = 1 Entonces
+		cont <- cont + 1
+		Escribir "Mov ", cont, ": ", origen, " -> ", destino
 	SiNo
-		HanoiCount(n-1, origen, auxiliar, destino, cont)
-		cont<-cont+1
-		Escribir "Mov ",cont,": ",origen," → ",destino
-		HanoiCount(n-1, auxiliar, destino, origen, cont)
+		HanoiCount(n - 1, origen, auxiliar, destino, cont)
+		cont <- cont + 1
+		Escribir "Mov ", cont, ": ", origen, " -> ", destino
+		HanoiCount(n - 1, auxiliar, destino, origen, cont)
 	FinSi
 FinSubProceso
 
 Proceso HanoiConContador
 	Definir n, contador Como Entero
-	Escribir "Discos (1-4):"; Leer n
-	contador<-0
-	HanoiCount(n,"A","C","B",contador)
-	Escribir "Total de movimientos: ",contador
+	Escribir "Discos (1-4):"
+	Leer n
+	contador <- 0
+	HanoiCount(n, "A", "C", "B", contador)
+	Escribir "Total de movimientos: ", contador
 FinProceso`,
                     },
                 },
@@ -12563,9 +12623,12 @@ FinProceso`,
                     // pero como editor educativo queremos que el usuario sea
                     // consistente con su propio estilo: declarar `hola` y usar
                     // `Hola` después debe avisarse.
-                    let declaredCanonical = new Map(); // lower → original
+                    let declaredCanonical = new Map(); // lower → original (global, primera vez vista en cualquier scope)
                     let declaredLineFirst = new Map(); // lower → 1-based line del primer Definir
-                    let duplicateReported = new Set(); // lower keys ya reportados como duplicados
+                    // FIX scope: duplicados solo se reportan en el MISMO scope (main o sub:<n>).
+                    // scopeDecls: Map<scopeKey, Map<lower, {name, line}>> — sólo Definir EXPLÍCITO
+                    let scopeDecls = new Map();
+                    let duplicateReported = new Set(); // scope+lower keys ya reportados como duplicados
 
                     // Registrar nombre del Proceso/Algoritmo principal (no es variable)
                     let procNames = new Set();
@@ -12574,74 +12637,105 @@ FinProceso`,
                         if (mProc) procNames.add(mProc[1].toLowerCase());
                     }
 
-                    // Helper: registra un nombre declarado y devuelve true si
-                    // ya estaba con OTRO casing (duplicado case-insensitive) o
-                    // EXACTO mismo casing (redeclaración real).
-                    // Marca canonical = primera vez vista.
-                    function _registerDecl(name, lineIdx, isExplicitDefinir) {
+                    // Helper: registra un nombre declarado en su SCOPE.
+                    // - Duplicados sólo se reportan cuando AMBAS apariciones son
+                    //   Definir EXPLÍCITO en el MISMO scope (params, asignaciones,
+                    //   Para, Leer no cuentan — sólo Definir es redeclaración real).
+                    // - declaredCanonical guarda la primera ocurrencia GLOBAL para
+                    //   los chequeos de casing-mismatch (que sí son globales).
+                    function _registerDecl(name, lineIdx, isExplicitDefinir, scopeKey) {
                         if (!name) return;
                         declaredVars.add(name);
                         const lo = name.toLowerCase();
                         if (!declaredCanonical.has(lo)) {
                             declaredCanonical.set(lo, name);
                             declaredLineFirst.set(lo, lineIdx + 1);
-                        } else if (isExplicitDefinir) {
-                            // Solo el explicit Definir cuenta como "duplicado declarado"
-                            // (las asignaciones autodefinen pero no son redeclaración).
-                            if (!duplicateReported.has(lo)) {
-                                const firstName = declaredCanonical.get(lo);
-                                const firstLine = declaredLineFirst.get(lo);
-                                const sameCase = (firstName === name);
+                        }
+                        if (!isExplicitDefinir) return;
+                        // Reportar duplicado SOLO dentro del mismo scope
+                        const sk = scopeKey || 'main';
+                        if (!scopeDecls.has(sk)) scopeDecls.set(sk, new Map());
+                        const sm = scopeDecls.get(sk);
+                        if (sm.has(lo)) {
+                            const dupKey = sk + ':' + lo;
+                            if (!duplicateReported.has(dupKey)) {
+                                const first = sm.get(lo);
+                                const sameCase = (first.name === name);
                                 const msg = sameCase
-                                    ? `Variable '${name}' ya fue declarada en la línea ${firstLine}. No se puede redeclarar.`
-                                    : `Variable '${name}' duplica a '${firstName}' (línea ${firstLine}) — PSeInt no distingue mayúsculas/minúsculas en nombres. Renombra una de las dos.`;
+                                    ? `Variable '${name}' ya fue declarada en la línea ${first.line}. No se puede redeclarar.`
+                                    : `Variable '${name}' duplica a '${first.name}' (línea ${first.line}) — PSeInt no distingue mayúsculas/minúsculas en nombres. Renombra una de las dos.`;
                                 errors.push({line: lineIdx + 1, msg});
-                                duplicateReported.add(lo);
+                                duplicateReported.add(dupKey);
                             }
+                        } else {
+                            sm.set(lo, {name, line: lineIdx + 1});
                         }
                     }
+
+                    // Determinar scope de cada línea
+                    function _computeScopes(linesArr) {
+                        const out = new Array(linesArr.length);
+                        let current = 'main';
+                        for (let i = 0; i < linesArr.length; i++) {
+                            const ln = linesArr[i];
+                            const open = ln.match(/^\s*(SubProceso|Funcion|Función|Procedimiento)\s+(?:\w+\s*<-\s*)?(\w+)/i);
+                            const close = /^\s*(FinSubProceso|FinFuncion|FinFunción|FinProcedimiento)\b/i.test(ln);
+                            if (open) {
+                                current = 'sub:' + open[2].toLowerCase();
+                                out[i] = current; // la línea del header pertenece al sub
+                                continue;
+                            }
+                            out[i] = current;
+                            if (close) current = 'main';
+                        }
+                        return out;
+                    }
+                    const _scopes = _computeScopes(lines);
 
                     // declaredVars guarda el nombre EXACTO (case-sensitive).
                     // Variables de usuario son case-sensitive: "y" != "Y".
                     for (let li = 0; li < lines.length; li++) {
                         let ln = lines[li];
+                        const sk = _scopes[li] || 'main';
                         // Definir x, y Como Tipo
                         let dm = ln.match(/^\s*Definir\s+(.+?)\s+Como\s+\w+/i);
                         if (dm) {
                             dm[1].split(',').forEach(v => {
                                 let vn = v.trim();
-                                if (vn) _registerDecl(vn, li, true);
+                                if (vn) _registerDecl(vn, li, true, sk);
                             });
                         }
                         // Dimension arr[...]
                         let dim = ln.match(/^\s*Dimension\s+(.+)$/i);
                         if (dim) {
                             let re2 = /(\w+)\s*\[/g, mm2;
-                            while ((mm2 = re2.exec(dim[1]))) _registerDecl(mm2[1], li, false);
+                            while ((mm2 = re2.exec(dim[1]))) _registerDecl(mm2[1], li, false, sk);
                         }
                         // Para i <- ...
                         let pm = ln.match(/^\s*Para\s+(\w+)\s*<-/i);
-                        if (pm) _registerDecl(pm[1], li, false);
+                        if (pm) _registerDecl(pm[1], li, false, sk);
                         // Leer x, y, z
                         let lm = ln.match(/^\s*Leer\s+(.+)$/i);
                         if (lm) {
                             lm[1].split(',').forEach(v => {
                                 let vn = v.trim().replace(/\[.*$/, '');
-                                if (vn) _registerDecl(vn, li, false);
+                                if (vn) _registerDecl(vn, li, false, sk);
                             });
                         }
                         // Asignación directa: x <- expr (case original)
                         let am = ln.match(/^\s*([a-zA-ZáéíóúÁÉÍÓÚñÑ_][\wáéíóúÁÉÍÓÚñÑ]*)\s*<-/i);
-                        if (am) _registerDecl(am[1], li, false);
+                        if (am) _registerDecl(am[1], li, false, sk);
                         // SubProceso / Funcion / Procedimiento — nombre y parámetros
+                        // sm[1] = nombre del sub, sm[2] = lista de params crudos
                         let sm = ln.match(/^\s*(?:SubProceso|Funcion|Función|Procedimiento)\s+(?:\w+\s*<-\s*)?(\w+)\s*(?:\(([^)]*)\))?/i);
                         if (sm) {
-                            if (sm[1]) _registerDecl(sm[1], li, false);
+                            // El nombre del sub lo declara el caller → scope 'main'.
+                            if (sm[1]) _registerDecl(sm[1], li, false, 'main');
                             if (sm[2]) {
+                                const subScope = 'sub:' + sm[1].toLowerCase();
                                 sm[2].split(',').forEach(p => {
                                     let pRaw = p.trim();
                                     // FIX: rechazar `var X` — no es sintaxis válida de PSeInt.
-                                    // PSeInt usa `Por Referencia` / `Por Valor` (o nada).
                                     if (/^var\s+/i.test(pRaw)) {
                                         errors.push({
                                             line: li + 1,
@@ -12649,13 +12743,17 @@ FinProceso`,
                                         });
                                     }
                                     let pn = pRaw.replace(/^\s*(var|ref)\s+/i,'').replace(/\s+(por\s+referencia|por\s+valor|byref)\b.*$/i,'').trim();
-                                    if (pn) _registerDecl(pn, li, false);
+                                    if (pn) _registerDecl(pn, li, false, subScope);
                                 });
                             }
                         }
-                        // Variable de retorno de Funcion
+                        // Variable de retorno de Funcion (en scope del propio sub)
                         let rm = ln.match(/^\s*(?:Funcion|Función)\s+(\w+)\s*<-/i);
-                        if (rm) _registerDecl(rm[1], li, false);
+                        if (rm) {
+                            const subMatch = ln.match(/^\s*(?:Funcion|Función)\s+\w+\s*<-\s*(\w+)/i);
+                            const subScopeR = subMatch ? 'sub:' + subMatch[1].toLowerCase() : sk;
+                            _registerDecl(rm[1], li, false, subScopeR);
+                        }
                     }
 
                     // ── PASA 1.5: TIPADO DE VARIABLES ─────────────────────────
