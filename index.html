@@ -3863,7 +3863,7 @@
             .btn-cancel-input {
                 background: rgba(239,68,68,0.12);
                 border: 1px solid rgba(239,68,68,0.3);
-                color: #f87171;
+                color: var(--color-error-strong);
                 border-radius: 8px;
                 padding: 5px 12px;
                 font-size: 0.78rem;
@@ -4445,7 +4445,7 @@ FinProceso</textarea>
                             <h3>💻 Consola de salida</h3>
                             <div style="display:flex;align-items:center;gap:8px">
                                 <span id="execTimeDisplay" style="font-size:0.72rem;color:var(--text-dim);display:none"></span>
-                                <button id="stopBtn" class="btn-clear" style="padding:4px 12px;font-size:0.78rem;display:none;color:#f87171;border-color:rgba(239,68,68,0.4)" onclick="stopExecution()" title="Detener ejecución">⏹ Detener</button>
+                                <button id="stopBtn" class="btn-clear" style="padding:4px 12px;font-size:0.78rem;display:none;color:var(--color-error-strong);border-color:rgba(239,68,68,0.4)" onclick="stopExecution()" title="Detener ejecución">⏹ Detener</button>
                                 <button
                                     class="btn-clear"
                                     style="padding: 4px 12px; font-size: 0.78rem"
@@ -4935,7 +4935,7 @@ FinProceso</textarea>
             .report-chip:hover { border-color:var(--accent1); background:rgba(0,212,255,0.08); }
             .report-chip input { margin:0; cursor:pointer; }
             .report-chip:has(input:checked) { background:rgba(0,212,255,0.15); border-color:var(--accent1); color:var(--text-main); }
-            #reportStatus.ok { background:rgba(16,185,129,0.15); border:1px solid #10b981; color:#6ee7b7; }
+            #reportStatus.ok { background:rgba(16,185,129,0.15); border:1px solid #10b981; color:var(--accent4); }
             #reportStatus.err { background:rgba(239,68,68,0.15); border:1px solid #ef4444; color:var(--color-error); }
             #reportStatus.info { background:rgba(0,212,255,0.10); border:1px solid var(--accent1); color:var(--accent1); }
         </style>
@@ -5112,8 +5112,8 @@ FinProceso</textarea>
                         <span class="fc-legend-item"><svg width="22" height="14"><polygon points="4,1 18,1 21,7 18,13 4,13 1,7" fill="#a855f7" stroke="#581c87" stroke-width="1.2"/></svg> Ciclo</span>
                         <span class="fc-legend-item"><svg width="22" height="14"><polygon points="11,1 18,5 18,13 4,13 4,5" fill="#06b6d4" stroke="#0e7490" stroke-width="1.2"/></svg> Selector</span>
                         <span style="width:1px;background:var(--border);height:18px;margin:0 4px;display:inline-block;vertical-align:middle;"></span>
-                        <span class="fc-legend-item"><svg width="28" height="14"><line x1="2" y1="7" x2="22" y2="7" stroke="#10b981" stroke-width="2"/><polygon points="18,4 26,7 18,10" fill="#10b981"/></svg> <span style="color:#6ee7b7">SI</span></span>
-                        <span class="fc-legend-item"><svg width="28" height="14"><line x1="2" y1="7" x2="22" y2="7" stroke="#ef4444" stroke-width="2"/><polygon points="18,4 26,7 18,10" fill="#ef4444"/></svg> <span style="color:#fca5a5">NO</span></span>
+                        <span class="fc-legend-item"><svg width="28" height="14"><line x1="2" y1="7" x2="22" y2="7" stroke="#10b981" stroke-width="2"/><polygon points="18,4 26,7 18,10" fill="#10b981"/></svg> <span style="color:var(--accent4)">SI</span></span>
+                        <span class="fc-legend-item"><svg width="28" height="14"><line x1="2" y1="7" x2="22" y2="7" stroke="#ef4444" stroke-width="2"/><polygon points="18,4 26,7 18,10" fill="#ef4444"/></svg> <span style="color:var(--color-error)">NO</span></span>
                         <span class="fc-legend-item"><svg width="28" height="14"><line x1="2" y1="7" x2="22" y2="7" stroke="#a855f7" stroke-width="2" stroke-dasharray="4 2"/><polygon points="18,4 26,7 18,10" fill="#a855f7"/></svg> <span style="color:#d8b4fe">Ciclo</span></span>
                         <span class="fc-legend-item"><svg width="28" height="14"><line x1="2" y1="7" x2="22" y2="7" stroke="#06b6d4" stroke-width="2"/><polygon points="18,4 26,7 18,10" fill="#06b6d4"/></svg> <span style="color:#67e8f9">Caso</span></span>
                     </div>
@@ -16538,11 +16538,11 @@ FinProceso</textarea>
                             if (match) {
                                 diffHtml += `<div style="color:#4ade80;padding:2px 6px">✅ "${escapeHtml(expL)}"</div>`;
                             } else if (expL !== undefined && actL === undefined) {
-                                diffHtml += `<div style="color:#f87171;padding:2px 6px">❌ Falta: "${escapeHtml(expL)}"</div>`;
+                                diffHtml += `<div style="color:var(--color-error-strong);padding:2px 6px">❌ Falta: "${escapeHtml(expL)}"</div>`;
                             } else if (expL === undefined && actL !== undefined) {
                                 diffHtml += `<div style="color:var(--color-warn-strong);padding:2px 6px">⚠ Extra: "${escapeHtml(actL)}"</div>`;
                             } else {
-                                diffHtml += `<div style="color:#f87171;padding:2px 6px">❌ Esperado: "${escapeHtml(expL||'')}" · Tu salida: "${escapeHtml(actL||'')}"</div>`;
+                                diffHtml += `<div style="color:var(--color-error-strong);padding:2px 6px">❌ Esperado: "${escapeHtml(expL||'')}" · Tu salida: "${escapeHtml(actL||'')}"</div>`;
                             }
                         }
                         diffHtml += '</div>';
@@ -16565,12 +16565,12 @@ FinProceso</textarea>
                             ? '<div style="margin-top:6px;font-size:0.78rem;color:var(--text-muted)">Tu salida actual: ' +
                               outputs.slice(0,5).map(o => '<code style="color:#60a5fa">' + escapeHtml(o) + '</code>').join(' · ') +
                               (outputs.length > 5 ? '...' : '') + '</div>'
-                            : '<div style="margin-top:6px;font-size:0.78rem;color:#f87171">Tu programa no produjo salida visible.</div>';
+                            : '<div style="margin-top:6px;font-size:0.78rem;color:var(--color-error-strong)">Tu programa no produjo salida visible.</div>';
                         verdict.className = "verdict wrong";
                         verdict.style.display = "block";
                         verdict.innerHTML =
                             '<div style="color:var(--color-warn-strong);font-weight:600">⚠ Falta completar el reto:</div>' +
-                            '<div style="color:#f87171;margin-top:6px;padding:6px 10px;background:rgba(239,68,68,0.08);border-radius:6px;border-left:3px solid #f87171">❌ ' + (result.hint || "Revisa los requisitos del reto.") + '</div>' +
+                            '<div style="color:var(--color-error-strong);margin-top:6px;padding:6px 10px;background:rgba(239,68,68,0.08);border-radius:6px;border-left:3px solid #f87171">❌ ' + (result.hint || "Revisa los requisitos del reto.") + '</div>' +
                             outPreview;
                     }
                 } else {
@@ -16607,7 +16607,7 @@ FinProceso</textarea>
                     }
 
                     if (issues.length > 0) {
-                        let issueHtml = issues.map(i => `<div style="color:#f87171;padding:3px 8px;margin:3px 0;border-left:3px solid #f87171;border-radius:4px;background:rgba(239,68,68,0.07)">❌ ${i}</div>`).join('');
+                        let issueHtml = issues.map(i => `<div style="color:var(--color-error-strong);padding:3px 8px;margin:3px 0;border-left:3px solid #f87171;border-radius:4px;background:rgba(239,68,68,0.07)">❌ ${i}</div>`).join('');
                         let outPreview = '<div style="margin-top:8px;font-size:0.78rem;color:var(--text-muted)">Tu salida actual: ' +
                             nonEmptyOutputs.slice(0,5).map(o=>'<code style="color:#60a5fa">'+escapeHtml(o)+'</code>').join(' · ') +
                             (nonEmptyOutputs.length>5?'...':'') + '</div>';
