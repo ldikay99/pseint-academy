@@ -7481,6 +7481,29 @@ FinProceso`,
                 }
             });
 
+            // ════════════════════════════════════════════════════════════
+            // VISUAL VIEWPORT — adaptar UI cuando aparece teclado virtual
+            // En mobile, al abrir el teclado iOS/Android, window.innerHeight
+            // NO cambia (sigue siendo la del device) pero el viewport visible
+            // SI se reduce. window.visualViewport reporta el viewport real.
+            //
+            // Aplicamos un CSS variable --vv-height con la altura visible
+            // que cualquier elemento puede usar (modales, paneles flotantes).
+            // ════════════════════════════════════════════════════════════
+            if (window.visualViewport) {
+                const updateVV = () => {
+                    const vv = window.visualViewport;
+                    document.documentElement.style.setProperty('--vv-height', vv.height + 'px');
+                    document.documentElement.style.setProperty('--vv-offset-top', vv.offsetTop + 'px');
+                    // Detectar keyboard abierto: viewport más pequeño que window.innerHeight
+                    const kbOpen = vv.height < window.innerHeight * 0.85;
+                    document.documentElement.classList.toggle('vv-keyboard-open', kbOpen);
+                };
+                window.visualViewport.addEventListener('resize', updateVV);
+                window.visualViewport.addEventListener('scroll', updateVV);
+                updateVV();
+            }
+
             function goToLine(lineNum, col) {
                 let ta = document.getElementById("playgroundEditor");
                 let lines = ta.value.split("\n");
@@ -11243,10 +11266,16 @@ FinProceso`,
                         highlight.style.display = 'none';
                     }
 
-                    // Marcar el número activo en el gutter (sin querySelector)
+                    // Marcar el número activo en el gutter.
+                    // FIX bug mobile: si entre frames el gutter se regeneró,
+                    // pueden quedar MÚLTIPLES .ln-row.current (residuos visuales).
+                    // Hacemos sweep: quitamos .current de TODOS, luego ponemos
+                    // solo el actual. Es O(n) pero solo corre 1x por RAF y
+                    // evita el bug del "highlight duplicado" reportado.
                     let newActive = ln.children[lineNum - 1];
-                    if (newActive !== _activeRowEl) {
-                        if (_activeRowEl) _activeRowEl.classList.remove('current');
+                    if (newActive !== _activeRowEl || (_activeRowEl && !_activeRowEl.isConnected)) {
+                        const stale = ln.querySelectorAll('.ln-row.current');
+                        for (const el of stale) el.classList.remove('current');
                         if (newActive) newActive.classList.add('current');
                         _activeRowEl = newActive;
                     }

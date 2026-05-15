@@ -4062,6 +4062,28 @@
                     border-radius: 12px 12px 0 0;
                 }
             }
+
+            /* ════════ VISUAL VIEWPORT — soporte teclado virtual ════════
+               Cuando el teclado mobile esta abierto, html.vv-keyboard-open
+               se activa. Reducimos paneles flotantes y ocultamos overlays
+               que pelearian por espacio con el teclado. */
+            html.vv-keyboard-open .debug-watch-panel {
+                max-height: 30vh;
+            }
+            html.vv-keyboard-open #floatingReportBtn,
+            html.vv-keyboard-open #cheatMobileToggle {
+                /* Subir los FAB para que no queden tapados por el teclado */
+                bottom: 8px;
+            }
+            html.vv-keyboard-open .cheat-panel.mobile-open {
+                /* Cheat panel mobile: ajustar a viewport visible */
+                max-height: calc(var(--vv-height, 100vh) - 100px);
+            }
+            html.vv-keyboard-open .playground-grid.fullscreen {
+                /* Asegurar que el grid se contenga en la altura visible
+                   (no que se extienda detrás del teclado) */
+                height: var(--vv-height, 100vh) !important;
+            }
             /* ── Botón cancelar input ────────────────────────────── */
             .input-hint-row {
                 display: flex;
