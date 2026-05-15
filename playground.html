@@ -5,17 +5,14 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
         <meta name="theme-color" content="#0a0e1a" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
-        <title>PSeInt Academy — Editor, Intérprete y Guía Interactiva</title>
-        <meta name="description" content="Aprende PSeInt desde cero. Editor con resaltado de sintaxis, intérprete en tiempo real, lecciones interactivas y referencia completa. 100% en el navegador, sin instalaciones." />
+        <title>Editor libre — PSeInt Academy</title>
+        <meta name="description" content="Editor PSeInt con resaltado, intérprete y diagrama de flujo en vivo." />
         <link rel="stylesheet" href="assets/app.css" />
     </head>
-
     <body style="background-color: rgb(1, 1, 1)">
         <!-- FONDO -->
         <div class="bg-stars" id="stars"></div>
         <div class="grid-lines"></div>
-
-        <!-- NAVBAR -->
         <nav id="navbar" role="navigation" aria-label="Navegación principal">
             <a href="index.html" class="nav-logo" style="text-decoration:none;color:inherit">⬡ <span>PSeInt</span> Academy</a>
             <div class="nav-links" id="navLinks">
@@ -38,119 +35,304 @@
             <div class="nav-progress" id="navProgress" style="width: 0%"></div>
         </nav>
 
-        <!-- HERO / INICIO (ruta: #/home) -->
-        <section id="hero" role="banner">
-            <div class="hero-badge">
-                🚀 Plataforma interactiva de programación
+        <section id="playground" aria-label="Editor de código">
+            <div class="animate-in">
+                <h2
+                    class="section-title"
+                    style="max-width: min(1400px, 95vw); margin: 0 auto 8px"
+                >
+                    ⚡ Editor libre
+                </h2>
+                <p
+                    class="section-sub"
+                    style="max-width: min(1400px, 95vw); margin: 0 auto 24px"
+                >
+                    Escribe y ejecuta cualquier programa PSeInt. Tu código se
+                    guarda automáticamente.
+                </p>
+                <div class="playground-grid">
+                    <div class="playground-editor-panel">
+                        <div class="panel-header">
+                            <h3>📝 Editor PSeInt</h3>
+                            <div style="display:flex;align-items:center;gap:8px">
+                                <span id="playAutoSave" style="font-size:0.72rem;color:var(--accent4)">✓ Auto-guardado</span>
+                                <!-- Menú Archivo -->
+                                <div class="file-menu-wrap" id="fileMenuWrap">
+                                    <button class="btn-ghost file-menu-btn" style="padding:4px 12px;font-size:0.72rem"
+                                            onclick="toggleFileMenu()" title="Menú Archivo">
+                                        📁 Archivo ▾
+                                    </button>
+                                    <div class="file-menu-dropdown" id="fileMenuDropdown">
+                                        <button onclick="closeFileMenu();importCode()">
+                                            <span class="fmi-icon">📂</span>
+                                            <span class="fmi-label">Abrir archivo...</span>
+                                            <span class="fmi-shortcut">Ctrl+O</span>
+                                        </button>
+                                        <button onclick="closeFileMenu();formatPlaygroundCode()">
+                                            <span class="fmi-icon">✨</span>
+                                            <span class="fmi-label">Formatear código</span>
+                                            <span class="fmi-shortcut">Ctrl+S</span>
+                                        </button>
+                                        <div class="file-menu-sep"></div>
+                                        <button onclick="closeFileMenu();downloadCode()">
+                                            <span class="fmi-icon">⬇</span>
+                                            <span class="fmi-label">Descargar .psc</span>
+                                            <span class="fmi-shortcut">Ctrl+Shift+S</span>
+                                        </button>
+                                        <button onclick="closeFileMenu();copyCode()">
+                                            <span class="fmi-icon">📋</span>
+                                            <span class="fmi-label">Copiar todo al portapapeles</span>
+                                            <span class="fmi-shortcut">Ctrl+Shift+C</span>
+                                        </button>
+                                        <div class="file-menu-sep"></div>
+                                        <button onclick="closeFileMenu();clearEditor()">
+                                            <span class="fmi-icon">🗑</span>
+                                            <span class="fmi-label">Limpiar editor</span>
+                                            <span class="fmi-shortcut">Ctrl+L</span>
+                                        </button>
+                                    </div>
+                                </div>
+                                <button class="btn-ghost" style="padding:4px 10px;font-size:0.72rem" onclick="toggleEditorFullscreen()" title="Pantalla completa (F11)">⛶</button>
+                                <button class="btn-ghost" style="padding:4px 10px;font-size:0.72rem" onclick="toggleShortcuts()" title="Atajos de teclado">⌨</button>
+                            </div>
+                        </div>
+                        <!-- Snippets panel -->
+                        <div class="snippets-panel" id="snippetsPanel">
+                            <div class="snippets-header">
+                                <h4>📋 Plantillas rápidas</h4>
+                                <button class="btn-clear" style="padding:3px 10px;font-size:0.75rem" onclick="toggleSnippets()">✕</button>
+                            </div>
+                            <div class="snippets-grid" id="snippetsGrid"></div>
+                        </div>
+                        <div class="big-editor-container" id="playgroundEditorContainer" style="min-height:340px">
+                            <div class="big-line-nums" id="playgroundLineNums"></div>
+                            <!-- Resaltado de la línea actual (estilo VS Code) -->
+                            <div class="active-line-highlight" id="playgroundActiveLine" aria-hidden="true" style="display:none"></div>
+                            <div class="big-editor-highlight" id="playgroundHighlight" aria-hidden="true"></div>
+                        <textarea
+                            class="big-editor"
+                            id="playgroundEditor"
+                            spellcheck="false"
+                            wrap="off"
+                            aria-label="Editor de código PSeInt"
+                            autocomplete="off" autocorrect="off" autocapitalize="off"
+                        >
+Proceso MiPrograma
+	Definir x Como Entero
+	Definir y Como Entero
+	x <- 10
+	y <- 5
+	Escribir "Suma: ", x + y
+	Escribir "Resta: ", x - y
+	Escribir "Producto: ", x * y
+	Escribir "Division: ", x / y
+FinProceso</textarea>
+                        </div><!-- end big-editor-container -->
+                        <!-- Status bar -->
+                        <div class="editor-status-bar" id="editorStatusBar">
+                            <span class="status-item" id="statusSyntax">⬤ PSeInt</span>
+                            <span class="status-item" id="statusLines">Líneas: 1</span>
+                            <span class="status-item" id="statusCursor">Ln 1, Col 1</span>
+                            <span class="status-item" id="statusChars">Chars: 0</span>
+                            <span class="status-item" style="margin-left:auto;color:var(--text-dim)">F5: Ejecutar · F7: Diagrama · F11: Pantalla completa · Ctrl+D: Duplicar · Alt+↑↓: Mover</span>
+                        </div>
+                        <!-- Error panel (colapsable) -->
+                        <div class="diag-panel error-panel" id="playgroundErrorPanel">
+                            <div class="diag-panel-header" onclick="toggleDiagPanel('playgroundErrorPanel')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleDiagPanel('playgroundErrorPanel');}" role="button" tabindex="0" aria-expanded="false" aria-label="Panel de errores. Presiona Enter para expandir o contraer.">
+                                <span class="diag-toggle-icon">▸</span>
+                                <span class="diag-panel-title">⛔ Errores de sintaxis</span>
+                                <span class="diag-count" id="errorCount">0</span>
+                                <span class="diag-spacer"></span>
+                                <span class="diag-hint">Clic para expandir / contraer</span>
+                            </div>
+                            <div class="diag-panel-body" id="playgroundErrorList"></div>
+                        </div>
+                        <div class="diag-panel warn-panel" id="playgroundWarnPanel">
+                            <div class="diag-panel-header" onclick="toggleDiagPanel('playgroundWarnPanel')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleDiagPanel('playgroundWarnPanel');}" role="button" tabindex="0" aria-expanded="false" aria-label="Panel de sugerencias. Presiona Enter para expandir o contraer.">
+                                <span class="diag-toggle-icon">▸</span>
+                                <span class="diag-panel-title">💡 Sugerencias</span>
+                                <span class="diag-count" id="warnCount">0</span>
+                                <span class="diag-spacer"></span>
+                                <span class="diag-hint">Clic para expandir / contraer</span>
+                            </div>
+                            <div class="diag-panel-body" id="playgroundWarnList"></div>
+                        </div>
+                        <div class="playground-toolbar">
+                            <button
+                                class="btn-run"
+                                onclick="runPlayground()"
+                                aria-label="Ejecutar código (F5)"
+                                title="Ejecutar (F5)"
+                            >
+                                ▶ Ejecutar
+                            </button>
+                            <button
+                                class="btn-flowchart"
+                                onclick="openFlowchart()"
+                                aria-label="Ver diagrama de flujo (F7)"
+                                title="Diagrama de flujo (F7)"
+                                style="background:linear-gradient(135deg,#7c3aed,#a78bfa);color:#fff;border:none;padding:8px 14px;font-size:0.85rem;border-radius:8px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(124,58,237,0.35)"
+                            >
+                                🔀 Diagrama
+                            </button>
+                            <button
+                                class="btn-ghost"
+                                style="padding: 8px 14px; font-size: 0.85rem"
+                                onclick="importCode()"
+                                aria-label="Importar archivo .psc"
+                                title="Importar código desde archivo .psc"
+                            >
+                                📂 Importar
+                            </button>
+                            <button
+                                class="btn-clear"
+                                onclick="clearPlayground()"
+                                aria-label="Limpiar código"
+                            >
+                                🗑 Limpiar
+                            </button>
+                            <button
+                                class="btn-ghost"
+                                style="padding: 8px 14px; font-size: 0.85rem"
+                                onclick="toggleSnippets()"
+                                aria-label="Plantillas de código"
+                            >
+                                📋 Plantillas
+                            </button>
+                            <button type="button" class="fg-toggle-btn" onclick="cycleFlowMode()" aria-label="Alternar guías visuales" title="Líneas de indent / Flechas de flujo / Off" style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;background:var(--bg-card2);color:var(--text-main);border:1px solid var(--border);border-radius:8px;font-size:0.78rem;font:inherit;cursor:pointer">
+                                <span aria-hidden="true">🧭</span>
+                                <span>Guías:</span>
+                                <span class="fg-mode-label" style="font-weight:700;color:var(--accent1)">Tabs</span>
+                            </button>
+                            <div class="theme-picker-wrap" style="position:relative;display:inline-block">
+                                <button type="button" class="theme-picker-btn" onclick="toggleThemePicker(this)" aria-label="Seleccionar tema del editor" aria-haspopup="true" aria-expanded="false" style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;background:var(--bg-card2);color:var(--text-main);border:1px solid var(--border);border-radius:8px;font-size:0.78rem;font:inherit;cursor:pointer">
+                                    <span aria-hidden="true">🎨</span>
+                                    <span>Tema:</span>
+                                    <span class="theme-picker-label" style="font-weight:700;color:var(--accent1)">Dark</span>
+                                    <span aria-hidden="true" style="font-size:0.7rem;opacity:0.7">▾</span>
+                                </button>
+                                <!-- select oculto para mantener compatibilidad -->
+                                <select id="themeSelector" aria-hidden="true" tabindex="-1" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none">
+                                    <option value="dark">Dark</option>
+                                    <option value="light">Light</option>
+                                    <option value="solarized">Solarized</option>
+                                    <option value="monokai">Monokai</option>
+                                    <option value="ocean">Ocean</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- ============================================================
+                         ELEMENTOS DEL MODO PANTALLA COMPLETA
+                         Solo visibles cuando .playground-grid tiene .fullscreen
+                         ============================================================ -->
+                    <!-- TOPBAR: ARCHIVO, atajos, ejecutar, diagrama, tabs, status -->
+                    <!-- TOPBAR: Título | Archivo | Atajos | Diagrama | Ejecutar | (spacer) | Salir -->
+                    <div class="fs-topbar" id="fsTopbar">
+                        <span class="fs-title">📝 Editor PSeInt</span>
+                        <span class="fs-sep"></span>
+                        <!-- Menú Archivo desplegable -->
+                        <div class="file-menu-wrap" id="fsFileMenuWrap">
+                            <button class="fs-icon-btn" onclick="fsToggleFileMenu(event)" title="Menú Archivo">📁 Archivo ▾</button>
+                            <div class="file-menu-dropdown" id="fsFileMenuDropdown">
+                                <button onclick="fsCloseFileMenu();importCode()">
+                                    <span class="fmi-icon">📂</span>
+                                    <span class="fmi-label">Abrir archivo...</span>
+                                    <span class="fmi-shortcut">Ctrl+O</span>
+                                </button>
+                                <button onclick="fsCloseFileMenu();formatPlaygroundCode()">
+                                    <span class="fmi-icon">✨</span>
+                                    <span class="fmi-label">Formatear código</span>
+                                    <span class="fmi-shortcut">Ctrl+S</span>
+                                </button>
+                                <div class="file-menu-sep"></div>
+                                <button onclick="fsCloseFileMenu();downloadCode()">
+                                    <span class="fmi-icon">⬇</span>
+                                    <span class="fmi-label">Descargar .psc</span>
+                                    <span class="fmi-shortcut">Ctrl+Shift+S</span>
+                                </button>
+                                <button onclick="fsCloseFileMenu();copyCode()">
+                                    <span class="fmi-icon">📋</span>
+                                    <span class="fmi-label">Copiar todo al portapapeles</span>
+                                    <span class="fmi-shortcut">Ctrl+Shift+C</span>
+                                </button>
+                                <div class="file-menu-sep"></div>
+                                <button onclick="fsCloseFileMenu();clearEditor()">
+                                    <span class="fmi-icon">🗑</span>
+                                    <span class="fmi-label">Limpiar editor</span>
+                                    <span class="fmi-shortcut">Ctrl+L</span>
+                                </button>
+                            </div>
+                        </div>
+                        <button class="fs-icon-btn" onclick="toggleShortcuts()" title="Atajos de teclado">⌨ Atajos</button>
+                        <button class="fs-icon-btn" onclick="openFlowchart()" title="Ver diagrama de flujo (F7)">🔀 Diagrama</button>
+                        <!-- Toggle Flow Guides en fullscreen -->
+                        <button type="button" class="fs-icon-btn fg-toggle-btn" onclick="cycleFlowMode()" title="Alternar guías visuales (tabs / guías / off)">
+                            🧭 <span class="fg-mode-label">Tabs</span>
+                        </button>
+                        <!-- Theme picker en pantalla completa -->
+                        <div class="theme-picker-wrap" style="position:relative;display:inline-block">
+                            <button type="button" class="theme-picker-btn fs-icon-btn" onclick="toggleThemePicker(this)" aria-label="Seleccionar tema del editor" aria-haspopup="true" aria-expanded="false">
+                                🎨 <span class="theme-picker-label">Dark</span> ▾
+                            </button>
+                        </div>
+                        <button class="fs-run-btn" id="fsRunBtn" onclick="runPlayground()" title="Ejecutar (F5)">▶ Ejecutar</button>
+                        <button class="fs-stop-btn" id="fsStopBtn" onclick="stopExecution()" title="Detener ejecución" style="display:none">⏹ Detener</button>
+                        <!-- spacer empuja Salir a la derecha -->
+                        <span class="fs-spacer"></span>
+                        <button class="fs-exit-btn" onclick="toggleEditorFullscreen()" title="Salir de pantalla completa (Esc o F11)">✕ Salir</button>
+                    </div>
+                    <!-- BOTTOM PANEL: contiene la consola/errores/sugerencias según el tab activo (se inserta ANTES de la bottom-bar) -->
+                    <!-- SPLITTER para redimensionar el panel inferior -->
+                    <div class="fs-splitter" id="fsSplitter" title="Arrastra para redimensionar"></div>
+                    <div class="fs-bottom-panel" id="fsBottomPanel">
+                        <div class="fs-bottom-header">
+                            <span class="fs-bh-title" id="fsBottomTitle">Consola</span>
+                            <button class="fs-bh-close" onclick="fsCloseBottomPanel()" title="Cerrar panel">✕ Cerrar</button>
+                        </div>
+                        <div class="fs-bottom-content" id="fsBottomContent"></div>
+                    </div>
+                    <!-- BOTTOM BAR: Errores/Sugerencias/Consola (izquierda) | Ln/Col (derecha) -->
+                    <div class="fs-bottombar" id="fsBottombar">
+                        <button class="fs-tab-btn" id="fsTabErrors" onclick="fsToggleTab('errors')" title="Errores de sintaxis" style="display:none">
+                            ⛔ Errores <span class="fs-tab-count" id="fsTabErrorsCount">0</span>
+                        </button>
+                        <button class="fs-tab-btn" id="fsTabWarns" onclick="fsToggleTab('warns')" title="Sugerencias y advertencias" style="display:none">
+                            💡 Sugerencias <span class="fs-tab-count" id="fsTabWarnsCount">0</span>
+                        </button>
+                        <button class="fs-tab-btn" id="fsTabConsole" onclick="fsToggleTab('console')" title="Consola (Ctrl+`)">
+                            💻 Consola
+                        </button>
+                        <!-- spacer empuja status a la derecha -->
+                        <span class="fs-spacer"></span>
+                        <span class="fs-status" id="fsStatus">Ln 1, Col 1 · 0 chars</span>
+                    </div>
+                    <!-- Panel original de consola (sigue siendo el "real", solo oculto en fullscreen) -->
+                    <div class="playground-output-panel">
+                        <div class="panel-header">
+                            <h3>💻 Consola de salida</h3>
+                            <div style="display:flex;align-items:center;gap:8px">
+                                <span id="execTimeDisplay" style="font-size:0.72rem;color:var(--text-dim);display:none"></span>
+                                <button id="stopBtn" class="btn-clear" style="padding:4px 12px;font-size:0.78rem;display:none;color:var(--color-error-strong);border-color:rgba(239,68,68,0.4)" onclick="stopExecution()" title="Detener ejecución">⏹ Detener</button>
+                                <button
+                                    class="btn-clear"
+                                    style="padding: 4px 12px; font-size: 0.78rem"
+                                    onclick="clearConsole('playgroundConsole')"
+                                    aria-label="Limpiar consola"
+                                >
+                                    🗑
+                                </button>
+                            </div>
+                        </div>
+                        <div class="big-console" id="playgroundConsole" role="log" aria-live="polite" aria-atomic="false" aria-label="Consola del playground">
+                            <span class="cout-line cout-info" style="color:var(--text-muted)">// 💡 Presiona F5 o el botón ▶ Ejecutar para ver la salida aquí.</span><br>
+                            <span class="cout-line cout-info" style="color:var(--text-muted)">// 📋 Tu código se guarda automáticamente en el navegador.</span><br>
+                            <span class="cout-line cout-info" style="color:var(--text-muted)">// ⌨ Ctrl+Space activa el autocompletado.</span>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <h1 class="hero-title">
-                Aprende a programar<br />con <span class="grad">PSeInt</span>
-            </h1>
-            <p class="hero-sub">
-                Desde cero hasta estructuras avanzadas. Aprende variables,
-                condicionales, ciclos, arreglos y funciones con un editor en
-                vivo y ejercicios interactivos. Compatible 100% con PSeInt para Windows.
-            </p>
-            <div class="hero-btns">
-                <a href="lecciones.html" class="btn-primary" style="text-decoration:none;display:inline-block">
-                    Comenzar ahora →
-                </a>
-                <a href="playground.html" class="btn-ghost" style="text-decoration:none;display:inline-block">
-                    ⚡ Abrir editor libre
-                </a>
-            </div>
-            <div class="hero-stats">
-                <div class="stat">
-                    <div class="stat-n" id="totalLessons">18</div>
-                    <div class="stat-l">Lecciones</div>
-                </div>
-                <div class="stat">
-                    <div class="stat-n">4</div>
-                    <div class="stat-l">Niveles</div>
-                </div>
-                <div class="stat">
-                    <div class="stat-n">∞</div>
-                    <div class="stat-l">Ejercicios</div>
-                </div>
-                <div class="stat">
-                    <div class="stat-n">0</div>
-                    <div class="stat-l">Instalación</div>
-                </div>
-            </div>
-            <div class="hero-code-preview animate-in">
-                <div class="code-bar">
-                    <div class="dot dot-r"></div>
-                    <div class="dot dot-y"></div>
-                    <div class="dot dot-g"></div>
-                    <span>mi_primer_programa.psc</span>
-                </div>
-                <div class="hero-code">
-                    <span class="kw-process">Proceso</span> MiPrimerPrograma<br>
-                    &nbsp;&nbsp;<span class="kw-var">Definir</span> nombre <span class="kw-var">Como</span>
-                    <span class="kw-type kw-type-texto">Texto</span><br>
-                    &nbsp;&nbsp;<span class="kw-var">Definir</span> edad <span class="kw-var">Como</span>
-                    <span class="kw-type kw-type-entero">Entero</span><br>
-                    &nbsp;&nbsp;<span class="kw-io">Escribir</span>
-                    <span class="kw-string">"¿Cuál es tu nombre?"</span><br>
-                    &nbsp;&nbsp;<span class="kw-io">Leer</span> nombre<br>
-                    &nbsp;&nbsp;<span class="kw-io">Escribir</span>
-                    <span class="kw-string">"Hola, "</span><span class="kw-op">,</span> nombre<span class="kw-op">,</span>
-                    <span class="kw-string">"!"</span><br>
-                    <span class="kw-process">FinProceso</span>
-                </div>
-            </div>
-
-            <!-- Banner "Proyecto en construcción activa" -->
-            <div class="status-banner reveal" style="margin-top:48px">
-                <div class="status-banner-icon">🚧</div>
-                <div class="status-banner-content">
-                    <div class="status-banner-title">Proyecto en construcción activa</div>
-                    <div class="status-banner-text">PSeInt Academy se mejora constantemente. Si encuentras un bug o tienes una sugerencia, <button onclick="document.getElementById('reportModal').classList.add('open')" style="background:none;border:none;color:var(--accent1);font-weight:600;cursor:pointer;text-decoration:underline;font-size:inherit;padding:0">reportarla aquí</button> o abre un <a href="https://github.com/ldikay99/pseint-academy/issues" target="_blank" rel="noopener" style="color:var(--accent1);font-weight:600">issue en GitHub</a>.</div>
-                </div>
-            </div>
-
-            <!-- Features showcase (NO clickable — el nav ya redirige) -->
-            <div class="features-showcase reveal" style="margin-top:56px">
-                <div class="feature-pill">
-                    <span class="feature-pill-icon">📚</span>
-                    <span>56 lecciones</span>
-                </div>
-                <div class="feature-pill">
-                    <span class="feature-pill-icon">⚡</span>
-                    <span>Editor con resaltado</span>
-                </div>
-                <div class="feature-pill">
-                    <span class="feature-pill-icon">🔍</span>
-                    <span>Análisis estático</span>
-                </div>
-                <div class="feature-pill">
-                    <span class="feature-pill-icon">🎨</span>
-                    <span>5 temas</span>
-                </div>
-                <div class="feature-pill">
-                    <span class="feature-pill-icon">📊</span>
-                    <span>Diagrama de flujo</span>
-                </div>
-                <div class="feature-pill">
-                    <span class="feature-pill-icon">⌨️</span>
-                    <span>Atajos VSCode</span>
-                </div>
-                <div class="feature-pill">
-                    <span class="feature-pill-icon">📦</span>
-                    <span>Offline 100%</span>
-                </div>
-                <div class="feature-pill">
-                    <span class="feature-pill-icon">🆓</span>
-                    <span>Open source MIT</span>
-                </div>
-            </div>
-
-
         </section>
-
-
-
-
 
         <footer class="site-footer">
             <div class="footer-grid">
@@ -187,6 +369,7 @@
                 </p>
             </div>
         </footer>
+
 
         <!-- FOOTER LEGACY (oculto por SPA, contiene info de roadmap modal) -->
         <footer style="display:none">
@@ -720,6 +903,7 @@
         <div id="ideTooltip"></div>
 
         <script src="assets/ui.js" defer></script>
+
 
     </body>
 </html>

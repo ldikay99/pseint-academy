@@ -5,17 +5,14 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
         <meta name="theme-color" content="#0a0e1a" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
-        <title>PSeInt Academy — Editor, Intérprete y Guía Interactiva</title>
-        <meta name="description" content="Aprende PSeInt desde cero. Editor con resaltado de sintaxis, intérprete en tiempo real, lecciones interactivas y referencia completa. 100% en el navegador, sin instalaciones." />
+        <title>Sobre el proyecto — PSeInt Academy</title>
+        <meta name="description" content="La historia detrás de PSeInt Academy y por qué decidí construirlo." />
         <link rel="stylesheet" href="assets/app.css" />
     </head>
-
     <body style="background-color: rgb(1, 1, 1)">
         <!-- FONDO -->
         <div class="bg-stars" id="stars"></div>
         <div class="grid-lines"></div>
-
-        <!-- NAVBAR -->
         <nav id="navbar" role="navigation" aria-label="Navegación principal">
             <a href="index.html" class="nav-logo" style="text-decoration:none;color:inherit">⬡ <span>PSeInt</span> Academy</a>
             <div class="nav-links" id="navLinks">
@@ -38,119 +35,71 @@
             <div class="nav-progress" id="navProgress" style="width: 0%"></div>
         </nav>
 
-        <!-- HERO / INICIO (ruta: #/home) -->
-        <section id="hero" role="banner">
-            <div class="hero-badge">
-                🚀 Plataforma interactiva de programación
-            </div>
-            <h1 class="hero-title">
-                Aprende a programar<br />con <span class="grad">PSeInt</span>
-            </h1>
-            <p class="hero-sub">
-                Desde cero hasta estructuras avanzadas. Aprende variables,
-                condicionales, ciclos, arreglos y funciones con un editor en
-                vivo y ejercicios interactivos. Compatible 100% con PSeInt para Windows.
-            </p>
-            <div class="hero-btns">
-                <a href="lecciones.html" class="btn-primary" style="text-decoration:none;display:inline-block">
-                    Comenzar ahora →
-                </a>
-                <a href="playground.html" class="btn-ghost" style="text-decoration:none;display:inline-block">
-                    ⚡ Abrir editor libre
-                </a>
-            </div>
-            <div class="hero-stats">
-                <div class="stat">
-                    <div class="stat-n" id="totalLessons">18</div>
-                    <div class="stat-l">Lecciones</div>
+<section id="sobre" class="section" aria-label="Sobre el proyecto" style="padding:clamp(40px,6vw,80px) clamp(16px,3vw,48px)">
+            <div id="sobre-anchor" class="home-subsection reveal" style="margin-top:96px;max-width:min(900px,95vw);margin-left:auto;margin-right:auto">
+                <div class="about-hero">
+                    <div class="about-avatar pulse">👨‍💻</div>
+                    <h2 class="section-title" style="margin-bottom:8px">👤 Sobre el proyecto</h2>
+                    <p class="section-sub" style="margin:0 auto 0">
+                        La historia detrás de PSeInt Academy y por qué decidí construirlo.
+                    </p>
                 </div>
-                <div class="stat">
-                    <div class="stat-n">4</div>
-                    <div class="stat-l">Niveles</div>
-                </div>
-                <div class="stat">
-                    <div class="stat-n">∞</div>
-                    <div class="stat-l">Ejercicios</div>
-                </div>
-                <div class="stat">
-                    <div class="stat-n">0</div>
-                    <div class="stat-l">Instalación</div>
-                </div>
-            </div>
-            <div class="hero-code-preview animate-in">
-                <div class="code-bar">
-                    <div class="dot dot-r"></div>
-                    <div class="dot dot-y"></div>
-                    <div class="dot dot-g"></div>
-                    <span>mi_primer_programa.psc</span>
-                </div>
-                <div class="hero-code">
-                    <span class="kw-process">Proceso</span> MiPrimerPrograma<br>
-                    &nbsp;&nbsp;<span class="kw-var">Definir</span> nombre <span class="kw-var">Como</span>
-                    <span class="kw-type kw-type-texto">Texto</span><br>
-                    &nbsp;&nbsp;<span class="kw-var">Definir</span> edad <span class="kw-var">Como</span>
-                    <span class="kw-type kw-type-entero">Entero</span><br>
-                    &nbsp;&nbsp;<span class="kw-io">Escribir</span>
-                    <span class="kw-string">"¿Cuál es tu nombre?"</span><br>
-                    &nbsp;&nbsp;<span class="kw-io">Leer</span> nombre<br>
-                    &nbsp;&nbsp;<span class="kw-io">Escribir</span>
-                    <span class="kw-string">"Hola, "</span><span class="kw-op">,</span> nombre<span class="kw-op">,</span>
-                    <span class="kw-string">"!"</span><br>
-                    <span class="kw-process">FinProceso</span>
-                </div>
-            </div>
 
-            <!-- Banner "Proyecto en construcción activa" -->
-            <div class="status-banner reveal" style="margin-top:48px">
-                <div class="status-banner-icon">🚧</div>
-                <div class="status-banner-content">
-                    <div class="status-banner-title">Proyecto en construcción activa</div>
-                    <div class="status-banner-text">PSeInt Academy se mejora constantemente. Si encuentras un bug o tienes una sugerencia, <button onclick="document.getElementById('reportModal').classList.add('open')" style="background:none;border:none;color:var(--accent1);font-weight:600;cursor:pointer;text-decoration:underline;font-size:inherit;padding:0">reportarla aquí</button> o abre un <a href="https://github.com/ldikay99/pseint-academy/issues" target="_blank" rel="noopener" style="color:var(--accent1);font-weight:600">issue en GitHub</a>.</div>
+                <div class="about-card">
+                    <h3>🎓 Quién soy</h3>
+                    <p>Soy <strong>Jonathan C.</strong> (<a href="https://github.com/ldikay99" target="_blank" rel="noopener" style="color:var(--accent1)">@ldikay99</a>), <strong>Técnico en Desarrollo de Software</strong> en formación. Me apasiona la programación, las herramientas modernas de desarrollo y el uso aplicado de inteligencias artificiales para acelerar el aprendizaje y la productividad. Trabajo con HTML, CSS, JavaScript, manejo flujos asistidos por IA y disfruto construyendo plataformas web que resuelvan problemas reales.</p>
+                    <p>Mi primer contacto con la programación fue, como el de muchos estudiantes, a través de <strong>PSeInt</strong>: ese lenguaje pseudo-código en español que enseña a pensar en términos de variables, condicionales, ciclos y funciones antes de pasar a un lenguaje de producción.</p>
+                </div>
+
+                <div class="about-card">
+                    <h3>💡 Por qué nació este proyecto</h3>
+                    <p>Comencé este proyecto durante mi formación en el instituto, al darme cuenta de que existía una necesidad clara: muchos estudiantes que se inician en programación necesitan una herramienta accesible, sin instalaciones, que les permita practicar pseudocódigo desde cualquier dispositivo y en cualquier momento.</p>
+                    <p>El editor oficial de PSeInt para Windows es excelente, pero no siempre se puede instalar (computadores compartidos, equipos antiguos, celulares). PSeInt Academy nació para cubrir ese vacío con tres principios:</p>
+                    <p>1. <strong>Cero fricción para empezar</strong>: abrir un enlace, escribir código, ejecutar. Sin cuentas, sin descargas.</p>
+                    <p>2. <strong>Enseñanza activa</strong>: cada lección tiene teoría, ejemplo ejecutable y un reto con validación automática — el estudiante aprende haciendo.</p>
+                    <p>3. <strong>Fidelidad al PSeInt oficial</strong>: el código que pasa el analizador aquí debe ejecutarse igual en PSeInt de escritorio. El analizador es estricto a propósito.</p>
+                </div>
+
+                <div class="about-card">
+                    <h3>🚧 Proyecto en construcción activa</h3>
+                    <p><strong>PSeInt Academy se sigue mejorando todos los días.</strong> Hay áreas funcionando perfectamente y otras en pulido constante. Las contribuciones, reportes de bugs y sugerencias son fundamentales para que la plataforma crezca.</p>
+                    <p>Si encuentras un problema, una falla del analizador, una lección que podría explicarse mejor o tienes una idea para una nueva funcionalidad, hazlo saber. Cada reporte ayuda a que la experiencia mejore para el siguiente estudiante.</p>
+                    <p style="margin-top:14px">
+                        <button onclick="document.getElementById('reportModal').classList.add('open')" class="btn-ghost" style="display:inline-block;text-decoration:none;margin-right:8px">🐛 Reportar bug o sugerencia</button>
+                        <a href="https://github.com/ldikay99/pseint-academy/issues" target="_blank" rel="noopener" class="btn-ghost" style="display:inline-block;text-decoration:none">⬢ Abrir issue en GitHub</a>
+                    </p>
+                </div>
+
+                <div class="about-grid reveal">
+                    <div class="about-stat">
+                        <div class="about-stat-icon">⚙️</div>
+                        <div class="about-stat-label">Stack</div>
+                        <div class="about-stat-value">HTML · CSS · JS vanilla</div>
+                    </div>
+                    <div class="about-stat">
+                        <div class="about-stat-icon">📦</div>
+                        <div class="about-stat-label">Dependencias</div>
+                        <div class="about-stat-value">Cero (offline 100%)</div>
+                    </div>
+                    <div class="about-stat">
+                        <div class="about-stat-icon">📚</div>
+                        <div class="about-stat-label">Lecciones</div>
+                        <div class="about-stat-value">56 con reto incluido</div>
+                    </div>
+                    <div class="about-stat">
+                        <div class="about-stat-icon">🎨</div>
+                        <div class="about-stat-label">Temas</div>
+                        <div class="about-stat-value">5 (Dark · Light · Solarized · Monokai · Ocean)</div>
+                    </div>
+                </div>
+
+                <div class="about-card">
+                    <h3>🤝 Cómo puedes ayudar</h3>
+                    <p>Si encuentras un bug, un falso positivo del analizador o tienes una idea para una lección nueva, abre un issue en <a href="https://github.com/ldikay99/pseint-academy/issues" target="_blank" rel="noopener" style="color:var(--accent1)">GitHub</a>. El proyecto es open source bajo licencia MIT — puedes clonarlo, modificarlo y usarlo en tu institución sin pedir permiso, siempre manteniendo la atribución al autor.</p>
+                    <p>Si esta plataforma te ayudó a aprobar algoritmos, cuéntamelo: <a href="mailto:heydikay@gmail.com" style="color:var(--accent1)">heydikay@gmail.com</a>. Es la mejor parte del proyecto.</p>
                 </div>
             </div>
-
-            <!-- Features showcase (NO clickable — el nav ya redirige) -->
-            <div class="features-showcase reveal" style="margin-top:56px">
-                <div class="feature-pill">
-                    <span class="feature-pill-icon">📚</span>
-                    <span>56 lecciones</span>
-                </div>
-                <div class="feature-pill">
-                    <span class="feature-pill-icon">⚡</span>
-                    <span>Editor con resaltado</span>
-                </div>
-                <div class="feature-pill">
-                    <span class="feature-pill-icon">🔍</span>
-                    <span>Análisis estático</span>
-                </div>
-                <div class="feature-pill">
-                    <span class="feature-pill-icon">🎨</span>
-                    <span>5 temas</span>
-                </div>
-                <div class="feature-pill">
-                    <span class="feature-pill-icon">📊</span>
-                    <span>Diagrama de flujo</span>
-                </div>
-                <div class="feature-pill">
-                    <span class="feature-pill-icon">⌨️</span>
-                    <span>Atajos VSCode</span>
-                </div>
-                <div class="feature-pill">
-                    <span class="feature-pill-icon">📦</span>
-                    <span>Offline 100%</span>
-                </div>
-                <div class="feature-pill">
-                    <span class="feature-pill-icon">🆓</span>
-                    <span>Open source MIT</span>
-                </div>
-            </div>
-
-
         </section>
-
-
-
-
 
         <footer class="site-footer">
             <div class="footer-grid">
@@ -187,6 +136,7 @@
                 </p>
             </div>
         </footer>
+
 
         <!-- FOOTER LEGACY (oculto por SPA, contiene info de roadmap modal) -->
         <footer style="display:none">
@@ -720,6 +670,7 @@
         <div id="ideTooltip"></div>
 
         <script src="assets/ui.js" defer></script>
+
 
     </body>
 </html>

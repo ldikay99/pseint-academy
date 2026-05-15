@@ -5,17 +5,14 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
         <meta name="theme-color" content="#0a0e1a" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
-        <title>PSeInt Academy — Editor, Intérprete y Guía Interactiva</title>
-        <meta name="description" content="Aprende PSeInt desde cero. Editor con resaltado de sintaxis, intérprete en tiempo real, lecciones interactivas y referencia completa. 100% en el navegador, sin instalaciones." />
+        <title>Licencia y créditos — PSeInt Academy</title>
+        <meta name="description" content="Licencia MIT y créditos del autor de PSeInt Academy." />
         <link rel="stylesheet" href="assets/app.css" />
     </head>
-
     <body style="background-color: rgb(1, 1, 1)">
         <!-- FONDO -->
         <div class="bg-stars" id="stars"></div>
         <div class="grid-lines"></div>
-
-        <!-- NAVBAR -->
         <nav id="navbar" role="navigation" aria-label="Navegación principal">
             <a href="index.html" class="nav-logo" style="text-decoration:none;color:inherit">⬡ <span>PSeInt</span> Academy</a>
             <div class="nav-links" id="navLinks">
@@ -38,119 +35,79 @@
             <div class="nav-progress" id="navProgress" style="width: 0%"></div>
         </nav>
 
-        <!-- HERO / INICIO (ruta: #/home) -->
-        <section id="hero" role="banner">
-            <div class="hero-badge">
-                🚀 Plataforma interactiva de programación
-            </div>
-            <h1 class="hero-title">
-                Aprende a programar<br />con <span class="grad">PSeInt</span>
-            </h1>
-            <p class="hero-sub">
-                Desde cero hasta estructuras avanzadas. Aprende variables,
-                condicionales, ciclos, arreglos y funciones con un editor en
-                vivo y ejercicios interactivos. Compatible 100% con PSeInt para Windows.
-            </p>
-            <div class="hero-btns">
-                <a href="lecciones.html" class="btn-primary" style="text-decoration:none;display:inline-block">
-                    Comenzar ahora →
-                </a>
-                <a href="playground.html" class="btn-ghost" style="text-decoration:none;display:inline-block">
-                    ⚡ Abrir editor libre
-                </a>
-            </div>
-            <div class="hero-stats">
-                <div class="stat">
-                    <div class="stat-n" id="totalLessons">18</div>
-                    <div class="stat-l">Lecciones</div>
-                </div>
-                <div class="stat">
-                    <div class="stat-n">4</div>
-                    <div class="stat-l">Niveles</div>
-                </div>
-                <div class="stat">
-                    <div class="stat-n">∞</div>
-                    <div class="stat-l">Ejercicios</div>
-                </div>
-                <div class="stat">
-                    <div class="stat-n">0</div>
-                    <div class="stat-l">Instalación</div>
-                </div>
-            </div>
-            <div class="hero-code-preview animate-in">
-                <div class="code-bar">
-                    <div class="dot dot-r"></div>
-                    <div class="dot dot-y"></div>
-                    <div class="dot dot-g"></div>
-                    <span>mi_primer_programa.psc</span>
-                </div>
-                <div class="hero-code">
-                    <span class="kw-process">Proceso</span> MiPrimerPrograma<br>
-                    &nbsp;&nbsp;<span class="kw-var">Definir</span> nombre <span class="kw-var">Como</span>
-                    <span class="kw-type kw-type-texto">Texto</span><br>
-                    &nbsp;&nbsp;<span class="kw-var">Definir</span> edad <span class="kw-var">Como</span>
-                    <span class="kw-type kw-type-entero">Entero</span><br>
-                    &nbsp;&nbsp;<span class="kw-io">Escribir</span>
-                    <span class="kw-string">"¿Cuál es tu nombre?"</span><br>
-                    &nbsp;&nbsp;<span class="kw-io">Leer</span> nombre<br>
-                    &nbsp;&nbsp;<span class="kw-io">Escribir</span>
-                    <span class="kw-string">"Hola, "</span><span class="kw-op">,</span> nombre<span class="kw-op">,</span>
-                    <span class="kw-string">"!"</span><br>
-                    <span class="kw-process">FinProceso</span>
-                </div>
-            </div>
+<section id="licencia" class="section" aria-label="Licencia y créditos" style="padding:clamp(40px,6vw,80px) clamp(16px,3vw,48px)">
+            <div id="licencia-anchor" class="home-subsection reveal" style="margin-top:96px;max-width:min(900px,95vw);margin-left:auto;margin-right:auto">
+                <h2 class="section-title">📜 Licencia y créditos</h2>
+                <p class="section-sub">
+                    PSeInt Academy es <strong>open source bajo licencia MIT</strong>. Puedes usar, copiar, modificar y distribuir el código — siempre incluyendo la atribución a su autor.
+                </p>
 
-            <!-- Banner "Proyecto en construcción activa" -->
-            <div class="status-banner reveal" style="margin-top:48px">
-                <div class="status-banner-icon">🚧</div>
-                <div class="status-banner-content">
-                    <div class="status-banner-title">Proyecto en construcción activa</div>
-                    <div class="status-banner-text">PSeInt Academy se mejora constantemente. Si encuentras un bug o tienes una sugerencia, <button onclick="document.getElementById('reportModal').classList.add('open')" style="background:none;border:none;color:var(--accent1);font-weight:600;cursor:pointer;text-decoration:underline;font-size:inherit;padding:0">reportarla aquí</button> o abre un <a href="https://github.com/ldikay99/pseint-academy/issues" target="_blank" rel="noopener" style="color:var(--accent1);font-weight:600">issue en GitHub</a>.</div>
+                <!-- Bloque destacado de autoría -->
+                <div class="author-banner">
+                    <div class="author-banner-avatar">⬡</div>
+                    <div class="author-banner-info">
+                        <div class="author-banner-label">Creado y mantenido por</div>
+                        <div class="author-banner-name">Jonathan C.</div>
+                        <div class="author-banner-handle">
+                            <a href="https://github.com/ldikay99" target="_blank" rel="noopener">@ldikay99</a> ·
+                            <a href="mailto:heydikay@gmail.com">heydikay@gmail.com</a>
+                        </div>
+                        <div class="author-banner-copyright">© 2026 · Todos los derechos reservados al autor · Distribuido bajo licencia MIT</div>
+                    </div>
+                </div>
+
+                <div class="about-card">
+                    <h3>✅ Qué puedes hacer</h3>
+                    <p>• <strong>Usar</strong> el editor sin pagar nada, sin cuenta, sin límites de uso.</p>
+                    <p>• <strong>Clonar</strong> el repositorio y modificarlo para tus alumnos, tu institución, tu empresa o tu uso personal.</p>
+                    <p>• <strong>Publicar</strong> tu propia versión derivada (incluso comercial) mientras incluyas el aviso de copyright original y la atribución al autor.</p>
+                    <p>• <strong>Combinarlo</strong> con otro software, libre o privativo.</p>
+                </div>
+
+                <div class="about-card">
+                    <h3>📋 Condiciones de uso y distribución</h3>
+                    <p>Cualquier persona o institución que <strong>edite, reutilice o redistribuya</strong> esta plataforma debe:</p>
+                    <p>• Mantener el aviso de copyright original: <code style="color:var(--accent1)">Copyright (c) 2026 Jonathan C.</code></p>
+                    <p>• Incluir el texto completo de la licencia MIT en copias o porciones sustanciales del software.</p>
+                    <p>• Atribuir al autor original (Jonathan C. @ldikay99) en créditos visibles si se publica una versión derivada.</p>
+                    <p>El software se distribuye <strong>"tal cual"</strong>, sin garantías. Si se rompe algo al usarlo, no se puede reclamar al autor — pero sí se puede abrir un issue en GitHub para que sea arreglado.</p>
+                </div>
+
+                <h3 style="color:var(--accent2);margin:32px 0 14px;font-size:1.1rem">📄 Texto completo de la licencia MIT</h3>
+                <div class="license-block">MIT License
+
+Copyright (c) 2026 Jonathan C. &lt;heydikay@gmail.com&gt; (@ldikay99)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.</div>
+
+                <div class="about-card" style="margin-top:32px">
+                    <h3>🙏 Atribución a PSeInt</h3>
+                    <p>Esta plataforma se inspira en <a href="http://pseint.sourceforge.net/" target="_blank" rel="noopener" style="color:var(--accent1)">PSeInt</a> — el intérprete de pseudocódigo educativo creado por <strong>Pablo Novara</strong>. PSeInt Academy es una <strong>implementación web independiente</strong> que respeta la sintaxis oficial, pero su código (editor, intérprete, analizador, lecciones, UI, todo) fue <strong>diseñado y escrito desde cero</strong> por Jonathan C.</p>
+                    <p>El lenguaje PSeInt es propiedad de su autor original. La implementación web de esta academia es propiedad intelectual de Jonathan C. — dos proyectos distintos que comparten el espíritu educativo.</p>
+                </div>
+
+                <div style="text-align:center;margin-top:32px">
+                    <a href="https://github.com/ldikay99/pseint-academy" target="_blank" rel="noopener" class="btn-primary" style="text-decoration:none;display:inline-block;margin-right:8px">⬢ Ver código en GitHub</a>
+                    <a href="#/lecciones" class="btn-ghost" style="text-decoration:none;display:inline-block">📚 Empezar a aprender</a>
                 </div>
             </div>
-
-            <!-- Features showcase (NO clickable — el nav ya redirige) -->
-            <div class="features-showcase reveal" style="margin-top:56px">
-                <div class="feature-pill">
-                    <span class="feature-pill-icon">📚</span>
-                    <span>56 lecciones</span>
-                </div>
-                <div class="feature-pill">
-                    <span class="feature-pill-icon">⚡</span>
-                    <span>Editor con resaltado</span>
-                </div>
-                <div class="feature-pill">
-                    <span class="feature-pill-icon">🔍</span>
-                    <span>Análisis estático</span>
-                </div>
-                <div class="feature-pill">
-                    <span class="feature-pill-icon">🎨</span>
-                    <span>5 temas</span>
-                </div>
-                <div class="feature-pill">
-                    <span class="feature-pill-icon">📊</span>
-                    <span>Diagrama de flujo</span>
-                </div>
-                <div class="feature-pill">
-                    <span class="feature-pill-icon">⌨️</span>
-                    <span>Atajos VSCode</span>
-                </div>
-                <div class="feature-pill">
-                    <span class="feature-pill-icon">📦</span>
-                    <span>Offline 100%</span>
-                </div>
-                <div class="feature-pill">
-                    <span class="feature-pill-icon">🆓</span>
-                    <span>Open source MIT</span>
-                </div>
-            </div>
-
-
         </section>
-
-
-
-
 
         <footer class="site-footer">
             <div class="footer-grid">
@@ -187,6 +144,7 @@
                 </p>
             </div>
         </footer>
+
 
         <!-- FOOTER LEGACY (oculto por SPA, contiene info de roadmap modal) -->
         <footer style="display:none">
@@ -720,6 +678,7 @@
         <div id="ideTooltip"></div>
 
         <script src="assets/ui.js" defer></script>
+
 
     </body>
 </html>
