@@ -1,0 +1,4409 @@
+            /* ============================================================
+            ===                     VARIABLES Y RESET                   ===
+            ============================================================ */
+
+            :root {
+                --bg-dark: #0a0e1a;
+                --bg-card: #111827;
+                --bg-card2: #1a2236;
+                --accent1: #00d4ff;
+                --accent2: #7c3aed;
+                --accent3: #f59e0b;
+                --accent4: #10b981;
+                --accent5: #ef4444;
+                --text-main: #e2e8f0;
+                --text-muted: #a1afc4;
+                --text-dim: #6b7280;
+                --border: #1e2d45;
+                --shadow: 0 4px 32px rgba(0, 212, 255, 0.08);
+                --radius: 14px;
+                --font-body: "Segoe UI", system-ui, sans-serif;
+                --font-mono:
+                    "Cascadia Code", "Consolas", "Courier New", monospace;
+                --nav-h: 64px;
+                /* Z-index escalonado (sistema unificado) */
+                --z-base: 1;
+                --z-overlay: 100;
+                --z-dropdown: 200;
+                --z-modal: 400;
+                --z-flowchart: 900;
+                --z-fullscreen: 950;
+                --z-input-modal: 980;
+                --z-toast: 1000;
+            }
+            /* ============================================================
+               TEMAS — 5 paletas seleccionables (data-theme en <html>)
+               Por defecto: "dark" (paleta original).
+               Las clases .kw-* específicas también se sobreescriben
+               para mantener legibilidad de la sintaxis en cada tema.
+            ============================================================ */
+            /* TEMA: Light (claro estilo VS Code Light+) */
+            html[data-theme="light"] {
+                --bg-dark: #f6f8fb;
+                --bg-card: #ffffff;
+                --bg-card2: #eef2f7;
+                --accent1: #0078d4;
+                --accent2: #6f42c1;
+                --accent3: #d97706;
+                --accent4: #059669;
+                --accent5: #dc2626;
+                --text-main: #1f2937;
+                --text-muted: #4b5563;
+                --text-dim: #6b7280;
+                --border: #d1d5db;
+                --shadow: 0 4px 32px rgba(0, 120, 212, 0.10);
+            }
+            html[data-theme="light"] .kw-comment { color: #6a737d !important; }
+            html[data-theme="light"] .kw-string  { color: #b45309 !important; }
+            html[data-theme="light"] .kw-number  { color: #6f42c1 !important; }
+            html[data-theme="light"] .kw-op      { color: #c026d3 !important; }
+            html[data-theme="light"] .kw-bool    { color: #b45309 !important; }
+            html[data-theme="light"] .kw-func    { color: #1d4ed8 !important; }
+            html[data-theme="light"] .kw-math    { color: #1d4ed8 !important; }
+            html[data-theme="light"] .kw-logic   { color: #be185d !important; }
+            html[data-theme="light"] .kw-sinsaltar { color: #047857 !important; }
+            html[data-theme="light"] .kw-uservar.kw-uservar-notype { color: #1f2937 !important; }
+            html[data-theme="light"] .console-output, html[data-theme="light"] .big-console { color: #14532d; background: #fafafa !important; }
+
+            /* TEMA: Solarized (paleta cálida, cremosa) */
+            html[data-theme="solarized"] {
+                --bg-dark: #002b36;
+                --bg-card: #073642;
+                --bg-card2: #0e4250;
+                --accent1: #2aa198;
+                --accent2: #6c71c4;
+                --accent3: #cb4b16;
+                --accent4: #859900;
+                --accent5: #dc322f;
+                --text-main: #fdf6e3;
+                --text-muted: #93a1a1;
+                --text-dim: #657b83;
+                --border: #103e4b;
+                --shadow: 0 4px 32px rgba(42, 161, 152, 0.10);
+            }
+            html[data-theme="solarized"] .kw-comment { color: #586e75 !important; }
+            html[data-theme="solarized"] .kw-string  { color: #b58900 !important; }
+            html[data-theme="solarized"] .kw-number  { color: #d33682 !important; }
+            html[data-theme="solarized"] .kw-op      { color: #d33682 !important; }
+            html[data-theme="solarized"] .kw-bool    { color: #cb4b16 !important; }
+            html[data-theme="solarized"] .kw-func    { color: #268bd2 !important; }
+            html[data-theme="solarized"] .kw-math    { color: #268bd2 !important; }
+            html[data-theme="solarized"] .kw-logic   { color: #d33682 !important; }
+            html[data-theme="solarized"] .kw-sinsaltar { color: #859900 !important; }
+
+            /* TEMA: Monokai (clásico dark + vibrante) */
+            html[data-theme="monokai"] {
+                --bg-dark: #1e1f1c;
+                --bg-card: #272822;
+                --bg-card2: #2d2e28;
+                --accent1: #66d9ef;
+                --accent2: #ae81ff;
+                --accent3: #fd971f;
+                --accent4: #a6e22e;
+                --accent5: #f92672;
+                --text-main: #f8f8f2;
+                --text-muted: #cfcfc2;
+                --text-dim: #75715e;
+                --border: #3e3d32;
+                --shadow: 0 4px 32px rgba(166, 226, 46, 0.06);
+            }
+            html[data-theme="monokai"] .kw-comment { color: #75715e !important; font-style: italic; }
+            html[data-theme="monokai"] .kw-string  { color: #e6db74 !important; }
+            html[data-theme="monokai"] .kw-number  { color: #ae81ff !important; }
+            html[data-theme="monokai"] .kw-op      { color: #f92672 !important; }
+            html[data-theme="monokai"] .kw-bool    { color: #ae81ff !important; }
+            html[data-theme="monokai"] .kw-func    { color: #a6e22e !important; }
+            html[data-theme="monokai"] .kw-math    { color: #66d9ef !important; }
+            html[data-theme="monokai"] .kw-logic   { color: #f92672 !important; }
+            html[data-theme="monokai"] .kw-sinsaltar { color: #a6e22e !important; }
+
+            /* TEMA: Ocean (azul profundo, cyan, suave) */
+            html[data-theme="ocean"] {
+                --bg-dark: #0b1a2b;
+                --bg-card: #112236;
+                --bg-card2: #1a304a;
+                --accent1: #38bdf8;
+                --accent2: #818cf8;
+                --accent3: #fbbf24;
+                --accent4: #34d399;
+                --accent5: #f87171;
+                --text-main: #e0f2fe;
+                --text-muted: #93c5fd;
+                --text-dim: #64748b;
+                --border: #1e3a5c;
+                --shadow: 0 4px 32px rgba(56, 189, 248, 0.10);
+            }
+            html[data-theme="ocean"] .kw-comment { color: #475569 !important; font-style: italic; }
+            html[data-theme="ocean"] .kw-string  { color: #fde68a !important; }
+            html[data-theme="ocean"] .kw-number  { color: #c4b5fd !important; }
+            html[data-theme="ocean"] .kw-op      { color: #f0abfc !important; }
+            html[data-theme="ocean"] .kw-bool    { color: #fde68a !important; }
+            html[data-theme="ocean"] .kw-func    { color: #38bdf8 !important; }
+            html[data-theme="ocean"] .kw-math    { color: #38bdf8 !important; }
+            html[data-theme="ocean"] .kw-logic   { color: #f9a8d4 !important; }
+            html[data-theme="ocean"] .kw-sinsaltar { color: #6ee7b7 !important; }
+
+            /* ── FIX: <select> y <option> heredan colores del tema actual ──
+               Sin esto, al cambiar de tema (especialmente Light), las opciones
+               del dropdown se ven blanco-sobre-blanco. Forzamos colores legibles
+               en todos los temas. */
+            select, option {
+                background: var(--bg-card2) !important;
+                color: var(--text-main) !important;
+            }
+            select {
+                border: 1px solid var(--border) !important;
+            }
+            /* En tema light, los <option> nativos del navegador usan el color
+               del sistema. Forzamos explícitamente colores legibles. */
+            html[data-theme="light"] select,
+            html[data-theme="light"] option {
+                background: #ffffff !important;
+                color: #1f2937 !important;
+            }
+            html[data-theme="solarized"] select,
+            html[data-theme="solarized"] option {
+                background: #073642 !important;
+                color: #fdf6e3 !important;
+            }
+            html[data-theme="monokai"] select,
+            html[data-theme="monokai"] option {
+                background: #272822 !important;
+                color: #f8f8f2 !important;
+            }
+            html[data-theme="ocean"] select,
+            html[data-theme="ocean"] option {
+                background: #112236 !important;
+                color: #e0f2fe !important;
+            }
+            /* Dark (default) ya está cubierto por las :root vars */
+
+            /* ── FIX: legibilidad de mensajes de error/warn por tema ──
+               Los colores claros (#fca5a5, #fde68a) son ilegibles sobre
+               fondos claros del tema Light. Forzamos versiones más oscuras
+               donde sea necesario para mantener contraste WCAG. */
+            /* Variables CSS unificadas para colores semánticos por tema */
+            :root {
+                --color-error: #fca5a5;
+                --color-error-strong: #f87171;
+                --color-warn: #fde68a;
+                --color-warn-strong: #fbbf24;
+            }
+            html[data-theme="light"] {
+                --color-error: #b91c1c;
+                --color-error-strong: #991b1b;
+                --color-warn: #92400e;
+                --color-warn-strong: #78350f;
+            }
+            html[data-theme="solarized"] {
+                --color-error: #dc322f;
+                --color-error-strong: #d33682;
+                --color-warn: #cb4b16;
+                --color-warn-strong: #b58900;
+            }
+            /* Forzar colores en TODOS los items de error/warn usando las variables */
+            .error-item,
+            .fs-bottom-content .fs-error-item,
+            .fs-bottom-content .fs-error-line {
+                color: var(--color-error) !important;
+            }
+            .warn-item,
+            .fs-bottom-content .fs-warn-item,
+            .fs-bottom-content .fs-warn-item .fs-error-line {
+                color: var(--color-warn) !important;
+            }
+            .error-msg, .warn-msg, .fs-error-msg, .fs-warn-msg {
+                color: inherit !important;
+            }
+            .diag-panel.error-panel .diag-panel-header {
+                color: var(--color-error-strong) !important;
+            }
+            .diag-panel.warn-panel .diag-panel-header {
+                color: var(--color-warn-strong) !important;
+            }
+            html[data-theme="light"] .fs-bottom-content,
+            html[data-theme="light"] .console-out,
+            html[data-theme="light"] .big-console {
+                color: #1f2937 !important;
+                background: #fafafa !important;
+            }
+            html[data-theme="light"] .cout-line {
+                color: #1f2937;
+            }
+            html[data-theme="light"] .error-line-num {
+                background: rgba(239,68,68,0.15) !important;
+                color: #b91c1c !important;
+            }
+
+            /* Reduced motion: respeta preferencias del usuario */
+            @media (prefers-reduced-motion: reduce) {
+                *, *::before, *::after {
+                    animation-duration: 0.001s !important;
+                    transition-duration: 0.001s !important;
+                }
+            }
+            /* Responsive 360-600px: gap previo */
+            @media (max-width: 600px) {
+                .modal { margin: 4px !important; max-height: calc(100vh - 8px) !important; }
+                .modal-overlay { padding: 4px !important; }
+                .ref-card { padding: 12px !important; }
+            }
+            /* Focus visible reforzado para console-input-field */
+            .console-input-field:focus {
+                box-shadow: 0 0 0 2px rgba(0, 212, 255, 0.5) !important;
+                outline: none !important;
+            }
+            /* Mejor contraste verde consola */
+            .console-output, .big-console {
+                color: #c4e86a;
+            }
+
+            *,
+            *::before,
+            *::after {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }
+
+            html {
+                scroll-behavior: smooth;
+                /* FIX responsive: tipografía fluida — escala con el viewport.
+                   En móvil baja a 14px, en escritorio 16px, en 1440p+ 17px.
+                   Esto hace que TODAS las medidas en rem (paddings, gaps, fontes)
+                   escalen automáticamente. No necesitamos breakpoints por componente. */
+                font-size: clamp(14px, 0.85vw + 10px, 17px);
+            }
+
+            body {
+                background: var(--bg-dark);
+                color: var(--text-main);
+                font-family: var(--font-body);
+                min-height: 100vh;
+                overflow-x: hidden;
+                /* No reflowee texto a anchos absurdos en monitores muy grandes */
+                max-width: 100vw;
+            }
+
+            /* Container helper: secciones con max-width fluido y padding interno */
+            .container, .section-container {
+                width: 100%;
+                max-width: min(1400px, 95vw);
+                margin: 0 auto;
+                padding-left: clamp(12px, 3vw, 24px);
+                padding-right: clamp(12px, 3vw, 24px);
+            }
+
+            a {
+                color: var(--accent1);
+                text-decoration: none;
+            }
+
+            button {
+                cursor: pointer;
+                font-family: inherit;
+            }
+
+            ::-webkit-scrollbar {
+                width: 6px;
+                height: 6px;
+            }
+
+            ::-webkit-scrollbar-track {
+                background: var(--bg-dark);
+            }
+
+            ::-webkit-scrollbar-thumb {
+                background: var(--border);
+                border-radius: 3px;
+            }
+            /* ============================================================
+     FONDO ANIMADO
+  ============================================================ */
+
+            .bg-stars {
+                position: fixed;
+                inset: 0;
+                z-index: 0;
+                overflow: hidden;
+                pointer-events: none;
+            }
+
+            .star {
+                position: absolute;
+                border-radius: 50%;
+                background: var(--accent1);
+                opacity: 0.15;
+                animation: twinkle var(--d, 3s) infinite alternate;
+            }
+
+            @keyframes twinkle {
+                to {
+                    opacity: 0.03;
+                    transform: scale(0.5);
+                }
+            }
+
+            @keyframes fadeInUp {
+                from { opacity:0; transform:translateY(12px); }
+                to   { opacity:1; transform:translateY(0); }
+            }
+
+            .grid-lines {
+                position: fixed;
+                inset: 0;
+                z-index: 0;
+                pointer-events: none;
+                background-image:
+                    linear-gradient(
+                        rgba(0, 212, 255, 0.03) 1px,
+                        transparent 1px
+                    ),
+                    linear-gradient(
+                        90deg,
+                        rgba(0, 212, 255, 0.03) 1px,
+                        transparent 1px
+                    );
+                background-size: 50px 50px;
+            }
+            /* ============================================================
+     NAVBAR
+  ============================================================ */
+
+            nav {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                z-index: 100;
+                height: var(--nav-h);
+                background: rgba(10, 14, 26, 0.92);
+                backdrop-filter: blur(16px);
+                border-bottom: 1px solid var(--border);
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 0 24px;
+                transition: background 0.3s;
+            }
+
+            .nav-logo {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                font-size: 1.2rem;
+                font-weight: 700;
+                color: var(--accent1);
+                letter-spacing: -0.5px;
+            }
+
+            .nav-logo span {
+                color: var(--text-main);
+            }
+
+            .nav-links {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+            }
+
+            .nav-links a {
+                padding: 6px 12px;
+                border-radius: 8px;
+                font-size: 0.85rem;
+                color: var(--text-muted);
+                transition: all 0.2s;
+            }
+
+            .nav-links a:hover,
+            .nav-links a.active {
+                background: rgba(0, 212, 255, 0.1);
+                color: var(--accent1);
+            }
+
+            .nav-burger {
+                display: none;
+                background: none;
+                border: none;
+                color: var(--text-main);
+                font-size: 1.4rem;
+                padding: 8px;
+            }
+
+            .nav-progress {
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                height: 2px;
+                background: linear-gradient(
+                    90deg,
+                    var(--accent1),
+                    var(--accent2)
+                );
+                transition: width 0.5s ease;
+            }
+            /* ============================================================
+     HERO
+  ============================================================ */
+
+            #hero {
+                position: relative;
+                z-index: 1;
+                min-height: 100vh;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                text-align: center;
+                padding: 80px 24px 40px;
+            }
+
+            .hero-badge {
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                background: rgba(124, 58, 237, 0.15);
+                border: 1px solid rgba(124, 58, 237, 0.4);
+                color: #a78bfa;
+                padding: 6px 16px;
+                border-radius: 99px;
+                font-size: 0.8rem;
+                font-weight: 600;
+                letter-spacing: 0.5px;
+                margin-bottom: 24px;
+                animation: fadeInDown 0.6s ease both;
+            }
+
+            .hero-title {
+                font-size: clamp(2.2rem, 7vw, 5rem);
+                font-weight: 800;
+                line-height: 1.08;
+                letter-spacing: -2px;
+                margin-bottom: 20px;
+                animation: fadeInDown 0.7s 0.1s ease both;
+            }
+
+            .hero-title .grad {
+                background: linear-gradient(
+                    135deg,
+                    var(--accent1) 0%,
+                    var(--accent2) 50%,
+                    var(--accent3) 100%
+                );
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+            }
+
+            .hero-sub {
+                font-size: clamp(1rem, 1.6vw, 1.2rem);
+                color: var(--text-main);
+                opacity: 0.9;
+                max-width: 640px;
+                line-height: 1.7;
+                margin-bottom: 40px;
+                animation: fadeInDown 0.7s 0.2s ease both;
+            }
+
+            .hero-btns {
+                display: flex;
+                gap: 12px;
+                flex-wrap: wrap;
+                justify-content: center;
+                animation: fadeInDown 0.7s 0.3s ease both;
+            }
+
+            .btn-primary {
+                background: linear-gradient(
+                    135deg,
+                    var(--accent1),
+                    var(--accent2)
+                );
+                color: #fff;
+                border: none;
+                padding: 14px 28px;
+                border-radius: 10px;
+                font-size: 1rem;
+                font-weight: 600;
+                transition: all 0.2s;
+                box-shadow: 0 4px 20px rgba(0, 212, 255, 0.3);
+            }
+
+            .btn-primary:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 8px 30px rgba(0, 212, 255, 0.4);
+            }
+
+            .btn-ghost {
+                background: rgba(255, 255, 255, 0.04);
+                color: var(--text-main);
+                border: 1px solid var(--border);
+                padding: 14px 28px;
+                border-radius: 10px;
+                font-size: 1rem;
+                font-weight: 600;
+                transition: all 0.2s;
+            }
+
+            .btn-ghost:hover {
+                background: rgba(255, 255, 255, 0.08);
+                border-color: var(--accent1);
+            }
+
+            .hero-stats {
+                display: flex;
+                gap: 32px;
+                flex-wrap: wrap;
+                justify-content: center;
+                margin-top: 60px;
+                animation: fadeInUp 0.7s 0.4s ease both;
+            }
+
+            .stat {
+                text-align: center;
+            }
+
+            .stat-n {
+                font-size: 2rem;
+                font-weight: 800;
+                color: var(--accent1);
+            }
+
+            .stat-l {
+                font-size: 0.8rem;
+                color: var(--text-muted);
+            }
+
+            .hero-code-preview {
+                margin-top: 48px;
+                max-width: 520px;
+                width: 100%;
+                background: var(--bg-card);
+                border: 1px solid var(--border);
+                border-radius: var(--radius);
+                overflow: hidden;
+                text-align: left;
+                animation: fadeInUp 0.7s 0.5s ease both;
+                box-shadow: var(--shadow);
+            }
+
+            .code-bar {
+                background: var(--bg-card2);
+                padding: 10px 16px;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                border-bottom: 1px solid var(--border);
+            }
+
+            .dot {
+                width: 10px;
+                height: 10px;
+                border-radius: 50%;
+            }
+
+            .dot-r {
+                background: #ef4444;
+            }
+
+            .dot-y {
+                background: #f59e0b;
+            }
+
+            .dot-g {
+                background: #10b981;
+            }
+
+            .code-bar span {
+                color: var(--text-muted);
+                font-size: 0.8rem;
+                margin-left: auto;
+            }
+
+            .hero-code {
+                padding: 16px;
+                font-family: var(--font-mono);
+                font-size: 0.85rem;
+                line-height: 1.8;
+            }
+            /* ============================================================
+     SECTION WRAPPER
+  ============================================================ */
+
+            .section {
+                position: relative;
+                z-index: 1;
+                padding: clamp(40px, 6vw, 80px) clamp(16px, 3vw, 48px);
+                /* FIX responsive: sin cap — secciones llenan viewport.
+                   El cap por legibilidad lo aplican children específicos
+                   (texto largo en hero, descripciones), no la sección entera. */
+                width: 100%;
+                margin: 0 auto;
+            }
+
+            .section-title {
+                font-size: clamp(1.6rem, 4vw, 2.4rem);
+                font-weight: 800;
+                letter-spacing: -1px;
+                margin-bottom: 12px;
+            }
+
+            .section-sub {
+                color: var(--text-main);
+                opacity: 0.85;
+                font-size: clamp(0.95rem, 1.5vw, 1.1rem);
+                line-height: 1.6;
+                margin-bottom: 48px;
+                max-width: 720px;
+            }
+
+            .section-divider {
+                height: 1px;
+                background: linear-gradient(
+                    90deg,
+                    transparent,
+                    var(--border),
+                    transparent
+                );
+                margin: 0 auto;
+            }
+            /* ============================================================
+     NIVEL CARDS
+  ============================================================ */
+
+            .level-tabs {
+                display: flex;
+                gap: 8px;
+                flex-wrap: wrap;
+                margin-bottom: 32px;
+            }
+
+            .level-tab {
+                padding: 8px 20px;
+                border-radius: 99px;
+                border: 1px solid var(--border);
+                background: transparent;
+                color: var(--text-muted);
+                font-size: 0.9rem;
+                font-weight: 600;
+                transition: all 0.2s;
+            }
+
+            .level-tab.active,
+            .level-tab:hover {
+                color: #fff;
+            }
+
+            .level-tab[data-level="basico"].active {
+                background: var(--accent4);
+                border-color: var(--accent4);
+            }
+
+            .level-tab[data-level="intermedio"].active {
+                background: var(--accent3);
+                border-color: var(--accent3);
+                color: #000;
+            }
+
+            .level-tab[data-level="avanzado"].active {
+                background: var(--accent2);
+                border-color: var(--accent2);
+            }
+
+            .level-tab[data-level="basico"]:hover {
+                color: var(--accent4);
+                border-color: var(--accent4);
+            }
+
+            .level-tab[data-level="intermedio"]:hover {
+                color: var(--accent3);
+                border-color: var(--accent3);
+            }
+
+            .level-tab[data-level="avanzado"]:hover {
+                color: #a78bfa;
+                border-color: var(--accent2);
+            }
+
+            .lessons-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+                gap: 16px;
+            }
+
+            .lesson-card {
+                background: var(--bg-card);
+                border: 1px solid var(--border);
+                border-radius: var(--radius);
+                padding: 20px;
+                cursor: pointer;
+                transition: all 0.25s;
+                position: relative;
+                overflow: hidden;
+            }
+
+            .lesson-card::before {
+                content: "";
+                position: absolute;
+                inset: 0;
+                background: linear-gradient(
+                    135deg,
+                    rgba(0, 212, 255, 0.04),
+                    transparent
+                );
+                opacity: 0;
+                transition: opacity 0.3s;
+            }
+
+            .lesson-card:hover {
+                border-color: var(--accent1);
+                transform: translateY(-3px);
+                box-shadow: var(--shadow);
+            }
+
+            .lesson-card:hover::before {
+                opacity: 1;
+            }
+
+            /* ── Estados de lección: 3 niveles tipo WhatsApp ── */
+
+            /* Estado 1: Leída (📖 abrió la lección) — borde sutil azul */
+            .lesson-card.state-read {
+                border-color: rgba(0,212,255,0.35);
+            }
+
+            /* Estado 2: Intentada (✓ ejecutó el ejemplo) — borde amarillo */
+            .lesson-card.state-tried {
+                border-color: rgba(245,158,11,0.6);
+            }
+
+            /* Estado 3: Completada (✓✓ resolvió el reto) — borde verde */
+            .lesson-card.state-done {
+                border-color: var(--accent4);
+            }
+
+            /* Badge de estado en esquina superior derecha */
+            .lesson-state-badge {
+                position: absolute;
+                top: 10px;
+                right: 12px;
+                display: flex;
+                align-items: center;
+                gap: 2px;
+                font-size: 0.72rem;
+                font-weight: 800;
+                border-radius: 99px;
+                padding: 2px 7px;
+                letter-spacing: 0px;
+                white-space: nowrap;
+                line-height: 1;
+            }
+            .lesson-state-badge.badge-read {
+                background: rgba(0,212,255,0.12);
+                color: var(--accent1);
+                border: 1px solid rgba(0,212,255,0.3);
+            }
+            .lesson-state-badge.badge-tried {
+                background: rgba(245,158,11,0.12);
+                color: var(--accent3);
+                border: 1px solid rgba(245,158,11,0.35);
+            }
+            .lesson-state-badge.badge-done {
+                background: rgba(16,185,129,0.15);
+                color: var(--accent4);
+                border: 1px solid rgba(16,185,129,0.4);
+            }
+
+            /* Compat: mantener clase 'completed' para lógica legacy */
+            .lesson-card.completed { border-color: var(--accent4); }
+
+            .lesson-icon {
+                font-size: 1.8rem;
+                margin-bottom: 10px;
+            }
+
+            .lesson-card h3 {
+                font-size: 0.95rem;
+                font-weight: 700;
+                margin-bottom: 6px;
+            }
+
+            .lesson-card p {
+                font-size: 0.8rem;
+                color: var(--text-muted);
+                line-height: 1.5;
+            }
+
+            .lesson-level-badge {
+                display: inline-block;
+                margin-top: 12px;
+                padding: 2px 10px;
+                border-radius: 99px;
+                font-size: 0.7rem;
+                font-weight: 700;
+            }
+
+            .badge-basico {
+                background: rgba(16, 185, 129, 0.15);
+                color: var(--accent4);
+            }
+
+            .badge-intermedio {
+                background: rgba(245, 158, 11, 0.15);
+                color: var(--accent3);
+            }
+
+            .badge-avanzado {
+                background: rgba(124, 58, 237, 0.15);
+                color: #a78bfa;
+            }
+
+            .badge-experto {
+                background: rgba(239, 68, 68, 0.15);
+                color: var(--color-error-strong);
+            }
+
+            .level-tab[data-level="experto"].active {
+                background: var(--accent5);
+                border-color: var(--accent5);
+            }
+
+            .level-tab[data-level="experto"]:hover {
+                color: var(--color-error-strong);
+                border-color: var(--accent5);
+            }
+            /* ============================================================
+     MODAL DE LECCIÓN
+  ============================================================ */
+
+            .modal-overlay {
+                position: fixed;
+                inset: 0;
+                z-index: 200;
+                background: rgba(0, 0, 0, 0.85);
+                display: flex;
+                align-items: flex-start;
+                justify-content: center;
+                padding: 20px;
+                overflow-y: auto;
+                opacity: 0;
+                pointer-events: none;
+                transition: opacity 0.3s;
+            }
+
+            .modal-overlay.open {
+                opacity: 1;
+                pointer-events: all;
+            }
+
+            .modal {
+                background: var(--bg-card);
+                border: 1px solid var(--border);
+                border-radius: 18px;
+                width: 100%;
+                /* FIX responsive: modal escala con viewport — 90% en pantallas
+                   normales, hasta 1400px en monitores grandes. Antes 900px fijo
+                   dejaba el modal pequeño en zoom-out / 4K. */
+                max-width: min(1400px, 92vw);
+                margin: auto;
+                overflow: hidden;
+                transform: scale(0.95);
+                transition: transform 0.3s;
+                box-shadow: 0 24px 80px rgba(0, 0, 0, 0.6);
+            }
+
+            .modal-overlay.open .modal {
+                transform: scale(1);
+            }
+
+            .modal-header {
+                background: var(--bg-card2);
+                border-bottom: 1px solid var(--border);
+                padding: 20px 24px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+            }
+
+            .modal-header h2 {
+                font-size: 1.1rem;
+                font-weight: 700;
+            }
+
+            .modal-close {
+                background: none;
+                border: 1px solid var(--border);
+                color: var(--text-muted);
+                width: 32px;
+                height: 32px;
+                border-radius: 8px;
+                font-size: 1rem;
+                transition: all 0.2s;
+            }
+
+            .modal-close:hover {
+                border-color: var(--accent5);
+                color: var(--accent5);
+            }
+
+            .modal-body {
+                padding: 24px;
+            }
+
+            .modal-tabs {
+                display: flex;
+                gap: 4px;
+                border-bottom: 1px solid var(--border);
+                margin-bottom: 20px;
+            }
+
+            .modal-tab {
+                padding: 8px 18px;
+                border: none;
+                background: none;
+                color: var(--text-muted);
+                font-size: 0.9rem;
+                font-weight: 600;
+                border-bottom: 2px solid transparent;
+                transition: all 0.2s;
+                margin-bottom: -1px;
+            }
+
+            .modal-tab.active {
+                color: var(--accent1);
+                border-bottom-color: var(--accent1);
+            }
+
+            .tab-content {
+                display: none;
+            }
+
+            .tab-content.active {
+                display: block;
+                animation: fadeIn 0.3s ease;
+            }
+            /* Teoría */
+
+            .theory-block {
+                background: var(--bg-card2);
+                border: 1px solid var(--border);
+                border-radius: 10px;
+                padding: 20px;
+                margin-bottom: 16px;
+            }
+
+            .theory-block h3 {
+                font-size: 0.95rem;
+                font-weight: 700;
+                margin-bottom: 10px;
+                color: var(--accent1);
+            }
+
+            .theory-block p {
+                font-size: 0.95rem;
+                line-height: 1.75;
+                /* FIX contraste: text-main es más legible que text-muted en el bg-card2 */
+                color: var(--text-main);
+            }
+
+            .theory-block p + p {
+                margin-top: 8px;
+            }
+
+            .inline-code {
+                background: rgba(0, 212, 255, 0.14);
+                color: var(--accent1);
+                padding: 2px 7px;
+                border-radius: 4px;
+                font-family: var(--font-mono);
+                font-size: 0.88em;
+                font-weight: 600;
+            }
+
+            .tip-box {
+                background: rgba(16, 185, 129, 0.10);
+                border: 1px solid rgba(16, 185, 129, 0.45);
+                border-radius: 10px;
+                padding: 14px 16px;
+                margin-bottom: 16px;
+                font-size: 0.92rem;
+                /* FIX contraste: usar text-main del tema + reservar el verde solo para acentos */
+                color: var(--text-main);
+                line-height: 1.65;
+            }
+            .tip-box strong { color: #34d399; }
+
+            .warn-box {
+                background: rgba(245, 158, 11, 0.10);
+                border: 1px solid rgba(245, 158, 11, 0.45);
+                border-radius: 10px;
+                padding: 14px 16px;
+                margin-bottom: 16px;
+                font-size: 0.92rem;
+                /* FIX contraste: text-main + acento amber solo en strong */
+                color: var(--text-main);
+                line-height: 1.65;
+            }
+            .warn-box strong { color: var(--color-warn-strong); }
+
+            .keyword-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+                gap: 8px;
+                margin: 12px 0;
+            }
+
+            .keyword-item {
+                background: rgba(124, 58, 237, 0.1);
+                border: 1px solid rgba(124, 58, 237, 0.3);
+                border-radius: 8px;
+                padding: 8px 12px;
+                font-family: var(--font-mono);
+                font-size: 0.8rem;
+                color: #c4b5fd;
+            }
+
+            .keyword-item strong {
+                display: block;
+                font-size: 0.7rem;
+                color: var(--text-muted);
+                margin-top: 2px;
+                font-family: var(--font-body);
+            }
+            /* ============================================================
+     EDITOR DE CÓDIGO
+  ============================================================ */
+
+            .editor-wrap {
+                border: 1px solid var(--border);
+                border-radius: var(--radius);
+                overflow: hidden;
+                margin-bottom: 12px;
+            }
+
+            .editor-toolbar {
+                background: var(--bg-card2);
+                padding: 8px 12px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                border-bottom: 1px solid var(--border);
+            }
+
+            .editor-toolbar span {
+                font-size: 0.78rem;
+                color: var(--text-muted);
+            }
+
+            .editor-body {
+                display: flex;
+            }
+
+            .line-nums {
+                background: var(--bg-dark);
+                padding: 12px 10px;
+                font-family: var(--font-mono);
+                font-size: 0.82rem;
+                color: var(--text-dim);
+                line-height: 1.6;
+                min-width: 38px;
+                text-align: right;
+                user-select: none;
+                border-right: 1px solid var(--border);
+            }
+
+            /* ============================================================
+     EDITOR CON SYNTAX HIGHLIGHT
+  ============================================================ */
+            .editor-container {
+                position: relative;
+                flex: 1;
+                min-height: 200px;
+                background: var(--bg-dark);
+                overflow: hidden;
+            }
+            .editor-highlight {
+                position: absolute;
+                inset: 0;
+                padding: 14px;
+                font-family: var(--font-mono);
+                font-size: 0.82rem;
+                line-height: 1.6;
+                color: var(--text-main);
+                white-space: pre-wrap;
+                word-break: break-word;
+                overflow: hidden;
+                pointer-events: none;
+                tab-size: 4;
+                border: none;
+                margin: 0;
+                z-index: 1; /* encima del SVG de flow guides (z-index 0) */
+            }
+            .code-editor {
+                position: relative;
+                background: transparent;
+                padding: 14px;
+                font-family: var(--font-mono);
+                font-size: 0.82rem;
+                line-height: 1.6;
+                color: transparent;
+                caret-color: var(--accent1);
+                border: none;
+                outline: none;
+                resize: none;
+                min-height: 200px;
+                width: 100%;
+                tab-size: 4;
+                z-index: 1;
+                -webkit-text-fill-color: transparent;
+                /* Sin wrap: las líneas largas hacen scroll horizontal.
+                   El highlight overlay debe usar exactamente las mismas reglas
+                   para mantenerse sincronizado. */
+                white-space: pre !important;
+                word-wrap: normal !important;
+                word-break: normal !important;
+                overflow: auto !important;
+            }
+            /* Editor highlight overlay debe replicar las mismas reglas de wrap */
+            .editor-highlight {
+                white-space: pre !important;
+                word-wrap: normal !important;
+                word-break: normal !important;
+                overflow: hidden;
+            }
+
+            .editor-actions {
+                display: flex;
+                gap: 8px;
+                flex-wrap: wrap;
+                margin-bottom: 8px;
+            }
+
+            .btn-run {
+                background: linear-gradient(135deg, var(--accent4), #059669);
+                color: #fff;
+                border: none;
+                padding: 8px 20px;
+                border-radius: 8px;
+                font-size: 0.85rem;
+                font-weight: 700;
+                transition: all 0.2s;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+            }
+
+            .btn-run:hover {
+                transform: translateY(-1px);
+                box-shadow: 0 4px 16px rgba(16, 185, 129, 0.4);
+            }
+
+            .btn-run:active {
+                transform: translateY(0);
+            }
+
+            .btn-clear {
+                background: rgba(255, 255, 255, 0.04);
+                color: var(--text-muted);
+                border: 1px solid var(--border);
+                padding: 8px 16px;
+                border-radius: 8px;
+                font-size: 0.85rem;
+                transition: all 0.2s;
+            }
+
+            .btn-clear:hover {
+                border-color: var(--text-muted);
+                color: var(--text-main);
+            }
+
+            .btn-solution {
+                background: rgba(124, 58, 237, 0.1);
+                color: #a78bfa;
+                border: 1px solid rgba(124, 58, 237, 0.3);
+                padding: 8px 16px;
+                border-radius: 8px;
+                font-size: 0.85rem;
+                transition: all 0.2s;
+                margin-left: auto;
+            }
+
+            .btn-solution:hover {
+                background: rgba(124, 58, 237, 0.2);
+            }
+
+            .console-out {
+                background: #080c14;
+                border: 1px solid var(--border);
+                border-radius: var(--radius);
+                padding: 14px 16px 20px; /* padding bottom para input inline */
+                font-family: var(--font-mono);
+                font-size: 0.82rem;
+                line-height: 1.7;
+                min-height: 80px;
+                max-height: 220px;
+                overflow-y: auto;
+                color: #a3e635;
+                position: relative;
+            }
+
+            .console-out .cout-line,
+            .big-console .cout-line {
+                display: inline;
+            }
+
+            .console-out .cout-err,
+            .big-console .cout-err {
+                color: var(--color-error-strong);
+            }
+
+            .console-out .cout-info,
+            .big-console .cout-info {
+                color: var(--accent1);
+            }
+
+            .console-out .cout-prompt,
+            .big-console .cout-prompt {
+                color: var(--color-warn-strong);
+            }
+
+            .console-label {
+                font-size: 0.75rem;
+                color: var(--text-muted);
+                margin-bottom: 6px;
+            }
+            /* Reto */
+
+            .challenge-block {
+                background: linear-gradient(
+                    135deg,
+                    rgba(124, 58, 237, 0.08),
+                    rgba(0, 212, 255, 0.04)
+                );
+                border: 1px solid rgba(124, 58, 237, 0.3);
+                border-radius: 12px;
+                padding: 20px;
+                margin-bottom: 16px;
+            }
+
+            .challenge-block h3 {
+                color: #a78bfa;
+                font-size: 0.95rem;
+                margin-bottom: 8px;
+            }
+
+            .challenge-block p {
+                font-size: 0.88rem;
+                color: var(--text-muted);
+                margin-bottom: 12px;
+                line-height: 1.6;
+            }
+
+            .expected-out {
+                background: rgba(0, 0, 0, 0.3);
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                padding: 10px 14px;
+                margin-bottom: 12px;
+            }
+
+            .expected-out span {
+                font-size: 0.75rem;
+                color: var(--text-dim);
+                display: block;
+                margin-bottom: 4px;
+            }
+
+            .expected-out code {
+                font-family: var(--font-mono);
+                font-size: 0.82rem;
+                color: #a3e635;
+                white-space: pre;
+            }
+
+            .verdict {
+                padding: 10px 14px;
+                border-radius: 8px;
+                font-size: 0.85rem;
+                font-weight: 600;
+                display: none;
+                margin-top: 8px;
+            }
+
+            .verdict.correct {
+                background: rgba(16, 185, 129, 0.15);
+                border: 1px solid var(--accent4);
+                color: var(--accent4);
+                display: block;
+            }
+
+            .verdict.wrong {
+                background: rgba(239, 68, 68, 0.12);
+                border: 1px solid var(--accent5);
+                color: var(--color-error);
+                display: block;
+            }
+            /* ============================================================
+     EDITOR PRINCIPAL (PLAYGROUND)
+  ============================================================ */
+
+            #playground {
+                position: relative;
+                z-index: 1;
+                padding: clamp(40px, 6vw, 80px) clamp(16px, 3vw, 48px);
+                /* FIX responsive: SIN cap fijo — el playground llena el viewport.
+                   Editor + consola en 1fr 1fr se reparten todo el espacio
+                   horizontal disponible. Sin esto, al hacer zoom-out quedaban
+                   columnas estrechas con huecos a los lados. */
+                width: 100%;
+                margin: 0 auto;
+            }
+
+            .playground-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 20px;
+                align-items: start;
+            }
+
+            .playground-editor-panel,
+            .playground-output-panel {
+                background: var(--bg-card);
+                border: 1px solid var(--border);
+                border-radius: var(--radius);
+                overflow: hidden;
+            }
+
+            /* ============================================================
+               MODO PANTALLA COMPLETA DEL EDITOR (F11)
+               ============================================================
+               Diseño estilo IDE simple:
+               - El grid se MUEVE al <body> via JS para evitar conflictos
+                 con padding/transform/overflow del section padre.
+               - Cubre TODO el viewport (100vw × 100vh) sin header del sitio.
+               - Estructura vertical:
+                   ┌────────────────────────────────────────┐
+                   │ TOP BAR: ⛶Salir · ▶Ejecutar · Tabs   │ ← 40px fijo
+                   ├────────────────────────────────────────┤
+                   │                                        │
+                   │           EDITOR                       │ ← flex:1
+                   │                                        │
+                   ├──── SPLITTER (drag para resize) ───────┤ ← 6px (si tab abierto)
+                   │ TAB CONTENT (consola / errores / sugs) │ ← altura variable
+                   └────────────────────────────────────────┘
+            ============================================================ */
+            .playground-grid.fullscreen {
+                /* CRITICAL: mover al body via JS evita conflictos con padre.
+                   Cuando esta clase está activa, el JS hace document.body.appendChild
+                   para sacar el grid de su lugar normal en el DOM. */
+                position: fixed !important;
+                top: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                bottom: 0 !important;
+                width: 100vw !important;
+                height: 100vh !important;
+                z-index: 99999 !important;
+                display: flex !important;
+                flex-direction: column !important;
+                grid-template-columns: none !important;
+                grid-template-rows: none !important;
+                gap: 0 !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                background: var(--bg-dark) !important;
+                overflow: hidden !important;
+                transform: none !important;
+                animation: fsFadeIn 0.15s ease-out;
+            }
+            @keyframes fsFadeIn {
+                from { opacity: 0; }
+                to { opacity: 1; }
+            }
+            /* Bloquear scroll del body.
+               IMPORTANTE: no usar position:fixed aquí porque ese reset
+               causa que al salir del fullscreen la página scrollee al
+               top. Con overflow:hidden basta para bloquear el scroll. */
+            body.editor-fullscreen-active {
+                overflow: hidden !important;
+            }
+
+            /* === TOP BAR (siempre visible en fullscreen) === */
+            /* Insertada via JS al activar fullscreen */
+            .fs-topbar {
+                display: none;
+                flex-shrink: 0;
+                min-height: 48px;
+                width: 100%;
+                box-sizing: border-box;
+                background: var(--bg-card2);
+                border-bottom: 1px solid var(--border);
+                padding: 0 16px;
+                align-items: center;
+                gap: 8px;
+                font-size: 0.78rem;
+                flex-wrap: nowrap;
+                overflow-x: auto;
+                overflow-y: hidden;
+            }
+            .fs-topbar::-webkit-scrollbar { height: 4px; }
+            .fs-topbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); }
+            .playground-grid.fullscreen .fs-topbar {
+                display: flex !important;
+            }
+            /* Spacer empuja contenido a los extremos (flex:1) */
+            .fs-spacer { flex: 1 1 auto; }
+            /* Separador visual entre grupos */
+            .fs-topbar .fs-sep,
+            .fs-bottombar .fs-sep {
+                width: 1px;
+                height: 22px;
+                background: var(--border);
+                flex-shrink: 0;
+                margin: 0 4px;
+            }
+            .fs-topbar .fs-exit-btn {
+                background: rgba(239,68,68,0.12);
+                color: var(--color-error);
+                border: 1px solid rgba(239,68,68,0.35);
+                padding: 6px 14px;
+                border-radius: 6px;
+                font-size: 0.78rem;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.12s;
+                flex-shrink: 0;
+                white-space: nowrap;
+            }
+            .fs-topbar .fs-exit-btn:hover {
+                background: rgba(239,68,68,0.25);
+                color: #fff;
+            }
+            .fs-topbar .fs-run-btn {
+                background: linear-gradient(135deg, #10b981, #059669);
+                color: #fff;
+                border: none;
+                padding: 6px 18px;
+                border-radius: 6px;
+                font-size: 0.8rem;
+                font-weight: 700;
+                cursor: pointer;
+                transition: all 0.12s;
+                flex-shrink: 0;
+                white-space: nowrap;
+            }
+            .fs-topbar .fs-run-btn:hover {
+                box-shadow: 0 0 10px rgba(16,185,129,0.45);
+            }
+            /* Botón Detener (solo visible mientras se ejecuta el código) */
+            .fs-topbar .fs-stop-btn {
+                background: linear-gradient(135deg, #ef4444, #dc2626);
+                color: #fff;
+                border: none;
+                padding: 6px 16px;
+                border-radius: 6px;
+                font-size: 0.8rem;
+                font-weight: 700;
+                cursor: pointer;
+                transition: all 0.12s;
+                flex-shrink: 0;
+                white-space: nowrap;
+                animation: fsStopPulse 1.2s ease-in-out infinite alternate;
+            }
+            .fs-topbar .fs-stop-btn:hover {
+                box-shadow: 0 0 14px rgba(239,68,68,0.6);
+                animation: none;
+                background: linear-gradient(135deg, #f87171, #ef4444);
+            }
+            @keyframes fsStopPulse {
+                from { box-shadow: 0 0 4px rgba(239,68,68,0.3); }
+                to   { box-shadow: 0 0 12px rgba(239,68,68,0.55); }
+            }
+            .fs-topbar .fs-icon-btn {
+                background: transparent;
+                color: var(--text-muted);
+                border: 1px solid var(--border);
+                padding: 6px 12px;
+                border-radius: 6px;
+                font-size: 0.78rem;
+                cursor: pointer;
+                transition: all 0.12s;
+                flex-shrink: 0;
+                white-space: nowrap;
+            }
+            .fs-topbar .fs-icon-btn:hover {
+                background: rgba(255,255,255,0.04);
+                color: var(--text-main);
+                border-color: var(--text-muted);
+            }
+            .fs-topbar .fs-title {
+                color: var(--text-main);
+                font-weight: 700;
+                font-size: 0.88rem;
+                flex-shrink: 0;
+                white-space: nowrap;
+            }
+            /* Menú "Archivo" dropdown dentro de la topbar */
+            .fs-topbar .file-menu-wrap {
+                flex-shrink: 0;
+                position: relative;
+            }
+            /* CRITICAL: position:fixed para escapar del overflow-x:auto
+               del topbar, que recortaba el dropdown haciéndolo invisible.
+               La posición exacta la calcula fsToggleFileMenu() via JS. */
+            .fs-topbar .file-menu-dropdown {
+                position: fixed !important;
+                top: auto;
+                left: auto;
+                right: auto;
+                z-index: 999999 !important;
+            }
+
+            /* === BOTTOM BAR (siempre visible en fullscreen) === */
+            /* Estructura:
+                 [Errores] [Sugerencias] [Consola]    →    [spacer]    →    Ln/Col chars
+               Los botones Errores/Sugerencias solo se muestran cuando hay
+               errores/sugerencias respectivamente (display:none via JS). */
+            .fs-bottombar {
+                display: none;
+                flex-shrink: 0;
+                min-height: 32px;
+                width: 100%;
+                box-sizing: border-box;
+                background: var(--bg-card2);
+                border-top: 1px solid var(--border);
+                padding: 0 14px;
+                align-items: center;
+                gap: 6px;
+                font-size: 0.74rem;
+                flex-wrap: nowrap;
+                overflow-x: auto;
+                overflow-y: hidden;
+            }
+            .fs-bottombar::-webkit-scrollbar { height: 3px; }
+            .fs-bottombar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); }
+            .playground-grid.fullscreen .fs-bottombar {
+                display: flex !important;
+            }
+            .fs-bottombar .fs-tab-btn {
+                background: transparent;
+                color: var(--text-muted);
+                border: 1px solid transparent;
+                padding: 4px 10px;
+                border-radius: 5px;
+                font-size: 0.74rem;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.12s;
+                display: inline-flex;
+                align-items: center;
+                gap: 5px;
+                flex-shrink: 0;
+                white-space: nowrap;
+            }
+            .fs-bottombar .fs-tab-btn:hover {
+                background: rgba(255,255,255,0.05);
+                color: var(--text-main);
+            }
+            .fs-bottombar .fs-tab-btn.active {
+                background: rgba(124,58,237,0.22);
+                color: #c4b5fd;
+                border-color: rgba(124,58,237,0.45);
+            }
+            .fs-bottombar .fs-tab-btn .fs-tab-count {
+                background: var(--bg-card);
+                padding: 0 7px;
+                border-radius: 8px;
+                font-size: 0.68rem;
+                font-family: var(--font-mono);
+                min-width: 18px;
+                text-align: center;
+            }
+            .fs-bottombar .fs-tab-btn.has-errors {
+                color: var(--color-error);
+            }
+            .fs-bottombar .fs-tab-btn.has-errors .fs-tab-count {
+                background: rgba(239,68,68,0.3);
+                color: #fff;
+                font-weight: 700;
+            }
+            .fs-bottombar .fs-tab-btn.has-warns {
+                color: var(--color-warn);
+            }
+            .fs-bottombar .fs-tab-btn.has-warns .fs-tab-count {
+                background: rgba(245,158,11,0.3);
+                color: #fff;
+                font-weight: 700;
+            }
+            .fs-bottombar .fs-status {
+                color: var(--text-dim);
+                font-family: var(--font-mono);
+                font-size: 0.72rem;
+                flex-shrink: 0;
+                white-space: nowrap;
+            }
+
+            /* === EDITOR PANEL en fullscreen === */
+            .playground-grid.fullscreen > .playground-editor-panel {
+                flex: 1 1 0 !important;
+                min-height: 0 !important;
+                min-width: 0 !important;
+                width: 100% !important;
+                height: auto !important;
+                display: flex !important;
+                flex-direction: column !important;
+                overflow: hidden !important;
+                margin: 0 !important;
+                border: none !important;
+                border-radius: 0 !important;
+                background: var(--bg-dark) !important;
+            }
+            /* Ocultar TODO lo que sobra del editor panel original
+               EXCEPTO el diag-panel: el usuario en mobile/fullscreen necesita
+               ver errores y sugerencias. El panel queda flotante arriba del
+               editor con z-index alto. */
+            .playground-grid.fullscreen .playground-editor-panel > .panel-header,
+            .playground-grid.fullscreen .playground-editor-panel > .snippets-panel,
+            .playground-grid.fullscreen .playground-editor-panel > .editor-status-bar,
+            .playground-grid.fullscreen .playground-editor-panel > .playground-toolbar {
+                display: none !important;
+            }
+            /* FIX bug mobile/fullscreen: diag-panel VISIBLE pero compacto */
+            .playground-grid.fullscreen .playground-editor-panel > .diag-panel,
+            .playground-grid.fullscreen .ide-diag-host {
+                position: fixed !important;
+                top: 48px !important;
+                left: 8px !important;
+                right: 8px !important;
+                z-index: 2147481000 !important;
+                max-height: 35vh !important;
+                overflow-y: auto !important;
+                background: var(--bg-card) !important;
+                border-radius: 8px !important;
+                box-shadow: 0 8px 32px rgba(0,0,0,0.5) !important;
+                pointer-events: auto !important;
+            }
+            /* Cuando no hay errores ni warns, ocultar */
+            .playground-grid.fullscreen .ide-diag-host:empty,
+            .playground-grid.fullscreen .playground-editor-panel > .diag-panel:empty {
+                display: none !important;
+            }
+            /* Editor container ocupa todo el panel */
+            .playground-grid.fullscreen .big-editor-container {
+                flex: 1 1 0 !important;
+                min-height: 0 !important;
+                height: auto !important;
+                max-height: none !important;
+                width: 100% !important;
+            }
+            .playground-grid.fullscreen .big-editor,
+            .playground-grid.fullscreen .big-editor-highlight {
+                min-height: 0 !important;
+                height: 100% !important;
+                max-height: none !important;
+                /* CRITICAL: white-space:pre + overflow:auto permite que el
+                   texto no haga wrap y el scroll horizontal sea natural.
+                   Antes el editor hacía wrap visual y el cursor podía moverse
+                   más allá del viewport sin que la página siguiera el cursor. */
+                white-space: pre !important;
+                overflow: auto !important;
+                word-wrap: normal !important;
+                overflow-wrap: normal !important;
+            }
+            .playground-grid.fullscreen .big-line-nums {
+                height: 100% !important;
+                max-height: none !important;
+            }
+
+            /* === SPLITTER (drag horizontal para resize del panel inferior) === */
+            /* === SPLITTER (drag horizontal para resize del panel inferior) ===
+               Una barra completa de ancho que ocupa TODO el horizontal,
+               con un color claramente visible y un handle central. */
+            .fs-splitter {
+                display: none;
+                flex-shrink: 0;
+                width: 100%;
+                height: 8px;
+                background: var(--accent1);
+                cursor: ns-resize;
+                position: relative;
+                transition: all 0.12s;
+                z-index: 10;
+                box-sizing: border-box;
+            }
+            .fs-splitter::before {
+                content: '⋯';
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                color: rgba(255,255,255,0.9);
+                font-size: 1rem;
+                font-weight: 900;
+                letter-spacing: 4px;
+                line-height: 1;
+                pointer-events: none;
+            }
+            .fs-splitter:hover {
+                background: #a78bfa;
+                height: 10px;
+            }
+            .fs-splitter:hover::before {
+                color: #fff;
+                font-size: 1.1rem;
+            }
+            .fs-splitter.dragging {
+                background: #c4b5fd;
+                height: 10px;
+            }
+            .fs-splitter.dragging::before {
+                color: #1e1b4b;
+            }
+            .playground-grid.fullscreen.bottom-panel-open .fs-splitter {
+                display: block !important;
+            }
+
+            /* === BOTTOM PANEL (consola/errores/sugerencias en tabs) === */
+            .fs-bottom-panel {
+                display: none;
+                flex-shrink: 0;
+                width: 100%;
+                box-sizing: border-box;
+                height: var(--fs-bottom-height, 240px);
+                min-height: 80px;
+                max-height: 70vh;
+                background: var(--bg-card);
+                border-top: 1px solid var(--border);
+                flex-direction: column;
+                overflow: hidden;
+            }
+            .playground-grid.fullscreen.bottom-panel-open .fs-bottom-panel {
+                display: flex !important;
+            }
+            .fs-bottom-content {
+                flex: 1 1 0;
+                min-height: 0;
+                width: 100%;
+                box-sizing: border-box;
+                overflow-y: auto;
+                overflow-x: auto;
+                background: var(--bg-dark);
+                text-align: left;
+            }
+            .fs-bottom-content.fs-pane-console {
+                padding: 14px 18px !important;
+                font-family: var(--font-mono);
+                font-size: 0.85rem;
+                line-height: 1.6;
+                /* normal: colapsa los espacios de indentación HTML que
+                   aparecían como "centrado" visual. Los \n y espacios
+                   reales del programa de usuario se preservan vía <br>
+                   tags que appendConsole añade explícitamente. */
+                white-space: normal;
+                word-break: break-word;
+                color: var(--text-main);
+                text-align: left !important;
+            }
+            /* Anular cualquier centrado heredado de las líneas .cout-line */
+            .fs-bottom-content.fs-pane-console * {
+                text-align: left !important;
+            }
+            .fs-bottom-content.fs-pane-console .cout-line {
+                display: inline;
+            }
+            .fs-bottom-content.fs-pane-errors,
+            .fs-bottom-content.fs-pane-warns {
+                padding: 8px 10px;
+                text-align: left;
+            }
+            .fs-bottom-content .fs-error-item,
+            .fs-bottom-content .fs-warn-item {
+                display: flex;
+                gap: 12px;
+                padding: 7px 12px;
+                font-size: 0.8rem;
+                cursor: pointer;
+                border-radius: 4px;
+                transition: background 0.1s;
+                text-align: left;
+            }
+            .fs-bottom-content .fs-error-item:hover,
+            .fs-bottom-content .fs-warn-item:hover {
+                background: rgba(255,255,255,0.03);
+            }
+            .fs-bottom-content .fs-error-line {
+                color: var(--color-error);
+                font-family: var(--font-mono);
+                font-weight: 700;
+                flex-shrink: 0;
+                min-width: 50px;
+            }
+            .fs-bottom-content .fs-warn-item .fs-error-line {
+                color: var(--color-warn);
+            }
+            .fs-bottom-content .fs-error-msg {
+                color: var(--text-main);
+                text-align: left;
+            }
+            .fs-bottom-content.empty {
+                padding: 30px 20px;
+                text-align: center;
+                color: var(--text-dim);
+                font-style: italic;
+                font-size: 0.85rem;
+            }
+            /* Header del bottom panel: nombre del tab activo + botón cerrar */
+            .fs-bottom-header {
+                display: flex;
+                align-items: center;
+                padding: 6px 14px;
+                background: var(--bg-card2);
+                border-bottom: 1px solid var(--border);
+                font-size: 0.74rem;
+                font-weight: 600;
+                color: var(--text-muted);
+                flex-shrink: 0;
+                gap: 12px;
+            }
+            .fs-bottom-header .fs-bh-title {
+                color: var(--text-main);
+                font-size: 0.78rem;
+            }
+            .fs-bottom-header .fs-bh-close {
+                margin-left: auto;
+                background: transparent;
+                color: var(--text-muted);
+                border: 1px solid var(--border);
+                padding: 3px 9px;
+                border-radius: 5px;
+                font-size: 0.7rem;
+                cursor: pointer;
+            }
+            .fs-bottom-header .fs-bh-close:hover {
+                background: rgba(239,68,68,0.15);
+                color: #fff;
+                border-color: rgba(239,68,68,0.4);
+            }
+
+            /* Neutralizar clase obsoleta */
+            .playground-editor-panel.fullscreen:not(.playground-grid) {
+                position: static !important;
+                z-index: auto !important;
+            }
+            /* En fullscreen, OCULTAR el output-panel original. Su contenido
+               (la consola) se "movera" al fs-bottom-content via JS. */
+            .playground-grid.fullscreen > .playground-output-panel {
+                display: none !important;
+            }
+
+            /* === MOBILE RESPONSIVE: pantalla pequeña en fullscreen ===
+               En pantallas pequeñas (celular), el topbar se vuelve más
+               compacto, los botones se reducen y se ocultan textos largos
+               para que todos quepan o se pueda hacer scroll horizontal. */
+            @media (max-width: 700px) {
+                .fs-topbar {
+                    min-height: 42px;
+                    padding: 0 8px;
+                    gap: 4px;
+                }
+                .fs-topbar .fs-title {
+                    /* Ocultar título en mobile para ahorrar espacio */
+                    display: none;
+                }
+                .fs-topbar .fs-sep {
+                    margin: 0 2px;
+                    height: 18px;
+                }
+                .fs-topbar .fs-exit-btn,
+                .fs-topbar .fs-run-btn,
+                .fs-topbar .fs-stop-btn,
+                .fs-topbar .fs-icon-btn,
+                .fs-topbar .fs-tab-btn {
+                    padding: 5px 8px;
+                    font-size: 0.7rem;
+                }
+                .fs-bottombar {
+                    min-height: 30px;
+                    padding: 0 8px;
+                    gap: 4px;
+                    font-size: 0.7rem;
+                }
+                .fs-bottombar .fs-tab-btn {
+                    padding: 3px 7px;
+                    font-size: 0.7rem;
+                }
+                .fs-bottombar .fs-status {
+                    font-size: 0.66rem;
+                }
+                /* En mobile, hacer la consola más pequeña por defecto */
+                .playground-grid.fullscreen {
+                    --fs-bottom-height: 180px;
+                }
+                /* El editor en mobile usa fuente ligeramente más pequeña */
+                .playground-grid.fullscreen .big-editor,
+                .playground-grid.fullscreen .big-editor-highlight {
+                    font-size: 0.78rem !important;
+                }
+                .playground-grid.fullscreen .big-line-nums {
+                    font-size: 0.72rem !important;
+                    width: 36px !important;
+                }
+                .playground-grid.fullscreen .big-editor,
+                .playground-grid.fullscreen .big-editor-highlight {
+                    padding-left: 42px !important;
+                }
+            }
+
+            /* === SCROLL GENERAL EN MODALES/POPUPS ===
+               Aplicar overflow:auto a todos los modales y popups del editor
+               para que ningún contenido quede cortado en pantallas pequeñas. */
+            .flowchart-modal { overflow-y: auto; overflow-x: hidden; }
+            .modal-overlay { overflow-y: auto; }
+            .file-menu-dropdown { max-height: 80vh; overflow-y: auto; }
+
+            /* Botón Ejecutar transformado a Detener mientras corre — clickeable */
+            .btn-run.running,
+            .fs-run-btn.running {
+                background: linear-gradient(135deg, #ef4444, #b91c1c) !important;
+                color: #fff !important;
+                animation: pulseRun 1.1s ease-in-out infinite alternate;
+                pointer-events: auto !important;
+                cursor: pointer !important;
+            }
+            @keyframes pulseRun {
+                from { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.55); }
+                to   { box-shadow: 0 0 14px 6px rgba(239, 68, 68, 0); }
+            }
+
+            /* ============================================================
+               MENÚ ARCHIVO (dropdown del editor)
+            ============================================================ */
+            .file-menu-wrap {
+                position: relative;
+                display: inline-block;
+            }
+            .file-menu-btn {
+                font-weight: 600;
+            }
+            .file-menu-dropdown {
+                display: none;
+                position: absolute;
+                top: calc(100% + 6px);
+                right: 0;
+                /* FIX responsive: ancho fluido — nunca excede el viewport */
+                min-width: min(280px, 92vw);
+                max-width: 92vw;
+                background: var(--bg-card);
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                box-shadow: 0 10px 28px rgba(0,0,0,0.55);
+                z-index: 200;
+                overflow: hidden;
+                animation: fmFadeIn 0.12s ease-out;
+            }
+            .file-menu-dropdown.open { display: block; }
+            @keyframes fmFadeIn {
+                from { opacity: 0; transform: translateY(-4px); }
+                to   { opacity: 1; transform: translateY(0); }
+            }
+            .file-menu-dropdown button {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                width: 100%;
+                background: transparent;
+                color: var(--text-main);
+                border: none;
+                padding: 9px 14px;
+                font-size: 0.82rem;
+                font-family: var(--font-body);
+                cursor: pointer;
+                text-align: left;
+                transition: background 0.12s;
+            }
+            .file-menu-dropdown button:hover {
+                background: rgba(124, 58, 237, 0.18);
+                color: #fff;
+            }
+            .file-menu-dropdown .fmi-icon {
+                width: 18px;
+                text-align: center;
+                font-size: 0.95rem;
+            }
+            .file-menu-dropdown .fmi-label {
+                flex: 1;
+            }
+            .file-menu-dropdown .fmi-shortcut {
+                font-family: var(--font-mono);
+                font-size: 0.7rem;
+                color: var(--text-dim);
+                background: rgba(255,255,255,0.04);
+                padding: 2px 6px;
+                border-radius: 4px;
+            }
+            .file-menu-dropdown .file-menu-sep {
+                height: 1px;
+                background: var(--border);
+                margin: 4px 0;
+            }
+
+            /* ============================================================
+               MODAL DE DESCARGA POR HOJAS (PNG/JPEG)
+            ============================================================ */
+            .fc-download-modal {
+                position: fixed;
+                inset: 0;
+                background: rgba(2, 6, 17, 0.78);
+                backdrop-filter: blur(4px);
+                z-index: 1000001; /* FIX: encima del flowchart-modal (999999) y del editor fullscreen (99999) */
+                display: none;
+                align-items: center;
+                justify-content: center;
+                padding: 20px;
+            }
+            .fc-download-modal.open {
+                display: flex;
+                animation: fcFadeIn 0.18s ease-out;
+            }
+            .fc-dl-box {
+                background: var(--bg-card);
+                border: 1px solid var(--border);
+                border-radius: 12px;
+                width: 100%;
+                max-width: 520px;
+                max-height: 88vh;
+                display: flex;
+                flex-direction: column;
+                box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+                overflow: hidden;
+            }
+            .fc-dl-header {
+                background: linear-gradient(135deg, #1a2236, #111827);
+                padding: 14px 18px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                border-bottom: 2px solid #7c3aed;
+            }
+            .fc-dl-header h3 {
+                color: #fff;
+                font-size: 1rem;
+                font-weight: 800;
+                margin: 0;
+            }
+            .fc-dl-close {
+                background: rgba(255,255,255,0.05);
+                color: var(--text-muted);
+                border: 1px solid var(--border);
+                width: 28px; height: 28px;
+                border-radius: 6px;
+                cursor: pointer;
+                font-size: 0.85rem;
+            }
+            .fc-dl-close:hover {
+                background: rgba(239, 68, 68, 0.25);
+                color: #fff;
+                border-color: rgba(239, 68, 68, 0.5);
+            }
+            .fc-dl-body {
+                padding: 16px 18px;
+                overflow-y: auto;
+                flex: 1;
+            }
+            .fc-dl-section {
+                margin-bottom: 18px;
+            }
+            .fc-dl-section:last-child { margin-bottom: 0; }
+            .fc-dl-section-title {
+                font-size: 0.82rem;
+                font-weight: 700;
+                color: var(--text-main);
+                margin-bottom: 8px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+            }
+            .fc-dl-bulk-actions {
+                display: flex;
+                gap: 6px;
+            }
+            .fc-dl-mini-btn {
+                background: rgba(124, 58, 237, 0.12);
+                color: #c4b5fd;
+                border: 1px solid rgba(124, 58, 237, 0.3);
+                padding: 3px 9px;
+                font-size: 0.7rem;
+                border-radius: 5px;
+                cursor: pointer;
+                font-family: var(--font-body);
+            }
+            .fc-dl-mini-btn:hover {
+                background: rgba(124, 58, 237, 0.25);
+                color: #fff;
+            }
+            .fc-dl-frames-list {
+                max-height: 260px;
+                overflow-y: auto;
+                background: rgba(0,0,0,0.18);
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                padding: 4px;
+            }
+            .fc-dl-frame-item {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                padding: 9px 10px;
+                border-radius: 6px;
+                cursor: pointer;
+                transition: background 0.12s;
+                font-size: 0.85rem;
+            }
+            .fc-dl-frame-item:hover {
+                background: rgba(124, 58, 237, 0.12);
+            }
+            .fc-dl-frame-item.selected {
+                background: rgba(124, 58, 237, 0.18);
+            }
+            .fc-dl-frame-item input[type=checkbox] {
+                width: 16px;
+                height: 16px;
+                cursor: pointer;
+                accent-color: #7c3aed;
+            }
+            .fc-dl-frame-num {
+                font-family: var(--font-mono);
+                font-size: 0.72rem;
+                color: #c4b5fd;
+                background: rgba(124, 58, 237, 0.18);
+                padding: 2px 7px;
+                border-radius: 4px;
+                font-weight: 600;
+            }
+            .fc-dl-frame-title {
+                color: var(--text-main);
+                flex: 1;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            .fc-dl-single-info {
+                padding: 12px 14px;
+                background: rgba(124, 58, 237, 0.1);
+                border: 1px solid rgba(124, 58, 237, 0.3);
+                border-radius: 8px;
+                font-size: 0.85rem;
+                color: var(--text-main);
+            }
+            .fc-dl-fmt-list {
+                display: grid;
+                /* FIX responsive: auto-fit en vez de 1fr 1fr fijo */
+                grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+                gap: 10px;
+            }
+            .fc-dl-fmt-opt {
+                display: flex;
+                flex-direction: column;
+                gap: 4px;
+                background: rgba(0,0,0,0.18);
+                border: 2px solid var(--border);
+                border-radius: 8px;
+                padding: 12px;
+                cursor: pointer;
+                transition: all 0.12s;
+                position: relative;
+            }
+            .fc-dl-fmt-opt:hover {
+                border-color: rgba(124, 58, 237, 0.5);
+            }
+            .fc-dl-fmt-opt.active {
+                border-color: #7c3aed;
+                background: rgba(124, 58, 237, 0.12);
+            }
+            .fc-dl-fmt-opt input[type=radio] {
+                position: absolute;
+                top: 10px; right: 10px;
+                accent-color: #7c3aed;
+            }
+            .fc-dl-fmt-label {
+                font-weight: 700;
+                color: var(--text-main);
+                font-size: 0.9rem;
+            }
+            .fc-dl-fmt-desc {
+                font-size: 0.72rem;
+                color: var(--text-muted);
+            }
+            .fc-dl-footer {
+                padding: 12px 18px;
+                border-top: 1px solid var(--border);
+                background: var(--bg-card2);
+                display: flex;
+                justify-content: flex-end;
+                gap: 10px;
+            }
+            .fc-dl-cancel,
+            .fc-dl-confirm {
+                padding: 9px 18px;
+                font-size: 0.85rem;
+                border-radius: 7px;
+                cursor: pointer;
+                font-family: var(--font-body);
+                font-weight: 600;
+                transition: all 0.12s;
+            }
+            .fc-dl-cancel {
+                background: transparent;
+                color: var(--text-muted);
+                border: 1px solid var(--border);
+            }
+            .fc-dl-cancel:hover {
+                background: rgba(255,255,255,0.05);
+                color: var(--text-main);
+            }
+            .fc-dl-confirm {
+                background: linear-gradient(135deg, #7c3aed, #a855f7);
+                color: #fff;
+                border: 1px solid #7c3aed;
+            }
+            .fc-dl-confirm:hover:not(:disabled) {
+                box-shadow: 0 0 14px rgba(124, 58, 237, 0.5);
+                transform: translateY(-1px);
+            }
+            .fc-dl-confirm:disabled {
+                opacity: 0.4;
+                cursor: not-allowed;
+            }
+            @media (max-width: 600px) {
+                .fc-dl-fmt-list { grid-template-columns: 1fr; }
+                .fc-dl-box { max-width: 95vw; }
+            }
+
+            /* ============================================================
+               DIAGRAMA DE FLUJO — MODAL Y CANVAS
+            ============================================================ */
+            .flowchart-modal {
+                position: fixed;
+                inset: 0;
+                background: rgba(2, 6, 17, 0.92);
+                backdrop-filter: blur(6px);
+                /* FIX: z-index alto para que el diagrama se superponga
+                   incluso sobre el editor en pantalla completa
+                   (que tiene z-index: 99999). El orden de capas es:
+                     página → editor normal → editor pantalla completa
+                     → diagrama de flujo (esta capa, encima de TODO) */
+                z-index: 999999;
+                display: none;
+                align-items: stretch;
+                justify-content: center;
+                padding: 0;
+            }
+            .flowchart-modal.open {
+                display: flex;
+                animation: fcFadeIn 0.18s ease-out;
+            }
+            @keyframes fcFadeIn {
+                from { opacity: 0; }
+                to { opacity: 1; }
+            }
+            .flowchart-box {
+                background: var(--bg-card);
+                width: 100%;
+                height: 100%;
+                display: flex;
+                flex-direction: column;
+                overflow: hidden;
+                border: none;
+            }
+            .flowchart-header {
+                background: linear-gradient(135deg, #1a2236, #111827);
+                padding: 10px 18px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                border-bottom: 2px solid #7c3aed;
+                flex-shrink: 0;
+            }
+            .flowchart-header h3 {
+                color: #fff;
+                font-size: 1rem;
+                font-weight: 800;
+                margin: 0;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            .flowchart-toolbar {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                flex-wrap: wrap;
+            }
+            .fc-tool-btn {
+                background: rgba(255,255,255,0.06);
+                color: var(--text-main);
+                border: 1px solid var(--border);
+                padding: 5px 10px;
+                font-size: 0.78rem;
+                border-radius: 6px;
+                cursor: pointer;
+                font-family: var(--font-body);
+                transition: all 0.15s;
+            }
+            .fc-tool-btn:hover {
+                background: rgba(124, 58, 237, 0.25);
+                border-color: #7c3aed;
+                color: #fff;
+            }
+            .fc-tool-btn.fc-close-btn {
+                background: rgba(239, 68, 68, 0.15);
+                color: var(--color-error);
+                border-color: rgba(239, 68, 68, 0.4);
+            }
+            .fc-tool-btn.fc-close-btn:hover {
+                background: rgba(239, 68, 68, 0.35);
+                color: #fff;
+            }
+            .fc-tool-btn.fc-pages-btn {
+                /* FIX: antes tenía background y color resaltado permanente
+                   que hacía parecer que el botón estaba "hover" todo el tiempo.
+                   Ahora hereda el estilo normal de .fc-tool-btn y solo se
+                   ilumina al hacer hover real. */
+                font-weight: 600;
+            }
+            .fc-tool-btn.fc-pages-btn:hover {
+                background: rgba(124, 58, 237, 0.25);
+                color: #c4b5fd;
+                border-color: rgba(124, 58, 237, 0.5);
+            }
+            .fc-zoom-label {
+                color: var(--text-muted);
+                font-family: var(--font-mono);
+                font-size: 0.75rem;
+                min-width: 50px;
+                text-align: center;
+            }
+            .fc-separator {
+                color: var(--text-dim);
+                margin: 0 4px;
+                font-weight: 100;
+            }
+            .flowchart-canvas-wrap {
+                flex: 1;
+                overflow: auto;
+                background:
+                    radial-gradient(circle at 1px 1px, rgba(124, 58, 237, 0.12) 1px, transparent 1px),
+                    linear-gradient(180deg, #0a0e1a 0%, #0f1525 100%);
+                background-size: 22px 22px, 100% 100%;
+                position: relative;
+                cursor: grab;
+                /* FIX: containment para que el scroll no se propague al body
+                   cuando se llega al tope/fondo del wrap (overscroll chain). */
+                overscroll-behavior: contain;
+                /* FIX: scroll instantáneo (no smooth) para máxima fluidez.
+                   Antes podía sentirse "a saltos" con scroll-behavior: smooth
+                   por defecto de algunos navegadores. */
+                scroll-behavior: auto;
+                /* FIX: el padding va aquí (no en .flowchart-canvas) para que
+                   no se vea afectado por transform:scale del canvas. */
+                padding: 20px;
+                box-sizing: border-box;
+                /* FIX: text-align center hace que el canvas inline-block se
+                   centre horizontalmente cuando es más estrecho que el wrap;
+                   cuando es más ancho, aparece scroll horizontal naturalmente. */
+                text-align: center;
+                /* FIX: containment para mejor rendimiento de scroll. */
+                contain: layout style;
+            }
+            .flowchart-canvas-wrap:active {
+                cursor: grabbing;
+            }
+            .flowchart-canvas {
+                /* FIX: padding 0 (lo absorbió el wrap). Usamos inline-block
+                   para que el contenedor se ajuste al tamaño REAL del SVG
+                   y permita centrado horizontal vía text-align del wrap. */
+                padding: 0;
+                display: inline-block;
+                text-align: left; /* resetear para el contenido SVG */
+                transform-origin: top left;
+                /* FIX: transición SOLO para el transform (zoom). Para el scroll
+                   del wrap padre no hay animación. La duración baja a 0.1s y
+                   linear para sentirse más responsivo. */
+                transition: transform 0.1s linear;
+                vertical-align: top;
+                /* FIX: hint al navegador para que use GPU compositing,
+                   mejorando la fluidez del scroll cuando el SVG es grande. */
+                will-change: transform;
+                /* Forzar GPU composite layer */
+                transform: translateZ(0);
+            }
+            /* Mientras se está scrolleando o haciendo pan, desactivar la
+               transición del transform para evitar lag visual. */
+            .flowchart-canvas-wrap.fc-panning .flowchart-canvas {
+                transition: none;
+            }
+            .flowchart-canvas svg {
+                display: block;
+                max-width: none;
+            }
+            /* FIX: cuando el modal está abierto, bloqueamos el scroll del body
+               detrás para evitar que el "scroll fuera del view" mueva la
+               página de fondo. */
+            body.fc-modal-open {
+                overflow: hidden;
+            }
+            .flowchart-footer {
+                background: var(--bg-card2);
+                padding: 8px 18px;
+                border-top: 1px solid var(--border);
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                flex-wrap: wrap;
+                gap: 10px;
+                flex-shrink: 0;
+            }
+            .fc-legend {
+                display: flex;
+                gap: 14px;
+                flex-wrap: wrap;
+            }
+            .fc-legend-item {
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                font-size: 0.72rem;
+                color: var(--text-muted);
+            }
+            .fc-status {
+                font-size: 0.72rem;
+                color: var(--text-dim);
+                font-family: var(--font-mono);
+            }
+
+            /* Shapes — animaciones hover/highlight */
+            .fc-shape {
+                cursor: pointer;
+                transition: filter 0.15s, opacity 0.15s;
+            }
+            .fc-shape:hover {
+                filter: brightness(1.18) drop-shadow(0 0 8px rgba(0,212,255,0.4));
+            }
+            .fc-shape.highlight {
+                animation: fcPulse 0.8s ease-in-out 2;
+            }
+            @keyframes fcPulse {
+                0%, 100% { filter: brightness(1); }
+                50% { filter: brightness(1.5) drop-shadow(0 0 14px #f59e0b); }
+            }
+            .fc-conn {
+                stroke: #94a3b8;
+                stroke-width: 1.8;
+                fill: none;
+            }
+            /* Colores semánticos de conexiones en el diagrama de flujo */
+            .fc-conn-si  { stroke: #10b981; stroke-width: 2; fill: none; } /* Verde = Sí/Verdadero */
+            .fc-conn-no  { stroke: #ef4444; stroke-width: 2; fill: none; } /* Rojo = No/Falso */
+            .fc-conn-loop { stroke: #a855f7; stroke-width: 2; fill: none; stroke-dasharray: 5 3; } /* Violeta = retorno de bucle */
+            .fc-conn-merge { stroke: #94a3b8; stroke-width: 1.8; fill: none; } /* Gris = merge/join */
+            .fc-conn-case { stroke: #06b6d4; stroke-width: 1.8; fill: none; } /* Cyan = caso Según */
+            .fc-conn-label {
+                fill: #f1f5f9;
+                font-family: var(--font-mono);
+                font-size: 12px;
+                font-weight: 800;
+                paint-order: stroke;
+                stroke: #0a0e1a;
+                stroke-width: 4px;
+                stroke-linecap: round;
+                stroke-linejoin: round;
+            }
+            .fc-conn-label-bg {
+                fill: rgba(10, 14, 26, 0.85);
+                stroke: rgba(148, 163, 184, 0.5);
+                stroke-width: 1;
+                rx: 3;
+            }
+            .fc-shape-text {
+                fill: #fff;
+                font-family: var(--font-mono);
+                font-size: 12px;
+                font-weight: 600;
+                text-anchor: middle;
+                dominant-baseline: middle;
+                pointer-events: none;
+            }
+            .fc-shape-text.dark {
+                fill: #0a0e1a;
+            }
+            .fc-frame-title {
+                fill: #c4b5fd;
+                font-family: var(--font-body);
+                font-size: 13px;
+                font-weight: 800;
+            }
+            .fc-frame-rect {
+                fill: rgba(124, 58, 237, 0.04);
+                stroke: rgba(124, 58, 237, 0.4);
+                stroke-width: 1.5;
+                stroke-dasharray: 6 4;
+                rx: 8;
+            }
+
+            @media (max-width: 700px) {
+                .flowchart-toolbar { gap: 4px; }
+                .fc-tool-btn { padding: 4px 7px; font-size: 0.7rem; }
+                .fc-legend { gap: 8px; }
+                .fc-legend-item { font-size: 0.65rem; }
+                /* FIX: el padding está en el wrap (no en .flowchart-canvas) */
+                .flowchart-canvas-wrap { padding: 12px; }
+            }
+
+            .panel-header {
+                background: var(--bg-card2);
+                padding: 12px 16px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                border-bottom: 1px solid var(--border);
+            }
+
+            .panel-header h3 {
+                font-size: 0.85rem;
+                font-weight: 700;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+            }
+
+            .big-console {
+                background: #080c14;
+                padding: 14px;
+                padding-bottom: 20px; /* espacio extra para la fila de input inline */
+                font-family: var(--font-mono);
+                font-size: 0.82rem;
+                line-height: 1.7;
+                min-height: 320px;
+                max-height: 420px;
+                overflow-y: auto;
+                color: #a3e635;
+                position: relative; /* para contener el input inline */
+            }
+
+            .playground-toolbar {
+                padding: 12px 16px;
+                border-top: 1px solid var(--border);
+                display: flex;
+                gap: 8px;
+                flex-wrap: wrap;
+                background: var(--bg-card2);
+            }
+            /* ============================================================
+     REFERENCIA DE PALABRAS CLAVE
+  ============================================================ */
+
+            .ref-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+                gap: 16px;
+            }
+
+            .ref-card {
+                background: var(--bg-card);
+                border: 1px solid var(--border);
+                border-radius: var(--radius);
+                padding: 18px;
+                transition: all 0.2s;
+            }
+
+            .ref-card:hover {
+                border-color: var(--accent1);
+            }
+
+            .ref-card h4 {
+                font-family: var(--font-mono);
+                color: var(--accent1);
+                font-size: 0.9rem;
+                margin-bottom: 6px;
+            }
+
+            .ref-card p {
+                font-size: 0.82rem;
+                color: var(--text-muted);
+                margin-bottom: 10px;
+            }
+
+            .ref-code {
+                background: var(--bg-dark);
+                border-radius: 6px;
+                padding: 8px 12px;
+                font-family: var(--font-mono);
+                font-size: 0.78rem;
+                color: var(--text-main);
+                white-space: pre;
+                overflow-x: auto;
+            }
+            /* ============================================================
+     PROGRESO
+  ============================================================ */
+
+            .progress-bar-wrap {
+                background: var(--bg-dark);
+                border-radius: 99px;
+                height: 8px;
+                overflow: hidden;
+                margin-top: 4px;
+            }
+
+            .progress-bar {
+                height: 100%;
+                border-radius: 99px;
+                background: linear-gradient(
+                    90deg,
+                    var(--accent1),
+                    var(--accent4)
+                );
+                transition: width 0.5s ease;
+            }
+
+            .progress-section {
+                background: var(--bg-card);
+                border: 1px solid var(--border);
+                border-radius: var(--radius);
+                padding: 24px;
+                max-width: 480px;
+            }
+
+            .progress-section h3 {
+                font-size: 1rem;
+                font-weight: 700;
+                margin-bottom: 16px;
+            }
+
+            .prog-row {
+                margin-bottom: 12px;
+            }
+
+            .prog-row-label {
+                display: flex;
+                justify-content: space-between;
+                font-size: 0.85rem;
+                color: var(--text-muted);
+                margin-bottom: 4px;
+            }
+            /* ============================================================
+     INPUT INLINE EN CONSOLA — Reemplaza el popup flotante
+     FRONTEND: Diseño tipo terminal, integrado en el output
+  ============================================================ */
+
+            /* El modal fantasma ya no existe — mantenemos el ID
+               pero oculto permanentemente (JS lo controla inline) */
+            .input-modal {
+                display: none !important;
+            }
+
+            /* ── Fila de entrada inline dentro de la consola ── */
+            .console-input-row {
+                display: none;
+                align-items: center;
+                gap: 0;
+                margin-top: 6px;
+                border-top: 1px solid rgba(0,212,255,0.15);
+                padding-top: 8px;
+                animation: inputRowIn 0.18s ease both;
+            }
+            .console-input-row.active {
+                display: flex;
+            }
+            @keyframes inputRowIn {
+                from { opacity: 0; transform: translateY(4px); }
+                to   { opacity: 1; transform: translateY(0); }
+            }
+
+            /* Prompt símbolo tipo terminal */
+            .console-input-prompt {
+                color: var(--accent1);
+                font-family: var(--font-mono);
+                font-size: 0.88rem;
+                font-weight: 700;
+                padding: 0 6px 0 0;
+                white-space: nowrap;
+                user-select: none;
+                flex-shrink: 0;
+            }
+
+            /* Campo de texto sin bordes flotantes */
+            .console-input-field {
+                flex: 1;
+                background: transparent;
+                border: none;
+                border-bottom: 2px solid var(--accent1);
+                border-radius: 0;
+                padding: 4px 8px;
+                color: var(--accent1);
+                font-family: var(--font-mono);
+                font-size: 0.88rem;
+                outline: none;
+                caret-color: var(--accent1);
+                transition: border-color 0.2s;
+            }
+            .console-input-field::placeholder {
+                color: rgba(0,212,255,0.3);
+                font-style: italic;
+            }
+            .console-input-field:focus {
+                border-bottom-color: #fff;
+                color: #fff;
+            }
+
+            /* Botón OK compacto */
+            .console-input-ok {
+                background: rgba(0,212,255,0.12);
+                border: 1px solid rgba(0,212,255,0.4);
+                border-radius: 6px;
+                color: var(--accent1);
+                font-family: var(--font-mono);
+                font-size: 0.78rem;
+                font-weight: 700;
+                padding: 4px 12px;
+                margin-left: 8px;
+                cursor: pointer;
+                white-space: nowrap;
+                transition: all 0.15s;
+                flex-shrink: 0;
+            }
+            .console-input-ok:hover {
+                background: rgba(0,212,255,0.22);
+                border-color: var(--accent1);
+            }
+
+            /* Hint debajo del input */
+            .console-input-hint {
+                font-size: 0.68rem;
+                color: var(--text-dim);
+                font-family: var(--font-mono);
+                padding: 3px 0 0 0;
+                display: none;
+            }
+            .console-input-row.active ~ .console-input-hint {
+                display: block;
+            }
+
+            /* Líneas de echo — cuando el usuario confirma, se muestra lo que escribió */
+            .cout-input-echo {
+                color: var(--accent1);
+                font-family: var(--font-mono);
+                font-size: 0.82rem;
+                opacity: 0.85;
+            }
+
+            /* Compatibilidad: estas clases legacy ya no se usan
+               pero las dejamos vacías para no romper nada */
+            .input-modal-box,
+            .input-modal-header,
+            .input-modal-icon,
+            .input-prompt-text,
+            .input-field-row,
+            .input-ok-btn,
+            .input-hint,
+            .input-hint-row,
+            .btn-cancel-input { display: none !important; }
+
+            /* Variable type color highlighting */
+            .kw-var-entero   { color: #a78bfa; font-weight: 600; } /* Entero → violeta */
+            .kw-var-real     { color: #60a5fa; font-weight: 600; } /* Real → azul */
+            .kw-var-texto    { color: #fbbf24; font-weight: 600; } /* Texto → amarillo */
+            .kw-var-logico   { color: #34d399; font-weight: 600; } /* Logico → verde */
+            /* ============================================================
+     FOOTER
+  ============================================================ */
+
+            footer {
+                position: relative;
+                z-index: 1;
+                border-top: 1px solid var(--border);
+                padding: 40px 24px;
+                text-align: center;
+                color: var(--text-muted);
+                font-size: 0.85rem;
+            }
+            /* ============================================================
+     ANIMACIONES
+  ============================================================ */
+
+            @keyframes fadeInDown {
+                from {
+                    opacity: 0;
+                    transform: translateY(-20px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            @keyframes fadeInUp {
+                from {
+                    opacity: 0;
+                    transform: translateY(20px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                }
+                to {
+                    opacity: 1;
+                }
+            }
+
+            @keyframes pulse {
+                0%,
+                100% {
+                    opacity: 1;
+                }
+                50% {
+                    opacity: 0.4;
+                }
+            }
+
+            .animate-in {
+                opacity: 0;
+                transform: translateY(24px);
+                transition:
+                    opacity 0.6s ease,
+                    transform 0.6s ease;
+            }
+
+            .animate-in.visible {
+                opacity: 1;
+                transform: translateY(0);
+            }
+
+            /* MOBILE FIX: En pantallas pequeñas, mostrar contenido inmediatamente sin depender de IntersectionObserver */
+            @media (max-width: 900px) {
+                .animate-in {
+                    opacity: 1 !important;
+                    transform: translateY(0) !important;
+                }
+            }
+
+            @keyframes lessonFadeIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(16px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            .lesson-fade {
+                animation: lessonFadeIn 0.35s ease both;
+            }
+
+            /* MOBILE FIX: No usar animación que bloquee visibilidad inicial */
+            @media (max-width: 900px) {
+                .lesson-fade {
+                    animation: none !important;
+                    opacity: 1 !important;
+                    transform: none !important;
+                }
+            }
+
+            .blink {
+                animation: pulse 1.2s infinite;
+            }
+            /* Syntax highlighting colors */
+
+            .kw-process {
+                color: #818cf8;
+            }
+
+            .kw-io {
+                color: #34d399;
+            }
+
+            .kw-control {
+                color: #f472b6;
+            }
+
+            .kw-var {
+                color: #60a5fa;
+            }
+
+            .kw-type {
+                color: #fb923c;
+            }
+            /* Tipos de datos - colores únicos para diferenciarlos */
+            .kw-type-entero { color: #a78bfa !important; } /* Entero → violeta */
+            .kw-type-real   { color: #60a5fa !important; } /* Real   → azul    */
+            .kw-type-texto  { color: #fbbf24 !important; } /* Texto  → dorado  */
+            .kw-type-logico { color: #34d399 !important; } /* Logico → verde   */
+
+            /* Variables de usuario coloreadas según su tipo (en uso, no solo declaración) */
+            .kw-uservar { font-style: normal; }
+            .kw-uservar.kw-type-entero { color: #c4b5fd !important; } /* violeta claro */
+            .kw-uservar.kw-type-real   { color: #93c5fd !important; } /* azul claro    */
+            .kw-uservar.kw-type-texto  { color: #fde68a !important; } /* dorado claro  */
+            .kw-uservar.kw-type-logico { color: #6ee7b7 !important; } /* verde claro   */
+            /* Variable declarada por asignación directa (sin Definir, tipo desconocido) */
+            .kw-uservar.kw-uservar-notype { color: #e2e8f0 !important; } /* texto plano — sin tipo conocido */
+
+            .kw-comment {
+                color: #4b5563;
+                font-style: italic;
+            }
+
+            .kw-string {
+                color: #fbbf24;
+            }
+
+            .kw-number {
+                color: #a78bfa;
+            }
+
+            .kw-op {
+                color: #e879f9;
+            }
+            .kw-sinsaltar {
+                color: #34d399 !important;
+                font-weight: 600;
+            }
+            .kw-logic {
+                color: #f472b6 !important;
+                font-weight: 600;
+            }
+            .kw-bool {
+                color: #fbbf24 !important;
+                font-weight: 600;
+            }
+            .kw-func {
+                color: #60a5fa !important;
+                font-weight: 600;
+            }
+            .kw-math {
+                color: #60a5fa !important;
+            }
+
+            /* ============================================================
+   PANEL DE ERRORES / ANÁLISIS SINTÁCTICO
+============================================================ */
+            /* ============================================================
+               PANELES DE DIAGNÓSTICO (errores / sugerencias) — colapsables
+            ============================================================ */
+            .diag-panel {
+                border-radius: var(--radius);
+                padding: 0;
+                margin-top: 6px;
+                overflow: hidden;
+                display: none;
+                border: 1px solid transparent;
+            }
+            /* Error line background in highlight div */
+            .error-line-bg {
+                display: inline;
+                background: rgba(239, 68, 68, 0.13);
+                border-bottom: 2px solid rgba(239, 68, 68, 0.75);
+                border-radius: 2px;
+            }
+            /* Variable usada sin declarar: ERROR (rojo) — visualmente claro y sin
+               ambigüedad con tipos válidos (que son verdes/azules/dorados). */
+            .kw-undeclared {
+                color: var(--color-error) !important;
+                text-decoration: underline wavy #ef4444;
+                text-decoration-thickness: 2px;
+                text-underline-offset: 3px;
+                background: rgba(239, 68, 68, 0.08);
+                border-radius: 2px;
+                cursor: help;
+            }
+
+            /* ── IDE: resaltado de ocurrencias ─────────────────────── */
+            .occurrence-highlight {
+                background: rgba(0, 212, 255, 0.18);
+                border-radius: 2px;
+                outline: 1px solid rgba(0, 212, 255, 0.35);
+                outline-offset: -1px;
+            }
+            /* Ocurrencia donde está el cursor (más brillante) */
+            .occurrence-origin {
+                background: rgba(0, 212, 255, 0.32);
+                border-radius: 2px;
+                outline: 1px solid rgba(0, 212, 255, 0.7);
+                outline-offset: -1px;
+            }
+
+            /* ── IDE: tooltip hover ─────────────────────────────────── */
+            #ideTooltip {
+                /* Deshabilitado por preferencia del usuario — el subrayado sierra
+                   y los paneles de diagnóstico son suficiente. */
+                display: none !important;
+                position: fixed;
+                z-index: 2147483000;
+                background: #1a2236;
+                border: 1px solid #1e2d45;
+                border-radius: 8px;
+                padding: 8px 12px;
+                font-family: var(--font-mono);
+                font-size: 0.78rem;
+                color: var(--text-main);
+                max-width: 380px;
+                pointer-events: none;
+                box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+                display: none;
+                line-height: 1.5;
+                white-space: pre-wrap;
+                word-break: break-word;
+            }
+            #ideTooltip .tt-header {
+                color: var(--accent1);
+                font-weight: 700;
+                margin-bottom: 3px;
+                display: block;
+            }
+            #ideTooltip .tt-type {
+                color: #c4b5fd;
+                font-size: 0.72rem;
+            }
+            #ideTooltip .tt-line {
+                color: var(--text-muted);
+                font-size: 0.72rem;
+                margin-top: 4px;
+                display: block;
+            }
+            #ideTooltip .tt-hint {
+                color: #4b5563;
+                font-size: 0.70rem;
+                margin-top: 5px;
+                border-top: 1px solid #1e2d45;
+                padding-top: 4px;
+                display: block;
+            }
+            /* Cursor de definición al hacer Ctrl+hover */
+            .ide-ctrl-hover {
+                cursor: pointer !important;
+                text-decoration: underline !important;
+                text-decoration-color: rgba(0,212,255,0.6) !important;
+            }
+            .diag-panel.error-panel {
+                background: rgba(239,68,68,0.06);
+                border-color: rgba(239,68,68,0.3);
+            }
+            .diag-panel.warn-panel {
+                background: rgba(245,158,11,0.06);
+                border-color: rgba(245,158,11,0.3);
+            }
+            .diag-panel.has-errors,
+            .diag-panel.has-warns {
+                display: block;
+                animation: diagFadeIn 0.2s ease-out;
+            }
+            @keyframes diagFadeIn {
+                from { opacity: 0; transform: translateY(-3px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            .diag-panel-header {
+                padding: 6px 12px;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                font-size: 0.78rem;
+                font-weight: 700;
+                cursor: pointer;
+                user-select: none;
+                transition: background 0.15s;
+            }
+            .diag-panel.error-panel .diag-panel-header {
+                background: rgba(239,68,68,0.1);
+                color: var(--color-error-strong);
+            }
+            .diag-panel.warn-panel .diag-panel-header {
+                background: rgba(245,158,11,0.08);
+                color: var(--color-warn-strong);
+            }
+            .diag-panel.error-panel .diag-panel-header:hover {
+                background: rgba(239,68,68,0.16);
+            }
+            .diag-panel.warn-panel .diag-panel-header:hover {
+                background: rgba(245,158,11,0.14);
+            }
+            .diag-toggle-icon {
+                display: inline-block;
+                transition: transform 0.18s ease-out;
+                font-size: 0.7rem;
+                opacity: 0.85;
+            }
+            .diag-panel.expanded .diag-toggle-icon {
+                transform: rotate(90deg);
+            }
+            .diag-panel-title {
+                font-weight: 700;
+            }
+            .diag-count {
+                background: rgba(0,0,0,0.35);
+                border-radius: 10px;
+                padding: 1px 8px;
+                font-size: 0.72rem;
+                font-weight: 800;
+                min-width: 22px;
+                text-align: center;
+            }
+            .diag-panel.error-panel .diag-count {
+                background: rgba(239,68,68,0.35);
+                color: #fff;
+            }
+            .diag-panel.warn-panel .diag-count {
+                background: rgba(245,158,11,0.3);
+                color: #fff;
+            }
+            .diag-spacer { flex: 1; }
+            .diag-hint {
+                font-size: 0.7rem;
+                opacity: 0.55;
+                font-weight: 500;
+            }
+            .diag-panel-body {
+                max-height: 0;
+                overflow: hidden;
+                transition: max-height 0.22s ease-out;
+                border-top: 1px solid transparent;
+            }
+            .diag-panel.expanded .diag-panel-body {
+                max-height: 380px;
+                overflow-y: auto;
+            }
+            .diag-panel.error-panel.expanded .diag-panel-body {
+                border-top-color: rgba(239,68,68,0.2);
+            }
+            .diag-panel.warn-panel.expanded .diag-panel-body {
+                border-top-color: rgba(245,158,11,0.2);
+            }
+            .error-item {
+                padding: 7px 14px;
+                font-size: 0.78rem;
+                /* FIX contraste: variable semantica theme-aware */
+                color: var(--color-error);
+                font-family: var(--font-mono);
+                border-bottom: 1px solid rgba(239,68,68,0.08);
+                display: flex;
+                align-items: flex-start;
+                gap: 8px;
+                cursor: pointer;
+                transition: background 0.15s;
+            }
+            .error-item:last-child { border-bottom: none; }
+            .error-item:hover { background: rgba(239,68,68,0.1); }
+            .error-line-num {
+                background: rgba(239,68,68,0.2);
+                color: var(--color-error-strong);
+                border-radius: 4px;
+                padding: 1px 6px;
+                font-size: 0.7rem;
+                font-weight: 700;
+                white-space: nowrap;
+                min-width: 38px;
+                text-align: center;
+            }
+            .error-msg { flex: 1; line-height: 1.5; }
+            .warn-item {
+                padding: 6px 14px;
+                font-size: 0.78rem;
+                /* FIX contraste: variable semántica theme-aware */
+                color: var(--color-warn);
+                font-family: var(--font-mono);
+                line-height: 1.5;
+                border-bottom: 1px solid rgba(245,158,11,0.08);
+                cursor: pointer;
+                transition: background 0.15s;
+            }
+            .warn-item:last-child { border-bottom: none; }
+            .warn-item:hover { background: rgba(245,158,11,0.1); }
+            .warn-item .warn-line-jump {
+                color: var(--color-warn-strong);
+                font-weight: 700;
+                margin-right: 6px;
+                background: rgba(245,158,11,0.15);
+                border: 1px solid rgba(245,158,11,0.4);
+                border-radius: 4px;
+                padding: 1px 6px;
+                font-family: var(--font-mono);
+                font-size: 0.72rem;
+                cursor: pointer;
+                transition: background 0.15s, transform 0.1s;
+            }
+            .warn-item .warn-line-jump:hover {
+                background: rgba(245,158,11,0.3);
+                transform: scale(1.05);
+            }
+            .warn-item { cursor: pointer; }
+            /* ── CheatPanel: sidebar fijo a la derecha del editor ──────── */
+            .cheat-panel {
+                position: absolute;
+                top: 0;
+                right: 0;
+                bottom: 0;
+                /* FIX responsive: ancho fluido entre 220 y 300px según viewport */
+                width: clamp(220px, 22vw, 300px);
+                z-index: 5;
+                display: flex;
+                flex-direction: column;
+                background: var(--bg-card);
+                border-left: 1px solid var(--border);
+                font-family: var(--font-body);
+                transition: width 0.2s ease;
+            }
+            /* Modo colapsado: solo barra estrecha con el nombre vertical */
+            .cheat-panel.collapsed { width: 36px; }
+            .cheat-panel.collapsed .cheat-body { display: none; }
+            .cheat-panel.collapsed .cheat-collapsed-strip { display: flex; }
+            .cheat-collapsed-strip {
+                display: none;
+                flex-direction: column;
+                align-items: center;
+                justify-content: space-between;
+                height: 100%;
+                padding: 10px 0;
+                cursor: pointer;
+                background: var(--bg-card2);
+            }
+            .cheat-collapsed-strip:hover { background: rgba(124,58,237,0.18); }
+            .cheat-collapsed-strip .vertical-label {
+                writing-mode: vertical-rl;
+                transform: rotate(180deg);
+                font-size: 0.78rem;
+                font-weight: 700;
+                color: var(--accent2);
+                letter-spacing: 1px;
+                white-space: nowrap;
+            }
+            .cheat-collapsed-strip .expand-icon {
+                color: var(--text-muted);
+                font-size: 0.9rem;
+            }
+            .cheat-body {
+                display: flex;
+                flex-direction: column;
+                height: 100%;
+                overflow: hidden;
+            }
+            .cheat-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 10px 12px;
+                background: var(--bg-card2);
+                border-bottom: 1px solid var(--border);
+                font-size: 0.82rem;
+                font-weight: 700;
+            }
+            .cheat-title { color: var(--accent2); }
+            .cheat-close {
+                background: transparent;
+                border: 1px solid transparent;
+                color: var(--text-muted);
+                cursor: pointer;
+                font-size: 0.78rem;
+                padding: 3px 8px;
+                border-radius: 4px;
+                font-family: inherit;
+            }
+            .cheat-close:hover {
+                background: rgba(124,58,237,0.18);
+                color: var(--accent2);
+                border-color: rgba(124,58,237,0.4);
+            }
+            .cheat-search-wrap {
+                padding: 6px 10px;
+                border-bottom: 1px solid var(--border);
+            }
+            .cheat-search {
+                width: 100%;
+                background: var(--bg-dark);
+                border: 1px solid var(--border);
+                color: var(--text-main);
+                padding: 6px 10px;
+                border-radius: 6px;
+                font-family: inherit;
+                font-size: 0.78rem;
+                outline: none;
+            }
+            .cheat-search:focus { border-color: var(--accent1); }
+            .cheat-cats {
+                overflow-y: auto;
+                overflow-x: hidden;
+                flex: 1;
+                padding: 4px 6px;
+            }
+            .cheat-cat { margin-bottom: 2px; }
+            .cheat-cat-head {
+                width: 100%;
+                background: transparent;
+                border: none;
+                color: var(--text-main);
+                padding: 6px 8px;
+                text-align: left;
+                font-size: 0.78rem;
+                font-weight: 600;
+                cursor: pointer;
+                border-radius: 4px;
+                display: flex;
+                align-items: center;
+                gap: 4px;
+            }
+            .cheat-cat-head:hover { background: rgba(124,58,237,0.1); }
+            .cheat-cat-arrow {
+                display: inline-block;
+                transition: transform 0.15s;
+                font-size: 0.7rem;
+                color: var(--text-muted);
+            }
+            .cheat-cat.open .cheat-cat-arrow { transform: rotate(90deg); }
+            .cheat-cat-count {
+                margin-left: auto;
+                color: var(--text-dim);
+                font-size: 0.7rem;
+                font-weight: 400;
+            }
+            .cheat-cat-body {
+                display: none;
+                flex-direction: column;
+                gap: 2px;
+                padding: 4px 4px 8px 16px;
+            }
+            .cheat-cat.open .cheat-cat-body { display: flex; }
+            .cheat-item {
+                background: rgba(255,255,255,0.02);
+                border: 1px solid transparent;
+                color: var(--text-main);
+                padding: 5px 8px;
+                text-align: left;
+                font-size: 0.74rem;
+                font-family: var(--font-mono);
+                border-radius: 4px;
+                cursor: pointer;
+                transition: background 0.1s, border-color 0.1s;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            .cheat-item:hover {
+                background: rgba(0,212,255,0.12);
+                border-color: rgba(0,212,255,0.35);
+            }
+            /* Responsive: en pantallas pequeñas, panel más estrecho */
+            @media (max-width: 700px) {
+                .cheat-panel { width: 220px; }
+            }
+            /* Cuando hay cheat-panel, el container recibe una clase
+               (`cheat-expanded` o `cheat-collapsed`) y reduce el área del editor.
+               No usamos :has() porque su soporte varía y a veces no se
+               re-evalúa cuando el panel cambia de estado vía JS. */
+
+            /* big-editor (playground) tiene `position:absolute inset:0` + `width:100%`.
+               `width:100%` IGNORA el `right`, así que tenemos que sobrescribir
+               AMBOS: poner width:auto y un right explícito. */
+            /* Reservamos un buffer EXTRA (≈24px) entre el área de edición
+               y el sidebar para que el cursor + último carácter nunca
+               queden tapados por el panel cuando el scroll horizontal
+               llega al límite derecho. */
+            .big-editor-container.cheat-expanded > .big-editor,
+            .big-editor-container.cheat-expanded > .big-editor-highlight {
+                right: 304px !important;
+                width: auto !important;
+                left: 0 !important;
+            }
+            .big-editor-container.cheat-collapsed > .big-editor,
+            .big-editor-container.cheat-collapsed > .big-editor-highlight {
+                right: 60px !important;
+                width: auto !important;
+                left: 0 !important;
+            }
+
+            /* editor-highlight (lecciones) también tiene position:absolute inset:0 */
+            .editor-container.cheat-expanded > .editor-highlight {
+                right: 304px !important;
+                width: auto !important;
+                left: 0 !important;
+            }
+            .editor-container.cheat-collapsed > .editor-highlight {
+                right: 60px !important;
+                width: auto !important;
+                left: 0 !important;
+            }
+            /* code-editor (lecciones) es flow normal width:100% → reducimos con calc */
+            .editor-container.cheat-expanded > .code-editor {
+                width: calc(100% - 304px) !important;
+            }
+            .editor-container.cheat-collapsed > .code-editor {
+                width: calc(100% - 60px) !important;
+            }
+            /* Padding-right interno: empuja el autoscroll del textarea
+               para que SIEMPRE quede aire entre el cursor y el sidebar. */
+            .big-editor-container.cheat-expanded > .big-editor,
+            .big-editor-container.cheat-collapsed > .big-editor,
+            .editor-container.cheat-expanded > .code-editor,
+            .editor-container.cheat-collapsed > .code-editor {
+                padding-right: 24px !important;
+                scroll-padding-right: 32px !important;
+            }
+            .big-editor-container.cheat-expanded > .big-editor-highlight,
+            .big-editor-container.cheat-collapsed > .big-editor-highlight,
+            .editor-container.cheat-expanded > .editor-highlight,
+            .editor-container.cheat-collapsed > .editor-highlight {
+                padding-right: 24px !important;
+            }
+
+            @media (max-width: 700px) {
+                .big-editor-container.cheat-expanded > .big-editor,
+                .big-editor-container.cheat-expanded > .big-editor-highlight,
+                .editor-container.cheat-expanded > .editor-highlight {
+                    right: 244px !important;
+                }
+                .editor-container.cheat-expanded > .code-editor {
+                    width: calc(100% - 244px) !important;
+                }
+                .cheat-panel:not(.collapsed) { width: 220px; }
+            }
+            /* ── EditorIDE: paneles dinámicos siempre visibles ────────── */
+            .ide-diag-host {
+                position: relative;
+                z-index: 2147481000; /* sobre flowchart / snippets / fullscreen */
+            }
+            .ide-diag-host .diag-panel {
+                position: relative;
+                z-index: 2147481000;
+            }
+            /* Cuando un modal de lección está abierto, los paneles del editor
+               de la lección quedan dentro de él — no necesitan z-index global,
+               pero sí sobre cualquier overlay que se despliegue por encima. */
+            .modal-body .ide-diag-host { z-index: 2147481500; }
+            /* Mensaje "sintaxis OK" cuando no hay errores */
+            .diag-ok-badge {
+                display: inline-block;
+                background: rgba(16,185,129,0.15);
+                color: var(--accent4);
+                border: 1px solid rgba(16,185,129,0.4);
+                border-radius: var(--radius);
+                padding: 5px 12px;
+                font-size: 0.72rem;
+                font-weight: 700;
+                margin-top: 6px;
+            }
+            /* ── Línea activa resaltada en el editor (estilo VS Code) ── */
+            .active-line-highlight {
+                position: absolute;
+                left: 40px; /* después del gutter de números */
+                right: 0;
+                height: 1.6em; /* misma altura que line-height del editor */
+                background: linear-gradient(
+                    90deg,
+                    rgba(124, 58, 237, 0.10) 0%,
+                    rgba(124, 58, 237, 0.05) 100%
+                );
+                border-left: 2px solid rgba(124, 58, 237, 0.5);
+                pointer-events: none;
+                /* z-index 0 para quedar DEBAJO del syntax highlight y del
+                   textarea, pero ENCIMA del fondo del container. Si lo
+                   ponemos en z-index:1, taparía el texto coloreado. */
+                z-index: 0;
+            }
+            /* Cuando el editor no tiene foco, atenuar el highlight */
+            .big-editor-container:not(:focus-within) .active-line-highlight {
+                opacity: 0.4;
+                background: rgba(124, 58, 237, 0.05);
+                border-left-color: rgba(124, 58, 237, 0.25);
+            }
+            .big-editor-container:not(:focus-within) .big-line-nums .ln-row.current {
+                background: rgba(124, 58, 237, 0.06);
+                color: var(--text-muted);
+                border-left-color: rgba(124, 58, 237, 0.25);
+            }
+            /* Número de línea activa resaltado en el gutter */
+            .big-line-nums .ln-row.current {
+                color: #c4b5fd;
+                font-weight: 700;
+                background: rgba(124, 58, 237, 0.18);
+                border-left: 2px solid #7c3aed;
+                margin-left: -2px; /* compensar el border para no desplazar el texto */
+                padding-right: 4px;
+                box-shadow: inset 0 0 0 1px rgba(124, 58, 237, 0.08);
+            }
+
+            /* ============================================================
+   BARRA DE ESTADO DEL EDITOR
+============================================================ */
+            .editor-status-bar {
+                background: var(--bg-card2);
+                border-top: 1px solid var(--border);
+                padding: 4px 12px;
+                display: flex;
+                align-items: center;
+                gap: 16px;
+                font-size: 0.72rem;
+                color: var(--text-dim);
+                font-family: var(--font-mono);
+                flex-wrap: wrap;
+            }
+            .status-item { display: flex; align-items: center; gap: 4px; }
+            .status-item.ok  { color: var(--accent4); }
+            .status-item.err { color: var(--accent5); }
+            .status-item.warn{ color: var(--accent3); }
+
+            /* ============================================================
+   AUTOCOMPLETADO
+============================================================ */
+            .autocomplete-popup {
+                position: absolute;
+                /* z-index alto para que se vea encima del editor en
+                   pantalla completa (z:99999). El JS lo setea a position
+                   fixed con coords basadas en getBoundingClientRect. */
+                z-index: 999997;
+                background: var(--bg-card);
+                border: 1px solid var(--accent1);
+                border-radius: 10px;
+                box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+                min-width: 220px;
+                max-height: 220px;
+                overflow-y: auto;
+                display: none;
+            }
+            .autocomplete-popup.open { display: block !important; }
+            .ac-item {
+                padding: 7px 14px;
+                font-family: var(--font-mono);
+                font-size: 0.82rem;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                border-bottom: 1px solid var(--border);
+                transition: background 0.12s;
+            }
+            .ac-item:last-child { border-bottom: none; }
+            .ac-item:hover, .ac-item.selected {
+                background: rgba(0,212,255,0.1);
+            }
+            .ac-tag {
+                font-size: 0.65rem;
+                padding: 1px 5px;
+                border-radius: 4px;
+                font-weight: 700;
+                font-family: var(--font-body);
+                white-space: nowrap;
+            }
+            .ac-tag-kw  { background: rgba(129,140,248,0.2); color: #818cf8; }
+            .ac-tag-fn  { background: rgba(96,165,250,0.2);  color: #60a5fa; }
+            .ac-tag-snip{ background: rgba(52,211,153,0.2);  color: #34d399; }
+            .ac-tag-type{ background: rgba(244,114,182,0.2); color: #f472b6; }
+            .ac-tag-lit { background: rgba(251,191,36,0.2);  color: #fbbf24; }
+            .ac-tag-op  { background: rgba(231,121,249,0.2); color: #e779f9; }
+            .ac-label   { flex: 1; color: var(--text-main); }
+            .ac-desc    { font-size: 0.7rem; color: var(--text-dim); font-family: var(--font-body); }
+
+            /* ============================================================
+   PANEL DE SNIPPETS / PLANTILLAS
+============================================================ */
+            .snippets-panel {
+                background: var(--bg-card);
+                border: 1px solid var(--border);
+                border-radius: var(--radius);
+                overflow: hidden;
+                margin-bottom: 16px;
+                display: none;
+            }
+            .snippets-panel.open { display: block; }
+            .snippets-header {
+                background: var(--bg-card2);
+                padding: 10px 16px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                border-bottom: 1px solid var(--border);
+            }
+            .snippets-header h4 { font-size: 0.88rem; color: var(--accent1); }
+            .snippets-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(180px,1fr));
+                gap: 8px;
+                padding: 12px;
+            }
+            .snippet-btn {
+                background: var(--bg-dark);
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                padding: 8px 12px;
+                text-align: left;
+                cursor: pointer;
+                transition: all 0.2s;
+                font-family: var(--font-body);
+            }
+            .snippet-btn:hover {
+                border-color: var(--accent1);
+                background: rgba(0,212,255,0.05);
+            }
+            .snippet-btn .sn-title {
+                font-size: 0.82rem;
+                font-weight: 600;
+                color: var(--text-main);
+                display: block;
+            }
+            .snippet-btn .sn-desc {
+                font-size: 0.72rem;
+                color: var(--text-muted);
+                margin-top: 2px;
+            }
+
+            /* ============================================================
+   EXPORTAR / COPIAR CÓDIGO
+============================================================ */
+            .toast {
+                position: fixed;
+                bottom: 32px;
+                right: 32px;
+                z-index: 1000002; /* FIX: encima de todos los modales incluyendo fc-download-modal (1000001) */
+                background: var(--bg-card);
+                border: 1px solid var(--accent4);
+                border-radius: 12px;
+                padding: 12px 20px;
+                font-size: 0.88rem;
+                font-weight: 600;
+                color: var(--accent4);
+                box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+                display: none;
+                animation: toastIn 0.25s ease;
+            }
+            @keyframes toastIn {
+                from { opacity:0; transform: translateY(16px); }
+                to   { opacity:1; transform: translateY(0); }
+            }
+
+            /* ============================================================
+   ATAJOS DE TECLADO PANEL
+============================================================ */
+            .shortcuts-modal {
+                position: fixed;
+                inset: 0;
+                /* FIX: z-index alto para superponerse al editor en pantalla
+                   completa (que está en z-index 99999). Orden de capas:
+                   editor normal < editor fullscreen < shortcuts/dropdowns
+                   < diagrama de flujo (z:999999). */
+                z-index: 999998;
+                background: rgba(0,0,0,0.7);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                opacity: 0;
+                pointer-events: none;
+                transition: opacity 0.25s;
+            }
+            .shortcuts-modal.open {
+                opacity: 1;
+                pointer-events: all;
+            }
+            .shortcuts-box {
+                background: var(--bg-card);
+                border: 1px solid var(--border);
+                border-radius: 18px;
+                padding: 28px;
+                max-width: 540px;
+                width: 92%;
+                /* FIX: scroll vertical cuando el contenido excede la pantalla */
+                max-height: 88vh;
+                overflow-y: auto;
+                box-shadow: 0 24px 80px rgba(0,0,0,0.6);
+            }
+            .shortcuts-box h3 {
+                font-size: 1.1rem;
+                margin-bottom: 16px;
+                color: var(--accent1);
+            }
+            .shortcut-row {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 8px 0;
+                border-bottom: 1px solid var(--border);
+                font-size: 0.85rem;
+            }
+            .shortcut-row:last-child { border-bottom: none; }
+            .shortcut-keys {
+                display: flex;
+                gap: 4px;
+            }
+            .shortcut-keys kbd {
+                background: var(--bg-card2);
+                border: 1px solid var(--border);
+                border-radius: 5px;
+                padding: 2px 8px;
+                font-family: var(--font-mono);
+                font-size: 0.78rem;
+                color: var(--accent1);
+            }
+
+            /* ============================================================
+   BIG EDITOR improvements
+============================================================ */
+            .big-editor-container {
+                position: relative;
+                min-height: 300px;
+                background: var(--bg-dark);
+                overflow: hidden;
+            }
+            /* FIX: alinear z-index del highlight overlay del playground con el
+               del editor de lecciones, así el SVG de Flow Guides (z-index 0)
+               queda por DEBAJO del texto pintado. Sin esto, el SVG se veía
+               solo en lecciones y no en playground. */
+            .big-editor-highlight {
+                z-index: 1;
+                position: absolute;
+                inset: 0;
+                pointer-events: none;
+            }
+            /* ── Overlay de rangos problemáticos (estilo VS Code) ──
+               Cada paréntesis con parámetros mal recibe un subrayado
+               ondulado amarillo justo en su rango. */
+            .param-error-overlay {
+                position: absolute;
+                pointer-events: none;
+                /* z-index: encima del highlight visual pero debajo del
+                   textarea (que es transparente y tiene z-index:1). */
+                z-index: 2;
+                /* SVG-data subrayado ondulado amarillo */
+                background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 6 3' width='6' height='3'><path d='M0,2 Q1.5,0 3,2 T6,2' stroke='%23f59e0b' fill='none' stroke-width='1'/></svg>");
+                background-repeat: repeat-x;
+                background-position: 0 100%;
+                background-size: 6px 3px;
+            }
+            .param-error-overlay.severe {
+                /* Rojo más grueso y visible para errores graves */
+                background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 6 4' width='6' height='4'><path d='M0,3 Q1.5,0.5 3,3 T6,3' stroke='%23ef4444' fill='none' stroke-width='1.4'/></svg>");
+                background-size: 6px 4px;
+            }
+            .big-editor-highlight {
+                position: absolute;
+                inset: 0;
+                padding: 14px 14px 14px 48px;
+                font-family: var(--font-mono);
+                font-size: 0.82rem;
+                line-height: 1.6;
+                color: var(--text-main);
+                white-space: pre-wrap;
+                word-break: break-word;
+                overflow: hidden;
+                pointer-events: none;
+                tab-size: 4;
+                border: none;
+                margin: 0;
+            }
+            .big-editor {
+                position: absolute;
+                inset: 0;
+                background: transparent;
+                padding: 14px 14px 14px 48px;
+                font-family: var(--font-mono);
+                font-size: 0.82rem;
+                line-height: 1.6;
+                color: transparent;
+                caret-color: var(--accent1);
+                border: none;
+                outline: none;
+                resize: none;
+                width: 100%;
+                height: 100%;
+                tab-size: 4;
+                z-index: 1;
+                -webkit-text-fill-color: transparent;
+                /* Sin wrap: scroll horizontal + vertical para ver líneas largas */
+                white-space: pre !important;
+                word-wrap: normal !important;
+                word-break: normal !important;
+                overflow: auto !important;
+                -webkit-overflow-scrolling: touch;
+            }
+            /* Overlay de syntax-highlight debe replicar las mismas reglas */
+            .big-editor-highlight {
+                white-space: pre !important;
+                word-wrap: normal !important;
+                word-break: normal !important;
+            }
+            .big-line-nums {
+                position: absolute;
+                left: 0;
+                top: 0;
+                bottom: 0;
+                width: 40px;
+                /* FIX: fondo sólido (no transparente) para que el código no se
+                   vea detrás del gutter cuando se hace scroll horizontal.
+                   Un tono ligeramente más claro que el bg-dark del editor. */
+                background: #11151f;
+                padding: 14px 6px;
+                font-family: var(--font-mono);
+                font-size: 0.82rem;
+                line-height: 1.6;
+                color: var(--text-dim);
+                text-align: right;
+                user-select: none;
+                border-right: 1px solid var(--border);
+                overflow: hidden;
+                pointer-events: none;
+                /* z-index encima del highlight y textarea */
+                z-index: 3;
+            }
+            /* Cada número de línea ocupa exactamente una fila del editor.
+               line-height 1.6 sobre font-size 0.82rem  ≈ 21px, igual que
+               la altura visual de una línea del textarea. */
+            .big-line-nums .ln-row {
+                display: block;
+                line-height: 1.6;
+                height: 1.6em;
+                min-height: 1.6em;
+                white-space: nowrap;
+            }
+            /* ── Botón cancelar input ────────────────────────────── */
+            .input-hint-row {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-top: 10px;
+                gap: 8px;
+                flex-wrap: wrap;
+            }
+            .btn-cancel-input {
+                background: rgba(239,68,68,0.12);
+                border: 1px solid rgba(239,68,68,0.3);
+                color: var(--color-error-strong);
+                border-radius: 8px;
+                padding: 5px 12px;
+                font-size: 0.78rem;
+                cursor: pointer;
+                transition: all 0.2s;
+                font-family: inherit;
+            }
+            .btn-cancel-input:hover {
+                background: rgba(239,68,68,0.22);
+                border-color: rgba(239,68,68,0.5);
+            }
+            /* ============================================================
+     SPA ROUTER — secciones como páginas (solo una visible a la vez)
+  ============================================================ */
+            [data-route] { display: none; }
+            [data-route][data-active="true"] {
+                display: block;
+                animation: routeFadeIn 0.25s ease-out;
+            }
+            @keyframes routeFadeIn {
+                from { opacity: 0; transform: translateY(8px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+
+            /* ============================================================
+     PÁGINAS ESPECÍFICAS (Sobre, Licencia)
+  ============================================================ */
+            .about-hero {
+                text-align: center;
+                padding: clamp(40px, 8vw, 80px) clamp(16px, 3vw, 32px) clamp(20px, 4vw, 40px);
+            }
+            .about-avatar {
+                width: clamp(80px, 12vw, 140px);
+                height: clamp(80px, 12vw, 140px);
+                border-radius: 50%;
+                margin: 0 auto 20px;
+                background: linear-gradient(135deg, var(--accent1), var(--accent2));
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: clamp(2.4rem, 4vw, 3.6rem);
+                box-shadow: 0 8px 32px rgba(0, 212, 255, 0.35);
+            }
+            .about-card {
+                background: var(--bg-card);
+                border: 1px solid var(--border);
+                border-radius: 16px;
+                padding: clamp(20px, 3vw, 32px);
+                margin-bottom: 20px;
+                line-height: 1.75;
+                font-size: clamp(0.95rem, 1.5vw, 1.05rem);
+                color: var(--text-main);
+            }
+            .about-card h3 {
+                color: var(--accent1);
+                font-size: clamp(1.1rem, 2vw, 1.4rem);
+                margin-bottom: 14px;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+            .about-card p { margin-bottom: 12px; }
+            .about-card p:last-child { margin-bottom: 0; }
+            .about-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+                gap: 16px;
+                margin: 24px 0;
+            }
+            .about-stat {
+                background: var(--bg-card2);
+                border: 1px solid var(--border);
+                border-radius: 12px;
+                padding: 18px;
+                text-align: center;
+            }
+            .about-stat-icon {
+                font-size: 2rem;
+                margin-bottom: 6px;
+            }
+            .about-stat-label {
+                font-size: 0.85rem;
+                color: var(--text-muted);
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+            .about-stat-value {
+                font-size: 1.1rem;
+                font-weight: 700;
+                color: var(--text-main);
+                margin-top: 4px;
+            }
+            .license-block {
+                font-family: var(--font-mono);
+                font-size: 0.88rem;
+                background: var(--bg-card2);
+                border: 1px solid var(--border);
+                border-left: 4px solid var(--accent2);
+                border-radius: 8px;
+                padding: 20px 24px;
+                white-space: pre-wrap;
+                color: var(--text-main);
+                line-height: 1.7;
+                overflow-x: auto;
+            }
+            .quick-cards {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+                gap: 16px;
+                margin: 32px 0;
+            }
+            .quick-card {
+                background: var(--bg-card);
+                border: 1px solid var(--border);
+                border-radius: 12px;
+                padding: 22px;
+                cursor: pointer;
+                transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+                text-decoration: none;
+                color: inherit;
+                display: block;
+            }
+            .quick-card {
+                position: relative;
+                overflow: hidden;
+            }
+            .quick-card::before {
+                content: '';
+                position: absolute;
+                top: 0; left: -100%;
+                width: 100%; height: 100%;
+                background: linear-gradient(90deg, transparent, rgba(0,212,255,0.08), transparent);
+                transition: left 0.6s ease;
+                pointer-events: none;
+            }
+            .quick-card:hover {
+                transform: translateY(-4px) scale(1.02);
+                border-color: var(--accent1);
+                box-shadow: 0 14px 36px rgba(0, 212, 255, 0.22);
+            }
+            .quick-card:hover::before { left: 100%; }
+            .quick-card:active { transform: translateY(-2px) scale(0.99); }
+
+            /* Author banner — destaca a Jonathan C. en la sección de licencia */
+            .author-banner {
+                display: flex;
+                align-items: center;
+                gap: clamp(16px, 3vw, 28px);
+                background: linear-gradient(135deg, rgba(0,212,255,0.08), rgba(124,58,237,0.10));
+                border: 1px solid rgba(0,212,255,0.3);
+                border-radius: 16px;
+                padding: clamp(20px, 3vw, 32px);
+                margin-bottom: 24px;
+                box-shadow: 0 8px 28px rgba(0,212,255,0.12);
+                flex-wrap: wrap;
+            }
+            .author-banner-avatar {
+                width: clamp(60px, 8vw, 84px);
+                height: clamp(60px, 8vw, 84px);
+                border-radius: 50%;
+                background: linear-gradient(135deg, var(--accent1), var(--accent2));
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: clamp(1.8rem, 3vw, 2.4rem);
+                font-weight: 800;
+                color: #fff;
+                flex-shrink: 0;
+                box-shadow: 0 8px 24px rgba(0,212,255,0.45);
+            }
+            .author-banner-info { flex: 1; min-width: 200px; }
+            .author-banner-label {
+                font-size: 0.78rem;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                color: var(--text-muted);
+                margin-bottom: 4px;
+            }
+            .author-banner-name {
+                font-size: clamp(1.3rem, 2.5vw, 1.7rem);
+                font-weight: 800;
+                color: var(--text-main);
+                margin-bottom: 4px;
+                background: linear-gradient(135deg, var(--accent1), var(--accent2));
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+            }
+            .author-banner-handle {
+                font-size: 0.92rem;
+                color: var(--text-main);
+                margin-bottom: 8px;
+            }
+            .author-banner-handle a {
+                color: var(--accent1);
+                text-decoration: none;
+                font-weight: 600;
+                transition: color 0.15s;
+            }
+            .author-banner-handle a:hover { color: var(--accent2); }
+            .author-banner-copyright {
+                font-size: 0.8rem;
+                color: var(--text-muted);
+                line-height: 1.5;
+            }
+
+            /* Reveal on scroll — sutil fade + slide hacia arriba al entrar viewport */
+            .reveal {
+                opacity: 0;
+                transform: translateY(24px);
+                transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+            }
+            .reveal.visible {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            @media (prefers-reduced-motion: reduce) {
+                .reveal { opacity: 1; transform: none; transition: none; }
+            }
+
+            /* Pulse suave para avatars / iconos destacados */
+            .pulse {
+                animation: pulseGlow 3s ease-in-out infinite;
+            }
+            @keyframes pulseGlow {
+                0%, 100% { box-shadow: 0 8px 32px rgba(0,212,255,0.35); }
+                50%      { box-shadow: 0 12px 48px rgba(0,212,255,0.55); }
+            }
+            @media (prefers-reduced-motion: reduce) {
+                .pulse { animation: none; }
+            }
+
+            /* Subsecciones inline dentro de home — separador visual sutil */
+            .home-subsection {
+                position: relative;
+            }
+            .home-subsection::before {
+                content: '';
+                display: block;
+                width: 60px;
+                height: 3px;
+                background: linear-gradient(90deg, var(--accent1), var(--accent2));
+                border-radius: 2px;
+                margin: 0 auto 32px;
+            }
+
+            /* Status banner "proyecto en construccion" — glass effect */
+            .status-banner {
+                display: flex;
+                align-items: center;
+                gap: 16px;
+                background: linear-gradient(135deg, rgba(245,158,11,0.10), rgba(124,58,237,0.06));
+                backdrop-filter: blur(8px);
+                -webkit-backdrop-filter: blur(8px);
+                border: 1px solid rgba(245,158,11,0.35);
+                border-radius: 14px;
+                padding: 18px 22px;
+                box-shadow: 0 6px 20px rgba(245,158,11,0.08);
+                transition: transform 0.2s, box-shadow 0.2s;
+            }
+            .status-banner:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 10px 28px rgba(245,158,11,0.18);
+            }
+            .status-banner-icon {
+                font-size: clamp(1.8rem, 3vw, 2.4rem);
+                flex-shrink: 0;
+                animation: floatY 3s ease-in-out infinite;
+            }
+            @keyframes floatY {
+                0%, 100% { transform: translateY(0); }
+                50%      { transform: translateY(-4px); }
+            }
+            @media (prefers-reduced-motion: reduce) {
+                .status-banner-icon { animation: none; }
+            }
+            .status-banner-content { flex: 1; line-height: 1.55; }
+            .status-banner-title {
+                font-weight: 700;
+                font-size: clamp(0.95rem, 1.6vw, 1.05rem);
+                color: var(--text-main);
+                margin-bottom: 4px;
+            }
+            .status-banner-text {
+                font-size: clamp(0.85rem, 1.4vw, 0.95rem);
+                color: var(--text-main);
+                opacity: 0.85;
+            }
+
+            /* Feature pills — chip-style, no clickable */
+            .features-showcase {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 12px;
+                justify-content: center;
+            }
+            .feature-pill {
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                background: var(--bg-card);
+                backdrop-filter: blur(6px);
+                -webkit-backdrop-filter: blur(6px);
+                border: 1px solid var(--border);
+                border-radius: 999px;
+                padding: 10px 18px;
+                font-size: clamp(0.85rem, 1.4vw, 0.95rem);
+                color: var(--text-main);
+                font-weight: 600;
+                transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s, background 0.2s;
+                cursor: default;
+            }
+            .feature-pill:hover {
+                transform: translateY(-2px);
+                border-color: var(--accent1);
+                background: linear-gradient(135deg, var(--bg-card), rgba(0,212,255,0.08));
+                box-shadow: 0 8px 20px rgba(0,212,255,0.18);
+            }
+            .feature-pill-icon { font-size: 1.1em; }
+
+            /* Glass effect helper para cards/modals */
+            .glass {
+                backdrop-filter: blur(12px) saturate(140%);
+                -webkit-backdrop-filter: blur(12px) saturate(140%);
+                background: linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01));
+            }
+            /* Aplicar glass sutil a about-card */
+            .about-card {
+                backdrop-filter: blur(4px);
+                -webkit-backdrop-filter: blur(4px);
+            }
+            .quick-card-icon { font-size: 2.2rem; margin-bottom: 10px; }
+            .quick-card-title {
+                font-weight: 700;
+                font-size: 1.05rem;
+                margin-bottom: 6px;
+                color: var(--text-main);
+            }
+            .quick-card-desc {
+                font-size: 0.88rem;
+                color: var(--text-muted);
+                line-height: 1.55;
+            }
+
+            /* Footer mejorado */
+            .site-footer {
+                margin-top: clamp(40px, 6vw, 80px);
+                padding: clamp(24px, 4vw, 48px) clamp(16px, 3vw, 32px);
+                background: var(--bg-card);
+                border-top: 1px solid var(--border);
+                text-align: center;
+                color: var(--text-muted);
+                font-size: 0.85rem;
+            }
+            .site-footer .footer-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+                gap: 24px;
+                max-width: 1200px;
+                margin: 0 auto 24px;
+                text-align: left;
+            }
+            .site-footer h4 {
+                color: var(--text-main);
+                font-size: 0.95rem;
+                margin-bottom: 10px;
+            }
+            .site-footer a {
+                color: var(--text-muted);
+                text-decoration: none;
+                display: block;
+                padding: 3px 0;
+                transition: color 0.15s;
+            }
+            .site-footer a:hover { color: var(--accent1); }
+            .site-footer-bottom {
+                border-top: 1px solid var(--border);
+                padding-top: 20px;
+                margin-top: 20px;
+                font-size: 0.8rem;
+            }
+            .site-footer-bottom a { display: inline; }
+
+            /* ============================================================
+     RESPONSIVE
+  ============================================================ */
+
+            /* FIX responsive: breakpoint intermedio para laptops/zoom moderado.
+               El playground colapsa a 1 col mucho antes (1100px en vez de 900px),
+               y el cheat panel se contrae automáticamente. */
+            @media (max-width: 1100px) {
+                .playground-grid { grid-template-columns: 1fr !important; }
+                .cheat-panel:not(.collapsed) { width: 240px; }
+            }
+
+            /* FIX responsive: pantallas muy grandes — el editor/consola llenan
+               el viewport. Para legibilidad de TEXTO LARGO (descripciones del
+               hero, párrafos de teoría) los hijos limitan su propio ancho con
+               max-width local. Las grids (editor, consola, lessons) no se topean. */
+            @media (min-width: 1600px) {
+                /* Aumentar gap visual en pantallas grandes para que el editor
+                   y consola no parezcan apretados */
+                .playground-grid { gap: 32px; }
+                .section, #playground { padding-left: clamp(24px, 4vw, 80px); padding-right: clamp(24px, 4vw, 80px); }
+            }
+
+            /* FIX responsive: mobile (<480px) — extras */
+            @media (max-width: 480px) {
+                /* Botones a ancho completo */
+                .btn-primary, .btn-ghost, .btn-run, .btn-clear, .btn-solution {
+                    width: 100%;
+                    margin: 4px 0;
+                }
+                /* Headers más compactos */
+                .hero-title { font-size: 1.7rem !important; }
+                /* Modal a casi viewport */
+                .modal { max-width: calc(100vw - 12px) !important; max-height: calc(100vh - 12px); }
+                /* Tabs scrollables */
+                .modal-tabs, .editor-actions { flex-wrap: wrap; }
+                /* Editor footer (acciones) en columna */
+                .editor-actions { flex-direction: column; align-items: stretch; }
+                .editor-actions > * { width: 100%; }
+                /* Sidebar de atajos oculto por default en mobile */
+                .cheat-panel { display: none !important; }
+                .big-editor-container.cheat-expanded > .big-editor,
+                .big-editor-container.cheat-collapsed > .big-editor,
+                .editor-container.cheat-expanded > .code-editor,
+                .editor-container.cheat-collapsed > .code-editor {
+                    width: 100% !important;
+                }
+            }
+
+            @media (max-width: 900px) {
+                .playground-grid {
+                    grid-template-columns: 1fr;
+                }
+                /* En layout estrecho ocultamos el cheat panel por defecto;
+                   el usuario lo abre con el botón si lo necesita. */
+                .cheat-panel { width: 36px !important; }
+                .cheat-panel .cheat-body { display: none; }
+                .cheat-panel .cheat-collapsed-strip { display: flex; }
+                .nav-links {
+                    display: none;
+                    flex-direction: column;
+                    position: absolute;
+                    top: var(--nav-h);
+                    left: 0;
+                    right: 0;
+                    background: rgba(10, 14, 26, 0.98);
+                    padding: 12px;
+                    border-bottom: 1px solid var(--border);
+                    gap: 4px;
+                    z-index: 99;
+                }
+                .nav-links.open {
+                    display: flex;
+                }
+                .nav-burger {
+                    display: block;
+                }
+                .lessons-grid {
+                    grid-template-columns: 1fr 1fr;
+                    gap: 12px;
+                }
+                .ref-grid {
+                    grid-template-columns: 1fr;
+                }
+            }
+
+            @media (max-width: 600px) {
+                .hero-title { letter-spacing: -1px; }
+                .hero-stats { gap: 20px; }
+                .modal-body { padding: 12px; }
+                .playground-grid { gap: 12px; }
+                .lessons-grid { grid-template-columns: 1fr; }
+                .lesson-card { padding: 16px; }
+                .code-editor, .big-editor {
+                    font-size: 0.78rem;
+                    min-height: 160px;
+                    /* Enable smooth scroll in editors on iOS */
+                    -webkit-overflow-scrolling: touch;
+                }
+                /* FIX: el gutter debe usar el mismo font-size que el editor
+                   para que los números queden alineados con cada línea de
+                   código en pantallas pequeñas. */
+                .big-line-nums {
+                    font-size: 0.78rem;
+                }
+                .big-editor-highlight {
+                    font-size: 0.78rem;
+                }
+                .modal {
+                    margin: 8px;
+                    max-height: calc(100vh - 16px);
+                    overflow-y: auto;
+                }
+                .modal-overlay {
+                    padding: 8px;
+                    align-items: flex-start;
+                }
+                .modal-tabs {
+                    gap: 0;
+                    overflow-x: auto;
+                    -webkit-overflow-scrolling: touch;
+                }
+                .modal-tab {
+                    padding: 8px 12px;
+                    font-size: 0.82rem;
+                    white-space: nowrap;
+                }
+                .section { padding: 60px 16px; }
+                #playground { padding: 60px 16px; }
+                .progress-section { padding: 16px; }
+                .progress-grid { grid-template-columns: 1fr !important; }
+                .input-modal-box { padding: 20px 16px 16px; }
+                .input-field-row { flex-direction: column; }
+                .input-ok-btn { width: 100%; justify-content: center; }
+                .input-hint-row { flex-direction: column-reverse; align-items: flex-start; }
+                .hero-btns { flex-direction: column; align-items: stretch; }
+                .btn-primary, .btn-ghost { text-align: center; }
+                .editor-container { min-height: 180px; }
+                .big-console, .console-out { min-height: 120px; }
+                .playground-grid { grid-template-columns: 1fr !important; }
+                /* Prevent horizontal overflow on small screens */
+                .hero-code-preview { max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+                .ref-code { font-size: 0.72rem; }
+                nav { padding: 0 12px; }
+            }
