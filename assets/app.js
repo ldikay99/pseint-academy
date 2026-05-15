@@ -12012,10 +12012,25 @@ FinProceso</textarea>
                 });
 
             document.querySelectorAll(".nav-links a").forEach((a) => {
-                a.addEventListener("click", () => {
+                a.addEventListener("click", (ev) => {
                     document
                         .getElementById("navLinks")
                         .classList.remove("open");
+                    // FIX: si el usuario clickea la MISMA ruta (ya activa), el
+                    // navegador NO dispara hashchange. Forzamos re-scroll a la
+                    // sección. Útil cuando bajaste/subiste manualmente y querés
+                    // volver al título de la sección con un click más.
+                    try {
+                        const href = a.getAttribute('href') || '';
+                        if (href.startsWith('#/') && href === location.hash) {
+                            ev.preventDefault();
+                            // Re-disparar la lógica del router via hashchange manual
+                            window.dispatchEvent(new HashChangeEvent('hashchange', {
+                                oldURL: location.href,
+                                newURL: location.href
+                            }));
+                        }
+                    } catch(_) {}
                 });
             });
 
