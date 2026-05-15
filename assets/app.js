@@ -3996,17 +3996,34 @@ FinProceso`,
                     // Si el modo debug esta activo, pausamos antes de ejecutar
                     // cada linea y esperamos a que la UI nos despierte (con un
                     // step o continue). Marcamos visualmente la linea actual.
-                    if (window._debugMode && !_execAborted) {
-                        const currentLine = (this.pos || 0); // 0-based del intérprete
-                        // Notificar UI: linea actual a resaltar (1-based para el editor)
-                        if (typeof window._debugHighlightLine === 'function') {
-                            try { window._debugHighlightLine(currentLine + 1); } catch(_) {}
+                    if ((window._debugMode || (window._debugBreakpoints && window._debugBreakpoints.size > 0)) && !_execAborted) {
+                        const currentLine = (this.pos || 0); // 0-based
+                        const lineNum1Based = currentLine + 1;
+                        // BREAKPOINTS: si la linea actual tiene un breakpoint, forzar pausa
+                        const hitBreakpoint = window._debugBreakpoints &&
+                            window._debugBreakpoints.has(lineNum1Based);
+                        if (hitBreakpoint && !window._debugMode) {
+                            // Auto-activar debug al pegar un breakpoint
+                            window._debugMode = true;
+                            if (typeof showToast === 'function') {
+                                showToast('🔴 Breakpoint en linea ' + lineNum1Based + ' · F10 step · F9 continue');
+                            }
                         }
-                        // Pausar hasta que el usuario haga step o continue
-                        await new Promise((resolve) => {
-                            window._debugResume = resolve;
-                        });
-                        window._debugResume = null;
+                        if (window._debugMode) {
+                            // Notificar UI: linea actual a resaltar
+                            if (typeof window._debugHighlightLine === 'function') {
+                                try { window._debugHighlightLine(lineNum1Based); } catch(_) {}
+                            }
+                            // Actualizar watch panel con valores actuales de vars
+                            if (typeof window._debugUpdateWatches === 'function') {
+                                try { window._debugUpdateWatches(this.vars, this.varTypes); } catch(_) {}
+                            }
+                            // Pausar hasta step o continue
+                            await new Promise((resolve) => {
+                                window._debugResume = resolve;
+                            });
+                            window._debugResume = null;
+                        }
                     }
                     // ============================================================
                     // COMANDOS ESPECIALES (compatibilidad PSeInt Windows extendida)
@@ -6204,6 +6221,17 @@ FinProceso`,
                         clearInterval(window._liveTimerInterval);
                         window._liveTimerInterval = null;
                     }
+                    // FEATURE debug: cerrar el watch panel si quedó abierto
+                    // y resetear el modo debug
+                    if (window._debugMode || window._debugResume) {
+                        window._debugMode = false;
+                        if (window._debugResume) { try { window._debugResume(); } catch(_) {} }
+                        window._debugResume = null;
+                    }
+                    if (window._debugClosePanel) {
+                        // Pequeño delay para que el usuario alcance a ver el valor final
+                        setTimeout(() => { try { window._debugClosePanel(); } catch(_) {} }, 1500);
+                    }
                     // FIX batching: forzar flush del buffer al terminar la ejecucion
                     // para que el mensaje final "✓ Ejecución completada" sea visible
                     // sin esperar al proximo RAF.
@@ -7289,6 +7317,66 @@ FinProceso`,
             window._debugMode = false;
             window._debugResume = null;
             window._debugCurrentLine = 0;
+            window._debugBreakpoints = new Set(); // line numbers (1-based)
+
+            // Toggle breakpoint en una linea via click en el gutter
+            window._debugToggleBreakpoint = function(lineNum) {
+                if (window._debugBreakpoints.has(lineNum)) {
+                    window._debugBreakpoints.delete(lineNum);
+                } else {
+                    window._debugBreakpoints.add(lineNum);
+                }
+                // Refrescar gutter para mostrar/quitar el marcador rojo
+                if (typeof updateLineNums === 'function') {
+                    updateLineNums('playgroundEditor', 'playgroundLineNums');
+                }
+            };
+
+            // Watch panel: muestra variables en tiempo real durante debug
+            window._debugUpdateWatches = function(vars, varTypes) {
+                let panel = document.getElementById('debugWatchPanel');
+                if (!panel) {
+                    panel = document.createElement('div');
+                    panel.id = 'debugWatchPanel';
+                    panel.className = 'debug-watch-panel';
+                    panel.innerHTML = '<div class="debug-watch-header">🐛 <strong>Variables</strong>'
+                        + ' <button onclick="window._debugClosePanel()" style="float:right;background:none;border:none;color:inherit;cursor:pointer;font-size:1.1em" title="Cerrar">✕</button>'
+                        + '</div><div class="debug-watch-body" id="debugWatchBody"></div>'
+                        + '<div class="debug-watch-controls">'
+                        + '<button onclick="window.debugStep()" title="Avanzar 1 linea (F10)">⬇ Paso (F10)</button>'
+                        + '<button onclick="window.debugContinue()" title="Continuar ejecucion (F9)">▶ Continuar (F9)</button>'
+                        + '<button onclick="window.debugStop()" title="Detener (Esc)">⏹ Detener</button>'
+                        + '</div>';
+                    document.body.appendChild(panel);
+                }
+                panel.style.display = 'flex';
+                const body = document.getElementById('debugWatchBody');
+                if (!body) return;
+                body.innerHTML = '';
+                const keys = Object.keys(vars || {}).sort();
+                if (keys.length === 0) {
+                    body.innerHTML = '<div class="debug-watch-empty">Sin variables aún. Avanza pasos para verlas aparecer.</div>';
+                    return;
+                }
+                for (const k of keys) {
+                    const v = vars[k];
+                    const t = (varTypes && varTypes[k]) || '';
+                    const row = document.createElement('div');
+                    row.className = 'debug-watch-row';
+                    let val;
+                    if (Array.isArray(v)) val = '[' + v.length + ' elementos]';
+                    else if (typeof v === 'string') val = '"' + v + '"';
+                    else val = String(v);
+                    row.innerHTML = '<span class="dw-name">' + k + '</span>'
+                        + (t ? '<span class="dw-type">' + t + '</span>' : '')
+                        + '<span class="dw-val">' + val + '</span>';
+                    body.appendChild(row);
+                }
+            };
+            window._debugClosePanel = function() {
+                const panel = document.getElementById('debugWatchPanel');
+                if (panel) panel.style.display = 'none';
+            };
 
             window._debugHighlightLine = function(n) {
                 window._debugCurrentLine = n;
@@ -10985,23 +11073,42 @@ FinProceso`,
                 if (!ta || !ln) return;
                 let lines = ta.value.split("\n");
                 // FEATURE: indicadores en gutter. Calculamos qué líneas tienen
-                // error o sugerencia desde los Sets que mantiene el analizador
-                // (window._errorLineSet y window._warnLineSet, ambos 1-based).
+                // error/sugerencia/breakpoint desde los Sets globales (1-based).
                 const errSet = (window._errorLineSet instanceof Set) ? window._errorLineSet : null;
                 const warnSet = (window._warnLineSet instanceof Set) ? window._warnLineSet : null;
+                const bpSet = (window._debugBreakpoints instanceof Set) ? window._debugBreakpoints : null;
                 ln.innerHTML = lines.map((_, i) => {
                     const lineNum = i + 1;
                     let cls = 'ln-row';
                     let dot = '';
-                    if (errSet && errSet.has(lineNum)) {
+                    const hasBp = bpSet && bpSet.has(lineNum);
+                    if (hasBp) {
+                        cls += ' ln-has-breakpoint';
+                        dot = '<span class="ln-dot ln-dot-bp" title="Breakpoint activo · clic para quitarlo"></span>';
+                    } else if (errSet && errSet.has(lineNum)) {
                         cls += ' ln-has-error';
                         dot = '<span class="ln-dot ln-dot-error" title="Esta línea tiene un error de sintaxis"></span>';
                     } else if (warnSet && warnSet.has(lineNum)) {
                         cls += ' ln-has-warn';
                         dot = '<span class="ln-dot ln-dot-warn" title="Esta línea tiene una sugerencia"></span>';
                     }
-                    return '<div class="' + cls + '">' + dot + lineNum + '</div>';
+                    // data-line para que el click handler sepa que linea es
+                    return '<div class="' + cls + '" data-line="' + lineNum + '">' + dot + lineNum + '</div>';
                 }).join('');
+                // Adjuntar handler de click solo una vez por gutter
+                if (!ln._bpListenerAttached) {
+                    ln._bpListenerAttached = true;
+                    ln.style.pointerEvents = 'auto';
+                    ln.style.cursor = 'pointer';
+                    ln.addEventListener('click', (ev) => {
+                        const row = ev.target.closest('.ln-row');
+                        if (!row) return;
+                        const n = parseInt(row.dataset.line, 10);
+                        if (!isNaN(n) && typeof window._debugToggleBreakpoint === 'function') {
+                            window._debugToggleBreakpoint(n);
+                        }
+                    });
+                }
                 // Sync scroll
                 ln.scrollTop = ta.scrollTop;
                 // FIX: invalidar y reaplicar el highlight de fila actual
@@ -11304,6 +11411,8 @@ FinProceso`,
                 { label: "SiNo", tag: "snip", desc: "Alternativa", insert: "SiNo\n" },
                 { label: "Mientras...Hacer", tag: "snip", desc: "Ciclo mientras", insert: "Mientras $COND$ Hacer\n\t\nFinMientras" },
                 { label: "Para...Hasta...Hacer", tag: "snip", desc: "Ciclo para", insert: "Para i <- 1 Hasta $N$ Hacer\n\t\nFinPara" },
+                { label: "Para...Con Paso...Hacer", tag: "snip", desc: "Ciclo para con incremento personalizado", insert: "Para i <- 1 Hasta $N$ Con Paso 2 Hacer\n\t\nFinPara" },
+                { label: "Con Paso", tag: "kw", desc: "Incremento del Para (use dentro de un bucle Para)", insert: "Con Paso 1 Hacer" },
                 { label: "Repetir...Hasta Que", tag: "snip", desc: "Ciclo repetir", insert: "Repetir\n\t\nHasta Que $COND$" },
                 { label: "Segun...Hacer", tag: "snip", desc: "Switch", insert: "Segun $VAR$ Hacer\n\t1: \n\tDe Otro Modo: \nFinSegun" },
                 { label: "SubProceso", tag: "snip", desc: "Subproceso (sin retorno)", insert: "SubProceso $NAME$()\n\t\nFinSubProceso" },
@@ -11435,8 +11544,28 @@ FinProceso`,
                 const wordStart = text.length - word.length;
                 const beforeWord = text.substring(0, wordStart);
                 const afterComo = /\bComo\s+$/i.test(beforeWord);
+                // FEATURE: contexto Para — si el usuario está en una linea que
+                // empieza con "Para X <- A Hasta B " (después de un valor de
+                // Hasta), priorizar/mostrar el snippet "Con Paso". El alcance
+                // es SOLO esa línea Para — fuera del bucle no aparece.
+                // Extraer la linea actual (desde el último \n hasta el cursor):
+                const currentLineFull = currentLine + word; // includes the partial word
+                const inParaContext = /^\s*Para\s+\w+\s*<-\s*\S.*?\s+Hasta\s+\S.+\s*$/i.test(currentLineFull);
                 if (afterComo) {
                     _acFiltered = AC_ITEMS.filter(it => it.tag === 'type' && it.label.toLowerCase().startsWith(lower));
+                } else if (inParaContext) {
+                    // Sugerir solo "Con Paso" + "Hacer" + items normales que matcheen
+                    const conPasoItem = AC_ITEMS.find(it => it.label === 'Con Paso');
+                    const hacerItem = { label: 'Hacer', tag: 'kw', desc: 'Cierra la cabecera del Para', insert: 'Hacer' };
+                    const matched = AC_ITEMS.filter(it => it.label.toLowerCase().startsWith(lower));
+                    // Si el usuario escribió "c"/"co"/"con" → priorizar Con Paso
+                    if ('con paso'.startsWith(lower) || 'con'.startsWith(lower)) {
+                        _acFiltered = [conPasoItem, hacerItem, ...matched.filter(it => it.label !== 'Con Paso' && it.label !== 'Hacer')];
+                    } else if ('hacer'.startsWith(lower)) {
+                        _acFiltered = [hacerItem, conPasoItem, ...matched.filter(it => it.label !== 'Con Paso' && it.label !== 'Hacer')];
+                    } else {
+                        _acFiltered = matched;
+                    }
                 } else {
                     _acFiltered = AC_ITEMS.filter(it => it.label.toLowerCase().startsWith(lower));
                     // Reordenar: tipos PUROS antes que cast-functions cuando ambos coinciden.
