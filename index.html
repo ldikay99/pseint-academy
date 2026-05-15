@@ -7257,21 +7257,21 @@ FinProceso`,
                     challenge: {
                         desc: "Crea un subproceso que intercambie (swap) dos variables usando paso por referencia. Verifica que la función realmente modifique las variables originales.",
                         expected: null,
-                        solution: `SubProceso Intercambiar(x Por Referencia, y Por Referencia)
+                        solution: `SubProceso Intercambiar(p1 Por Referencia, p2 Por Referencia)
 	Definir aux Como Real
-	aux <- x
-	x <- y
-	y <- aux
+	aux <- p1
+	p1 <- p2
+	p2 <- aux
 FinSubProceso
 
 Proceso ProbarSwap
-	Definir a Como Real
-	Definir b Como Real
-	a <- 100
-	b <- 200
-	Escribir "Antes: a=", a, " b=", b
-	Intercambiar(a, b)
-	Escribir "Despues: a=", a, " b=", b
+	Definir num1 Como Real
+	Definir num2 Como Real
+	num1 <- 100
+	num2 <- 200
+	Escribir "Antes: num1=", num1, " num2=", num2
+	Intercambiar(num1, num2)
+	Escribir "Despues: num1=", num1, " num2=", num2
 FinProceso`,
                     },
                 },
@@ -7321,22 +7321,22 @@ FinProceso`,
                     challenge: {
                         desc: "Crea un subproceso recursivo que calcule la potencia: potencia(base, exp) = base * potencia(base, exp-1). Caso base: potencia(base, 0) = 1.",
                         expected: null,
-                        solution: `SubProceso result <- Potencia(base, exp)
-	Si exp = 0 Entonces
+                        solution: `SubProceso result <- Potencia(base, expo)
+	Si expo = 0 Entonces
 		result <- 1
 	SiNo
-		result <- base * Potencia(base, exp - 1)
+		result <- base * Potencia(base, expo - 1)
 	FinSi
 FinSubProceso
 
 Proceso PotenciaRecursiva
-	Definir b Como Real
-	Definir e Como Entero
+	Definir baseNum Como Real
+	Definir expo Como Entero
 	Escribir "Base:"
-	Leer b
+	Leer baseNum
 	Escribir "Exponente:"
-	Leer e
-	Escribir b, " ^ ", e, " = ", Potencia(b, e)
+	Leer expo
+	Escribir baseNum, " ^ ", expo, " = ", Potencia(baseNum, expo)
 FinProceso`,
                     },
                 },
@@ -7739,33 +7739,65 @@ FinProceso`,
                         desc: "Agrega una opción '4. Reabastecer' al sistema que pida el índice del producto y la cantidad a agregar al stock. También agrega un reporte que muestre productos con stock < 10.",
                         expected: null,
                         solution: `Proceso InventarioMejorado
-	Definir nombres Como Texto
-	Definir precios Como Real
-	Definir stock Como Entero
 	Definir opc, n, idx, cant, i Como Entero
-	Dimension nombres[20]; Dimension precios[20]; Dimension stock[20]
-	n<-3
-	nombres[1]<-"Laptop"; precios[1]<-1200; stock[1]<-2
-	nombres[2]<-"Mouse"; precios[2]<-25; stock[2]<-5
-	nombres[3]<-"Teclado"; precios[3]<-45; stock[3]<-15
+	Dimension nombres[20]
+	Dimension precios[20]
+	Dimension stock[20]
+	n <- 3
+	nombres[1] <- "Laptop"
+	precios[1] <- 1200
+	stock[1] <- 2
+	nombres[2] <- "Mouse"
+	precios[2] <- 25
+	stock[2] <- 5
+	nombres[3] <- "Teclado"
+	precios[3] <- 45
+	stock[3] <- 15
 	Repetir
 		Escribir "1.Ver  2.Vender  3.Agregar  4.Reabastecer  5.Stock bajo  0.Salir"
 		Leer opc
 		Segun opc Hacer
-			1: Para i<-1 Hasta n Hacer Escribir i,". ",nombres[i]," stock:",stock[i] FinPara
-			2: Escribir "Índice:"; Leer idx; Escribir "Cantidad:"; Leer cant
-			   Si idx>=1 Y idx<=n Y cant<=stock[idx] Entonces
-			     stock[idx]<-stock[idx]-cant; Escribir "Vendido. Quedan:",stock[idx]
-			   SiNo Escribir "Error" FinSi
-			3: n<-n+1; Escribir "Nombre:"; Leer nombres[n]
-			   Escribir "Precio:"; Leer precios[n]; Escribir "Stock:"; Leer stock[n]
-			4: Escribir "Índice a reabastecer:"; Leer idx
-			   Escribir "Cantidad:"; Leer cant
-			   stock[idx]<-stock[idx]+cant; Escribir "Nuevo stock:",stock[idx]
-			5: Escribir "=== Stock bajo (<10) ==="; Para i<-1 Hasta n Hacer
-			   Si stock[i]<10 Entonces Escribir "⚠ ",nombres[i]," stock:",stock[i] FinSi FinPara
-			0: Escribir "Adiós"
-			De Otro Modo: Escribir "Inválido"
+			1:
+				Para i <- 1 Hasta n Hacer
+					Escribir i, ". ", nombres[i], " stock:", stock[i]
+				FinPara
+			2:
+				Escribir "Indice:"
+				Leer idx
+				Escribir "Cantidad:"
+				Leer cant
+				Si idx >= 1 Y idx <= n Y cant <= stock[idx] Entonces
+					stock[idx] <- stock[idx] - cant
+					Escribir "Vendido. Quedan:", stock[idx]
+				SiNo
+					Escribir "Error"
+				FinSi
+			3:
+				n <- n + 1
+				Escribir "Nombre:"
+				Leer nombres[n]
+				Escribir "Precio:"
+				Leer precios[n]
+				Escribir "Stock:"
+				Leer stock[n]
+			4:
+				Escribir "Indice a reabastecer:"
+				Leer idx
+				Escribir "Cantidad:"
+				Leer cant
+				stock[idx] <- stock[idx] + cant
+				Escribir "Nuevo stock:", stock[idx]
+			5:
+				Escribir "=== Stock bajo (<10) ==="
+				Para i <- 1 Hasta n Hacer
+					Si stock[i] < 10 Entonces
+						Escribir nombres[i], " stock:", stock[i]
+					FinSi
+				FinPara
+			0:
+				Escribir "Adios"
+			De Otro Modo:
+				Escribir "Invalido"
 		FinSegun
 	Hasta Que opc = 0
 FinProceso`,
@@ -8156,30 +8188,55 @@ FinProceso`,
                         desc: "Mejora el sistema de login: permite registrar un nuevo usuario si no existe (máx 5 usuarios), y muestra cuántos usuarios están registrados al iniciar sesión exitosamente.",
                         expected: null,
                         solution: `Proceso LoginConRegistro
-	Definir usuarios, claves Como Texto
 	Definir uing, cing Como Texto
 	Definir intentos, maxInt, i, idx, n Como Entero
 	Definir ok, bloq Como Logico
-	Dimension usuarios[5]; Dimension claves[5]
-	n<-2
-	usuarios[1]<-"admin"; claves[1]<-"1234"
-	usuarios[2]<-"juan"; claves[2]<-"pass"
-	maxInt<-3; intentos<-0; ok<-Falso; bloq<-Falso
-	Escribir "¿Quieres registrarte? (si/no):"; Leer uing
-	Si uing="si" Y n<5 Entonces
-		n<-n+1; Escribir "Nuevo usuario:"; Leer usuarios[n]
-		Escribir "Contraseña:"; Leer claves[n]; Escribir "Registrado ✅"
+	Dimension usuarios[5]
+	Dimension claves[5]
+	n <- 2
+	usuarios[1] <- "admin"
+	claves[1] <- "1234"
+	usuarios[2] <- "juan"
+	claves[2] <- "pass"
+	maxInt <- 3
+	intentos <- 0
+	ok <- Falso
+	bloq <- Falso
+	Escribir "Quieres registrarte? (si/no):"
+	Leer uing
+	Si uing = "si" Y n < 5 Entonces
+		n <- n + 1
+		Escribir "Nuevo usuario:"
+		Leer usuarios[n]
+		Escribir "Contrasena:"
+		Leer claves[n]
+		Escribir "Registrado"
 	FinSi
 	Repetir
-		intentos<-intentos+1
-		Escribir "Usuario:"; Leer uing; Escribir "Clave:"; Leer cing
-		idx<-0
-		Para i<-1 Hasta n Hacer Si usuarios[i]=uing Entonces idx<-i FinSi FinPara
-		Si idx>0 Y claves[idx]=cing Entonces ok<-Verdadero; Escribir "¡Bienvenido! Usuarios: ",n
-		SiNo Escribir "Error. Intentos: ",intentos,"/",maxInt
-		  Si intentos>=maxInt Entonces bloq<-Verdadero FinSi FinSi
+		intentos <- intentos + 1
+		Escribir "Usuario:"
+		Leer uing
+		Escribir "Clave:"
+		Leer cing
+		idx <- 0
+		Para i <- 1 Hasta n Hacer
+			Si usuarios[i] = uing Entonces
+				idx <- i
+			FinSi
+		FinPara
+		Si idx > 0 Y claves[idx] = cing Entonces
+			ok <- Verdadero
+			Escribir "Bienvenido! Usuarios: ", n
+		SiNo
+			Escribir "Error. Intentos: ", intentos, "/", maxInt
+			Si intentos >= maxInt Entonces
+				bloq <- Verdadero
+			FinSi
+		FinSi
 	Hasta Que ok O bloq
-	Si bloq Y NO ok Entonces Escribir "🔒 Bloqueado" FinSi
+	Si bloq Y NO ok Entonces
+		Escribir "Bloqueado"
+	FinSi
 FinProceso`,
                     },
                 },
@@ -8362,29 +8419,33 @@ FinProceso`,
 		  <p>Una cadena es palíndroma si se lee igual al derecho y al revés (ej: "radar", "ala"). Para verificarlo, construye la cadena invertida y compárala.</p>
 		</div>
 	 `,
-                    example: `SubProceso inv <- Invertir(cadena)
+                    example: `SubProceso inv <- Invertir(entrada)
 	Definir i Como Entero
 	inv <- ""
-	Para i <- Longitud(cadena) Hasta 1 Con Paso -1 Hacer
-		inv <- inv + Subcadena(cadena, i, i)
+	Para i <- Longitud(entrada) Hasta 1 Con Paso -1 Hacer
+		inv <- inv + Subcadena(entrada, i, i)
 	FinPara
 FinSubProceso
 
-SubProceso es <- EsPalindromo(cadena)
+SubProceso es <- EsPalindromo(entrada)
 	Definir limpia Como Texto
-	limpia <- Minusculas(cadena)
+	limpia <- Minusculas(entrada)
 	es <- (limpia = Invertir(limpia))
 FinSubProceso
 
-SubProceso n <- ContarPalabras(texto)
+SubProceso n <- ContarPalabras(frase)
 	Definir i Como Entero
 	Definir enPalabra Como Logico
-	n <- 0; enPalabra <- Falso
-	Para i <- 1 Hasta Longitud(texto) Hacer
-		Definir c Como Texto
-		c <- Subcadena(texto, i, i)
+	Definir c Como Texto
+	n <- 0
+	enPalabra <- Falso
+	Para i <- 1 Hasta Longitud(frase) Hacer
+		c <- Subcadena(frase, i, i)
 		Si c <> " " Entonces
-			Si NO enPalabra Entonces n <- n+1; enPalabra<-Verdadero FinSi
+			Si NO enPalabra Entonces
+				n <- n + 1
+				enPalabra <- Verdadero
+			FinSi
 		SiNo
 			enPalabra <- Falso
 		FinSi
@@ -8392,34 +8453,43 @@ SubProceso n <- ContarPalabras(texto)
 FinSubProceso
 
 Proceso ProcesadorTexto
-	Definir texto Como Texto
+	Definir frase Como Texto
 	Definir opc Como Entero
 	Repetir
-		Escribir "1.Invertir  2.¿Palíndromo?  3.Contar palabras  4.Mayúsculas  0.Salir"
+		Escribir "1.Invertir  2.¿Palindromo?  3.Contar palabras  4.Mayusculas  0.Salir"
 		Leer opc
 		Si opc <> 0 Entonces
-			Escribir "Texto:"; Leer texto
+			Escribir "Texto:"
+			Leer frase
 			Segun opc Hacer
-				1: Escribir "Invertido: ", Invertir(texto)
-				2: Si EsPalindromo(texto) Entonces Escribir "¡Es palíndromo! 🔄"
-				   SiNo Escribir "No es palíndromo" FinSi
-				3: Escribir "Palabras: ", ContarPalabras(texto)
-				4: Escribir "Mayúsculas: ", Mayusculas(texto)
-				De Otro Modo: Escribir "Inválido"
+				1:
+					Escribir "Invertido: ", Invertir(frase)
+				2:
+					Si EsPalindromo(frase) Entonces
+						Escribir "Es palindromo"
+					SiNo
+						Escribir "No es palindromo"
+					FinSi
+				3:
+					Escribir "Palabras: ", ContarPalabras(frase)
+				4:
+					Escribir "Mayusculas: ", Mayusculas(frase)
+				De Otro Modo:
+					Escribir "Invalido"
 			FinSegun
 		FinSi
-	Hasta Que opc=0
+	Hasta Que opc = 0
 FinProceso`,
                     challenge: {
                         desc: "Agrega al procesador de texto una opción que censure palabras: pide una palabra 'prohibida' y la reemplaza por '****' en el texto usando Reemplazar().",
                         expected: null,
                         solution: `Proceso CensorTexto
-	Definir texto, prohibida, censurado Como Texto
+	Definir frase, prohibida, censurado Como Texto
 	Escribir "Texto original:"
-	Leer texto
+	Leer frase
 	Escribir "Palabra a censurar:"
 	Leer prohibida
-	censurado <- Reemplazar(texto, prohibida, "****")
+	censurado <- Reemplazar(frase, prohibida, "****")
 	censurado <- Reemplazar(censurado, Mayusculas(prohibida), "****")
 	censurado <- Reemplazar(censurado, Minusculas(prohibida), "****")
 	Escribir "Texto censurado: ", censurado
@@ -12237,8 +12307,16 @@ FinProceso`,
                         stack.push({kw: 'procedimiento', line: ln});
                         continue;
                     }
-                    // Si — multilínea solo si termina en Entonces (no inline)
+                    // Si — multilínea (Entonces al final) o híbrido (Entonces seguido de
+                    // stmt en misma línea PERO sin FinSi → el cierre vendrá con `SiNo X FinSi`
+                    // o `FinSi` en otra línea).
                     if (/^si\s+.+entonces$/i.test(t) && !/finsi$/i.test(t) && !/^sino\s+si/i.test(t)) {
+                        stack.push({kw: 'si', line: ln});
+                        continue;
+                    }
+                    // FIX: forma híbrida `Si X Entonces <stmt>` (Entonces no al final, sin FinSi).
+                    // Esto abre un Si que se cierra con `SiNo X FinSi` (otra línea) o `FinSi`.
+                    if (/^si\s+.+\s+entonces\s+\S/i.test(t) && !/\s+finsi\s*$/i.test(t) && !/^sino\s+si/i.test(t)) {
                         stack.push({kw: 'si', line: ln});
                         continue;
                     }
@@ -12312,8 +12390,38 @@ FinProceso`,
                     // SiNo solo — no cierra, pertenece a Si
                     if (/^sino$/i.test(t)) continue;
 
+                    // FIX: forma híbrida `SiNo <stmt> FinSi` cierra el Si abierto en la
+                    // misma línea. Si no la tratamos como cierre, el stack queda
+                    // desbalanceado y las cases siguientes de Segun se reportan mal
+                    // (firstWord = '?', "Falta FinSi", etc.).
+                    if (/^sino\s+.+\s+finsi\s*$/i.test(t)) {
+                        reportMismatch('FinSi', 'si', ln);
+                        continue;
+                    }
+                    // NOTA: Si full-inline (`Si X Entonces stmt FinSi`) NO necesita
+                    // early-continue aquí — el detector de apertura ya no la apila
+                    // (por la guard `!/finsi$/i`). Dejamos que la validación de
+                    // cuerpo más abajo siga funcionando.
+
                     // Caso de Segun (líneas tipo "1:" o "De Otro Modo:" — no son error)
-                    // Si estamos dentro de Segun, aceptarlas
+                    // Si estamos dentro de Segun, aceptarlas (incluso si hay un Si abierto
+                    // arriba en el stack, mientras el Segun esté en algún punto del stack).
+                    const inSegunNow = stack.some(b => b.kw === 'segun');
+                    // FIX: aceptar líneas tipo `1: stmt` también si contienen `<-`
+                    // (asignaciones inline son comunes en case bodies compactos).
+                    // Reconocemos un case label como: prefijo válido (número, rango,
+                    // string corto o identificador) seguido de `:` seguido de stmt.
+                    const _caseLabelM = inSegunNow && t.match(/^(\d+(?:\s*,\s*\d+)*|\d+\s*(?:-|\.\.)\s*\d+|"[^"]*"|[a-zA-ZáéíóúÁÉÍÓÚñÑ_][\wáéíóúÁÉÍÓÚñÑ]*|de\s+otro\s+modo|otro(?:\s+modo)?)\s*:\s*(\S.*)?$/i);
+                    if (_caseLabelM) {
+                        const afterColon = (_caseLabelM[2] || '').trim();
+                        // Si después del `:` viene `Si X Entonces` (multi-línea, sin body)
+                        // O `Si X Entonces stmt` (híbrido sin FinSi en la misma línea),
+                        // abre un bloque Si pendiente que se cierra con `SiNo X FinSi` o `FinSi`.
+                        if (/^si\s+.+\s+entonces\b/i.test(afterColon) && !/\bfinsi\s*$/i.test(t)) {
+                            stack.push({kw: 'si', line: ln});
+                        }
+                        continue;
+                    }
                     if (stack.length && stack[stack.length-1].kw === 'segun') {
                         if (/^(de\s+otro\s+modo|otro\s+modo|otro)\s*:/i.test(t)) continue;
                         // Caso "valor:" o "valor1, valor2:"
@@ -12725,13 +12833,19 @@ FinProceso`,
                     for (let li = 0; li < lines.length; li++) {
                         let ln = lines[li];
                         const sk = _scopes[li] || 'main';
-                        // Definir x, y Como Tipo
-                        let dm = ln.match(/^\s*Definir\s+(.+?)\s+Como\s+\w+/i);
-                        if (dm) {
-                            dm[1].split(',').forEach(v => {
-                                let vn = v.trim();
-                                if (vn) _registerDecl(vn, li, true, sk);
-                            });
+                        // FIX: las lecciones a veces compactan varios stmts en una línea:
+                        //   `Definir notas Como Real; Definir i,n,opc Como Entero`
+                        // Recorremos cada sub-statement separado por `;`.
+                        const _segs = ln.split(';');
+                        for (const _seg of _segs) {
+                            // Definir x, y Como Tipo
+                            let dm = _seg.match(/^\s*Definir\s+(.+?)\s+Como\s+\w+/i);
+                            if (dm) {
+                                dm[1].split(',').forEach(v => {
+                                    let vn = v.trim();
+                                    if (vn) _registerDecl(vn, li, true, sk);
+                                });
+                            }
                         }
                         // Dimension arr[...]
                         let dim = ln.match(/^\s*Dimension\s+(.+)$/i);
@@ -12834,10 +12948,16 @@ FinProceso`,
                         // Inferir tipo de una expresión RHS (best-effort, conservador)
                         function _inferType(expr) {
                             if (!expr) return null;
-                            const e = expr.trim();
+                            let e = expr.trim();
+                            // FIX: si la línea es multi-statement con `;`, tomamos solo
+                            // la parte ANTES del primer `;` (la asignación que estamos
+                            // analizando termina ahí; el resto son otros statements).
+                            if (e.includes(';')) e = e.split(';')[0].trim();
+                            // FIX: enmascarar `<-` para que el detector de comparación no
+                            // confunda el `<` de la siguiente asignación como operador.
+                            const eForOp = e.replace(/<-/g, '##');
                             // String literal "..."
                             if (/^"[^"]*"$/.test(e)) {
-                                // Caracter si exactamente 1 char (sin comillas)
                                 return e.length === 3 ? 'caracter' : 'texto';
                             }
                             // Concatenación de strings o que contiene string literal
@@ -12854,10 +12974,10 @@ FinProceso`,
                                 const fn = fnCall[1].toLowerCase();
                                 if (FN_RETURN_TYPE[fn]) return FN_RETURN_TYPE[fn];
                             }
-                            // Comparación → logico
-                            if (/[<>]=?|<>|(?<![<>])=(?!=)/.test(e)) return 'logico';
-                            // Operadores lógicos
-                            if (/\b(Y|O|NO|AND|OR|NOT)\b/i.test(e)) return 'logico';
+                            // Comparación → logico (usando expresión sin `<-`)
+                            if (/[<>]=?|<>|(?<![<>])=(?!=)/.test(eForOp)) return 'logico';
+                            // Operadores lógicos (palabras Y/O/NO con bordes)
+                            if (/\b(Y|O|NO|AND|OR|NOT)\b/.test(e)) return 'logico';
                             // Aritmético con literales numéricos → numerico (conservador)
                             if (/^[\d\s+\-*/().^%]+$/.test(e)) return 'real';
                             // Acceso a variable conocida con tipo: usar su tipo
@@ -12999,12 +13119,30 @@ FinProceso`,
                         if (typeof __forcedExpr === 'string' && __forcedExpr) {
                             exprPart = __forcedExpr;
                             __forcedExpr = null;
-                        } else if (/^escribir\s+/i.test(t2)) {
-                            exprPart = t2.replace(/^escribir\s+/i, '');
+                        } else if (/^escribir(\s+sin\s+saltar)?\s+/i.test(t2)) {
+                            // FIX: aceptar `Escribir Sin Saltar X` (modifier al inicio) Y
+                            // `Escribir X Sin Saltar` (modifier al final, también válido en
+                            // PSeInt). Strippeamos ambas posiciones para que `Sin`/`Saltar`
+                            // no se reporten como keywords mal usadas.
+                            exprPart = t2.replace(/^escribir(?:\s+sin\s+saltar)?\s+/i, '')
+                                         .replace(/\s+sin\s+saltar\s*$/i, '');
                         } else if (/^leer\s+/i.test(t2)) {
                             // Leer declara variables — pero los nombres deben ser identificadores válidos.
                             // Antes: skip total. Ahora validamos cada token y rechazamos reservadas.
-                            const leerArgs = t2.replace(/^leer\s+/i, '').split(',').map(s => s.trim()).filter(Boolean);
+                            // FIX: split bracket-aware. `Leer mat[f, c]` no debe partirse
+                            // en `mat[f` y `c]` — la coma dentro de `[]` pertenece al subíndice.
+                            const _leerStr = t2.replace(/^leer\s+/i, '');
+                            const leerArgs = [];
+                            {
+                                let buf = '', d = 0;
+                                for (const ch of _leerStr) {
+                                    if (ch === '[' || ch === '(') d++;
+                                    else if (ch === ']' || ch === ')') d--;
+                                    else if (ch === ',' && d === 0) { if (buf.trim()) leerArgs.push(buf.trim()); buf = ''; continue; }
+                                    buf += ch;
+                                }
+                                if (buf.trim()) leerArgs.push(buf.trim());
+                            }
                             const reservedLeer = new Set([
                                 'proceso','finproceso','algoritmo','finalgoritmo',
                                 'subproceso','finsubproceso','funcion','función','finfuncion','finfunción',
@@ -13115,7 +13253,11 @@ FinProceso`,
                         ]);
                         // LITERALES válidos en cualquier posición de valor
                         const LITERAL_OK = new Set(['verdadero','falso','true','false','pi','e']);
-                        const isValueChar = (c) => !!c && /[A-Za-z0-9_)"À-ſ]/.test(c);
+                        // FIX falso positivo: `(` también es válido como "char antes/después de operador"
+                        // porque abre un grupo de valor: `(x > 0) Y (y > 0)` debe ser reconocido como
+                        // operador binario. Antes, el `Y` con prev=`)` y next=`(` se reportaba como
+                        // identificador reservado.
+                        const isValueChar = (c) => !!c && /[A-Za-z0-9_)("À-ſ]/.test(c);
                         const reportedTokens = new Set();
                         let mTok;
                         let breakLine = false;
@@ -13152,9 +13294,15 @@ FinProceso`,
                                 if (LITERAL_OK.has(tokL)) continue;
 
                                 // 2) Operador-palabra (Y, O, NO, MOD, DIV, AND, OR, NOT):
-                                //    es OPERADOR cuando tiene valores a AMBOS lados.
+                                //    `Y, O, MOD, DIV, AND, OR` son BINARIOS → necesitan valor a ambos lados.
+                                //    `NO, NOT` son UNARIOS → solo necesitan valor a la DERECHA (después
+                                //    pueden venir de paréntesis o keyword como Entonces). FIX falso positivo
+                                //    en `NO (x > 0)` donde prev era `,` o ` `.
                                 if (BIN_OP_WORDS.has(tokL)) {
-                                    const inOpPos = isValueChar(prev) && isValueChar(next);
+                                    const isUnary = (tokL === 'no' || tokL === 'not');
+                                    const inOpPos = isUnary
+                                        ? isValueChar(next)  // unario: solo derecha
+                                        : (isValueChar(prev) && isValueChar(next));
                                     if (!inOpPos) {
                                         reportedTokens.add(tok);
                                         errors.push({
