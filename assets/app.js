@@ -6018,6 +6018,25 @@ FinProceso`,
                 let lastOutput = "";
                 const t0 = performance.now();
 
+                // FIX feature: timer en tiempo real durante ejecución.
+                // Actualiza cada 250ms el texto del boton de "Detener" para
+                // que el usuario vea cuanto tiempo lleva el programa. Util
+                // sobre todo con bucles grandes para saber si esta atascado.
+                const _liveTimerInterval = setInterval(() => {
+                    if (_execAborted) return;
+                    const elapsedSec = ((performance.now() - t0) / 1000).toFixed(1);
+                    const labelText = '⏹ Detener · ' + elapsedSec + 's';
+                    if (runBtn && runBtn.dataset.executing === 'true') {
+                        runBtn.innerHTML = labelText;
+                    }
+                    const fsRun = document.getElementById('fsRunBtn');
+                    if (fsRun && fsRun.dataset.executing === 'true') {
+                        fsRun.innerHTML = labelText;
+                    }
+                }, 250);
+                // Guardar para limpiar en finally
+                window._liveTimerInterval = _liveTimerInterval;
+
                 let interp = new PSeIntInterpreter(
                     (text, cls, noNewline) => {
                         appendConsole(consoleId, text, cls, noNewline);
@@ -6110,6 +6129,11 @@ FinProceso`,
                     }
                 } finally {
                     _currentInterp = null;
+                    // FIX feature: detener el live timer
+                    if (window._liveTimerInterval) {
+                        clearInterval(window._liveTimerInterval);
+                        window._liveTimerInterval = null;
+                    }
                     // FIX batching: forzar flush del buffer al terminar la ejecucion
                     // para que el mensaje final "✓ Ejecución completada" sea visible
                     // sin esperar al proximo RAF.
