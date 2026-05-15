@@ -3879,6 +3879,174 @@
                 border-color: rgba(239,68,68,0.5);
             }
             /* ============================================================
+     SPA ROUTER — secciones como páginas (solo una visible a la vez)
+  ============================================================ */
+            [data-route] { display: none; }
+            [data-route][data-active="true"] {
+                display: block;
+                animation: routeFadeIn 0.25s ease-out;
+            }
+            @keyframes routeFadeIn {
+                from { opacity: 0; transform: translateY(8px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+
+            /* ============================================================
+     PÁGINAS ESPECÍFICAS (Sobre, Licencia)
+  ============================================================ */
+            .about-hero {
+                text-align: center;
+                padding: clamp(40px, 8vw, 80px) clamp(16px, 3vw, 32px) clamp(20px, 4vw, 40px);
+            }
+            .about-avatar {
+                width: clamp(80px, 12vw, 140px);
+                height: clamp(80px, 12vw, 140px);
+                border-radius: 50%;
+                margin: 0 auto 20px;
+                background: linear-gradient(135deg, var(--accent1), var(--accent2));
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: clamp(2.4rem, 4vw, 3.6rem);
+                box-shadow: 0 8px 32px rgba(0, 212, 255, 0.35);
+            }
+            .about-card {
+                background: var(--bg-card);
+                border: 1px solid var(--border);
+                border-radius: 16px;
+                padding: clamp(20px, 3vw, 32px);
+                margin-bottom: 20px;
+                line-height: 1.75;
+                font-size: clamp(0.95rem, 1.5vw, 1.05rem);
+                color: var(--text-main);
+            }
+            .about-card h3 {
+                color: var(--accent1);
+                font-size: clamp(1.1rem, 2vw, 1.4rem);
+                margin-bottom: 14px;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+            .about-card p { margin-bottom: 12px; }
+            .about-card p:last-child { margin-bottom: 0; }
+            .about-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+                gap: 16px;
+                margin: 24px 0;
+            }
+            .about-stat {
+                background: var(--bg-card2);
+                border: 1px solid var(--border);
+                border-radius: 12px;
+                padding: 18px;
+                text-align: center;
+            }
+            .about-stat-icon {
+                font-size: 2rem;
+                margin-bottom: 6px;
+            }
+            .about-stat-label {
+                font-size: 0.85rem;
+                color: var(--text-muted);
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+            .about-stat-value {
+                font-size: 1.1rem;
+                font-weight: 700;
+                color: var(--text-main);
+                margin-top: 4px;
+            }
+            .license-block {
+                font-family: var(--font-mono);
+                font-size: 0.88rem;
+                background: var(--bg-card2);
+                border: 1px solid var(--border);
+                border-left: 4px solid var(--accent2);
+                border-radius: 8px;
+                padding: 20px 24px;
+                white-space: pre-wrap;
+                color: var(--text-main);
+                line-height: 1.7;
+                overflow-x: auto;
+            }
+            .quick-cards {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+                gap: 16px;
+                margin: 32px 0;
+            }
+            .quick-card {
+                background: var(--bg-card);
+                border: 1px solid var(--border);
+                border-radius: 12px;
+                padding: 22px;
+                cursor: pointer;
+                transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+                text-decoration: none;
+                color: inherit;
+                display: block;
+            }
+            .quick-card:hover {
+                transform: translateY(-3px);
+                border-color: var(--accent1);
+                box-shadow: 0 10px 28px rgba(0, 212, 255, 0.15);
+            }
+            .quick-card-icon { font-size: 2.2rem; margin-bottom: 10px; }
+            .quick-card-title {
+                font-weight: 700;
+                font-size: 1.05rem;
+                margin-bottom: 6px;
+                color: var(--text-main);
+            }
+            .quick-card-desc {
+                font-size: 0.88rem;
+                color: var(--text-muted);
+                line-height: 1.55;
+            }
+
+            /* Footer mejorado */
+            .site-footer {
+                margin-top: clamp(40px, 6vw, 80px);
+                padding: clamp(24px, 4vw, 48px) clamp(16px, 3vw, 32px);
+                background: var(--bg-card);
+                border-top: 1px solid var(--border);
+                text-align: center;
+                color: var(--text-muted);
+                font-size: 0.85rem;
+            }
+            .site-footer .footer-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+                gap: 24px;
+                max-width: 1200px;
+                margin: 0 auto 24px;
+                text-align: left;
+            }
+            .site-footer h4 {
+                color: var(--text-main);
+                font-size: 0.95rem;
+                margin-bottom: 10px;
+            }
+            .site-footer a {
+                color: var(--text-muted);
+                text-decoration: none;
+                display: block;
+                padding: 3px 0;
+                transition: color 0.15s;
+            }
+            .site-footer a:hover { color: var(--accent1); }
+            .site-footer-bottom {
+                border-top: 1px solid var(--border);
+                padding-top: 20px;
+                margin-top: 20px;
+                font-size: 0.8rem;
+            }
+            .site-footer-bottom a { display: inline; }
+
+            /* ============================================================
      RESPONSIVE
   ============================================================ */
 
@@ -4033,13 +4201,15 @@
 
         <!-- NAVBAR -->
         <nav id="navbar" role="navigation" aria-label="Navegación principal">
-            <div class="nav-logo">⬡ <span>PSeInt</span> Academy</div>
+            <a href="#/home" class="nav-logo" style="text-decoration:none;color:inherit">⬡ <span>PSeInt</span> Academy</a>
             <div class="nav-links" id="navLinks">
-                <a href="#hero" aria-label="Inicio">🏠 Inicio</a>
-                <a href="#lecciones" aria-label="Lecciones">📚 Lecciones</a>
-                <a href="#playground" aria-label="Editor">⚡ Editor</a>
-                <a href="#referencia" aria-label="Referencia">📖 Referencia</a>
-                <a href="#progreso" aria-label="Progreso">🏆 Progreso</a>
+                <a href="#/home" aria-label="Inicio">🏠 Inicio</a>
+                <a href="#/lecciones" aria-label="Lecciones">📚 Lecciones</a>
+                <a href="#/playground" aria-label="Editor">⚡ Editor</a>
+                <a href="#/referencia" aria-label="Referencia">📖 Referencia</a>
+                <a href="#/progreso" aria-label="Progreso">🏆 Progreso</a>
+                <a href="#/sobre" aria-label="Sobre">👤 Sobre</a>
+                <a href="#/licencia" aria-label="Licencia">📜 Licencia</a>
             </div>
             <button
                 class="nav-burger"
@@ -4052,8 +4222,8 @@
             <div class="nav-progress" id="navProgress" style="width: 0%"></div>
         </nav>
 
-        <!-- HERO -->
-        <section id="hero" role="banner">
+        <!-- HERO / INICIO (ruta: #/home) -->
+        <section id="hero" role="banner" data-route="home">
             <div class="hero-badge">
                 🚀 Plataforma interactiva de programación
             </div>
@@ -4066,12 +4236,12 @@
                 vivo y ejercicios interactivos. Compatible 100% con PSeInt para Windows.
             </p>
             <div class="hero-btns">
-                <button class="btn-primary" onclick="scrollToSection('#lecciones')">
+                <a href="#/lecciones" class="btn-primary" style="text-decoration:none;display:inline-block">
                     Comenzar ahora →
-                </button>
-                <button class="btn-ghost" onclick="scrollToSection('#playground')">
+                </a>
+                <a href="#/playground" class="btn-ghost" style="text-decoration:none;display:inline-block">
                     ⚡ Abrir editor libre
-                </button>
+                </a>
             </div>
             <div class="hero-stats">
                 <div class="stat">
@@ -4113,10 +4283,44 @@
                     <span class="kw-process">FinProceso</span>
                 </div>
             </div>
+
+            <!-- Quick navigation cards: cada uno lleva a su sección -->
+            <div class="quick-cards" style="margin-top:48px">
+                <a href="#/lecciones" class="quick-card">
+                    <div class="quick-card-icon">📚</div>
+                    <div class="quick-card-title">Lecciones interactivas</div>
+                    <div class="quick-card-desc">56 lecciones con teoría, ejemplo y reto. Desde lo básico hasta proyectos completos.</div>
+                </a>
+                <a href="#/playground" class="quick-card">
+                    <div class="quick-card-icon">⚡</div>
+                    <div class="quick-card-title">Editor libre</div>
+                    <div class="quick-card-desc">Escribí tu propio pseudocódigo y ejecutalo al instante. Con resaltado, autocompletado y diagrama de flujo.</div>
+                </a>
+                <a href="#/referencia" class="quick-card">
+                    <div class="quick-card-icon">📖</div>
+                    <div class="quick-card-title">Referencia rápida</div>
+                    <div class="quick-card-desc">Todas las palabras clave de PSeInt con ejemplos listos para copiar.</div>
+                </a>
+                <a href="#/progreso" class="quick-card">
+                    <div class="quick-card-icon">🏆</div>
+                    <div class="quick-card-title">Tu progreso</div>
+                    <div class="quick-card-desc">Mirá cuánto avanzaste por nivel. Cada lección tiene 3 estados de completitud.</div>
+                </a>
+                <a href="#/sobre" class="quick-card">
+                    <div class="quick-card-icon">👤</div>
+                    <div class="quick-card-title">Sobre el proyecto</div>
+                    <div class="quick-card-desc">La historia detrás de PSeInt Academy y por qué nació esta plataforma.</div>
+                </a>
+                <a href="#/licencia" class="quick-card">
+                    <div class="quick-card-icon">📜</div>
+                    <div class="quick-card-title">Licencia y créditos</div>
+                    <div class="quick-card-desc">Open source bajo MIT. Libre para usar, modificar y distribuir.</div>
+                </a>
+            </div>
         </section>
 
         <!-- LECCIONES -->
-        <section id="lecciones" class="section" aria-label="Lecciones">
+        <section id="lecciones" class="section" aria-label="Lecciones" data-route="lecciones">
             <div class="animate-in">
                 <h2 class="section-title">📚 Lecciones</h2>
                 <p class="section-sub">
@@ -4170,7 +4374,7 @@
         </section>
 
         <!-- PLAYGROUND -->
-        <section id="playground" aria-label="Editor de código">
+        <section id="playground" aria-label="Editor de código" data-route="playground">
             <div class="animate-in">
                 <h2
                     class="section-title"
@@ -4474,6 +4678,7 @@ FinProceso</textarea>
             id="referencia"
             class="section"
             aria-label="Referencia de palabras clave"
+            data-route="referencia"
         >
             <div class="animate-in">
                 <h2 class="section-title">📖 Referencia rápida</h2>
@@ -4486,7 +4691,7 @@ FinProceso</textarea>
         </section>
 
         <!-- PROGRESO -->
-        <section id="progreso" class="section" aria-label="Tu progreso">
+        <section id="progreso" class="section" aria-label="Tu progreso" data-route="progreso">
             <div class="animate-in">
                 <h2 class="section-title">🏆 Tu progreso</h2>
                 <p class="section-sub">
@@ -4620,7 +4825,169 @@ FinProceso</textarea>
             </div>
         </section>
 
-        <footer>
+        <!-- SOBRE (ruta: #/sobre) -->
+        <section id="sobre" class="section" aria-label="Sobre el proyecto" data-route="sobre">
+            <div class="animate-in" style="max-width:min(900px,95vw);margin:0 auto">
+                <div class="about-hero">
+                    <div class="about-avatar">👨‍💻</div>
+                    <h2 class="section-title" style="margin-bottom:8px">👤 Sobre el proyecto</h2>
+                    <p class="section-sub" style="margin:0 auto 0">
+                        La historia detrás de PSeInt Academy y por qué decidí construirlo.
+                    </p>
+                </div>
+
+                <div class="about-card">
+                    <h3>🎓 Quién soy</h3>
+                    <p>Hola, soy <strong>Jonathan</strong> — estudiante de un técnico en programación y desarrollo de software. Como muchos de los que estamos arrancando, mi primera materia de algoritmos fue con <strong>PSeInt</strong>: ese lenguaje pseudo-código en español que te enseña a pensar en términos de variables, condicionales, ciclos y funciones antes de meterte con la sintaxis de un lenguaje "de verdad".</p>
+                    <p>Cuando estaba aprendiendo, me topé varias veces con un problema: el editor de PSeInt para Windows es genial, pero no siempre podés instalarlo (PC compartida, una netbook vieja, el celular). Y cuando querés revisar un concepto rápido, abrir un IDE pesado es una fricción enorme.</p>
+                </div>
+
+                <div class="about-card">
+                    <h3>💡 Por qué construí esto</h3>
+                    <p>Quise tener una plataforma que cumpla tres cosas a la vez:</p>
+                    <p>1. <strong>Que funcione en cualquier dispositivo</strong> con un navegador. Sin instalar nada, sin cuenta, sin esperar updates.</p>
+                    <p>2. <strong>Que enseñe activamente</strong>, no solo que sea un editor. Por eso cada lección tiene teoría, un ejemplo ejecutable y un reto con validación automática.</p>
+                    <p>3. <strong>Que sea fiel a PSeInt</strong>. Si pegás tu código acá, debería correr igual que en PSeInt de escritorio. Por eso el analizador es estricto: prefiero avisarte el error antes de ejecutar.</p>
+                </div>
+
+                <div class="about-card">
+                    <h3>🛠 Lo que me apasiona</h3>
+                    <p>Me obsesiona la <strong>experiencia del que está aprendiendo</strong>. Un error críptico, un autocompletado que falla o una página que no se ve bien en celular son fricciones que te hacen abandonar antes de entender el concepto. Por eso este editor tiene resaltado por tipo de variable, sugerencias accionables, diagrama de flujo automático, autocompletado, soporte multi-tema y atajos de teclado tipo VSCode.</p>
+                    <p>También me gusta el lado "ingeniería interna": el intérprete está escrito en JavaScript puro, sin frameworks, con un parser de expresiones que respeta precedencia y un analizador estático con ~16 reglas de regresión que cubre bugs históricos. Todo en un solo archivo HTML offline.</p>
+                </div>
+
+                <div class="about-grid">
+                    <div class="about-stat">
+                        <div class="about-stat-icon">⚙️</div>
+                        <div class="about-stat-label">Stack</div>
+                        <div class="about-stat-value">HTML · CSS · JS vanilla</div>
+                    </div>
+                    <div class="about-stat">
+                        <div class="about-stat-icon">📦</div>
+                        <div class="about-stat-label">Dependencias</div>
+                        <div class="about-stat-value">Cero (offline 100%)</div>
+                    </div>
+                    <div class="about-stat">
+                        <div class="about-stat-icon">📚</div>
+                        <div class="about-stat-label">Lecciones</div>
+                        <div class="about-stat-value">56 con reto incluido</div>
+                    </div>
+                    <div class="about-stat">
+                        <div class="about-stat-icon">🎨</div>
+                        <div class="about-stat-label">Temas</div>
+                        <div class="about-stat-value">5 (Dark · Light · Solarized · Monokai · Ocean)</div>
+                    </div>
+                </div>
+
+                <div class="about-card">
+                    <h3>🤝 Cómo podés ayudar</h3>
+                    <p>Si encontrás un bug, un falso positivo del analizador o tenés una idea para una lección nueva, abrí un issue en <a href="https://github.com/ldikay99/pseint-academy/issues" target="_blank" rel="noopener" style="color:var(--accent1)">GitHub</a>. El proyecto es open source bajo licencia MIT — podés clonarlo, modificarlo y usarlo en tu instituto sin pedir permiso.</p>
+                    <p>Si esta plataforma te ayudó a aprobar algoritmos, contámelo: <a href="mailto:heydikay@gmail.com" style="color:var(--accent1)">heydikay@gmail.com</a>. Es la mejor parte del proyecto.</p>
+                </div>
+
+                <div style="text-align:center;margin-top:32px">
+                    <a href="#/lecciones" class="btn-primary" style="text-decoration:none;display:inline-block;margin-right:8px">📚 Empezar lecciones</a>
+                    <a href="#/licencia" class="btn-ghost" style="text-decoration:none;display:inline-block">📜 Ver licencia</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- LICENCIA (ruta: #/licencia) -->
+        <section id="licencia" class="section" aria-label="Licencia y créditos" data-route="licencia">
+            <div class="animate-in" style="max-width:min(900px,95vw);margin:0 auto">
+                <h2 class="section-title">📜 Licencia y distribución</h2>
+                <p class="section-sub">
+                    PSeInt Academy es <strong>open source</strong> bajo la licencia MIT. Podés usar, copiar, modificar y distribuir el código libremente.
+                </p>
+
+                <div class="about-card">
+                    <h3>✅ Qué podés hacer</h3>
+                    <p>• <strong>Usar</strong> el editor sin pagar nada, sin cuenta, sin límites de uso.</p>
+                    <p>• <strong>Clonar</strong> el repositorio y modificarlo para tus alumnos, tu instituto, tu empresa o tu uso personal.</p>
+                    <p>• <strong>Publicar</strong> tu propia versión derivada (incluso comercial) mientras incluyas el aviso de copyright.</p>
+                    <p>• <strong>Combinarlo</strong> con otro software, libre o privativo.</p>
+                </div>
+
+                <div class="about-card">
+                    <h3>📋 Condiciones</h3>
+                    <p>La única obligación es incluir el aviso de copyright original y el texto de la licencia en cualquier copia o porción sustancial del software.</p>
+                    <p>El software se distribuye <strong>"tal cual"</strong>, sin garantías. Si lo usás y algo se rompe, no podés reclamar — pero podés abrir un issue en GitHub y vemos cómo arreglarlo juntos.</p>
+                </div>
+
+                <h3 style="color:var(--accent2);margin:32px 0 14px;font-size:1.1rem">📄 Texto completo de la licencia (MIT)</h3>
+                <div class="license-block">MIT License
+
+Copyright (c) 2026 Jonathan C. &lt;heydikay@gmail.com&gt; (@ldikay99)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.</div>
+
+                <div class="about-card" style="margin-top:32px">
+                    <h3>🙏 Créditos</h3>
+                    <p>PSeInt Academy se inspira en <a href="http://pseint.sourceforge.net/" target="_blank" rel="noopener" style="color:var(--accent1)">PSeInt</a>, el intérprete de pseudocódigo original creado por <strong>Pablo Novara</strong>. Este proyecto es una implementación web independiente que respeta la sintaxis oficial.</p>
+                    <p>Diseñado, codificado y mantenido por <strong>Jonathan C.</strong> (<a href="https://github.com/ldikay99" target="_blank" rel="noopener" style="color:var(--accent1)">@ldikay99</a>) · 2026 · Hecho con ❤️ para la comunidad estudiantil.</p>
+                </div>
+
+                <div style="text-align:center;margin-top:32px">
+                    <a href="https://github.com/ldikay99/pseint-academy" target="_blank" rel="noopener" class="btn-primary" style="text-decoration:none;display:inline-block;margin-right:8px">⬢ Ver en GitHub</a>
+                    <a href="#/home" class="btn-ghost" style="text-decoration:none;display:inline-block">🏠 Volver al inicio</a>
+                </div>
+            </div>
+        </section>
+
+        <footer class="site-footer">
+            <div class="footer-grid">
+                <div>
+                    <h4>⬡ PSeInt Academy</h4>
+                    <p style="font-size:0.82rem;line-height:1.6">Plataforma educativa interactiva de pseudocódigo. Aprendé desde cero hasta proyectos completos.</p>
+                </div>
+                <div>
+                    <h4>Navegación</h4>
+                    <a href="#/home">🏠 Inicio</a>
+                    <a href="#/lecciones">📚 Lecciones</a>
+                    <a href="#/playground">⚡ Editor libre</a>
+                    <a href="#/referencia">📖 Referencia</a>
+                </div>
+                <div>
+                    <h4>Recursos</h4>
+                    <a href="#/progreso">🏆 Mi progreso</a>
+                    <a href="#/sobre">👤 Sobre el proyecto</a>
+                    <a href="#/licencia">📜 Licencia MIT</a>
+                    <a href="https://github.com/ldikay99/pseint-academy" target="_blank" rel="noopener">⬢ GitHub</a>
+                </div>
+                <div>
+                    <h4>Atajos</h4>
+                    <p style="font-size:0.78rem;line-height:1.7;color:var(--text-muted)">F5: Ejecutar · F6: Limpiar · F7: Diagrama · F11: Pantalla completa · Ctrl+/: Comentar · Ctrl+Space: Autocompletar</p>
+                </div>
+            </div>
+            <div class="site-footer-bottom">
+                <p>© 2026 <strong>Jonathan C.</strong> (<a href="https://github.com/ldikay99" target="_blank" rel="noopener" style="color:var(--accent1)">@ldikay99</a>) · Distribuido bajo licencia <a href="#/licencia" style="color:var(--accent1)">MIT</a>.</p>
+                <p style="margin-top:6px">Todo se ejecuta 100% en tu navegador. Sin instalaciones. Sin dependencias externas. Sin tracking.</p>
+                <p style="margin-top:14px">
+                    <button onclick="document.getElementById('roadmapModal').classList.add('open')" style="background:rgba(124,58,237,0.15);border:1px solid rgba(124,58,237,0.4);color:#a78bfa;padding:7px 18px;border-radius:8px;font-size:0.8rem;font-weight:600;cursor:pointer;transition:all 0.2s">
+                        🗺 Ver Roadmap de Ideas Futuras
+                    </button>
+                </p>
+            </div>
+        </footer>
+
+        <!-- FOOTER LEGACY (oculto por SPA, contiene info de roadmap modal) -->
+        <footer style="display:none">
             <p>⬡ PSeInt Academy v12 — Plataforma educativa interactiva de pseudocódigo</p>
             <p style="margin-top: 6px">
                 Todo ejecutado 100% en tu navegador. Sin instalaciones. Sin dependencias externas.
@@ -16993,9 +17360,77 @@ FinProceso</textarea>
             });
 
             function scrollToSection(sel) {
+                // Legacy: convertir scroll a navegación de ruta.
+                // Si el selector apunta a una sección con data-route, navegamos
+                // por hash router en vez de scrollear.
                 let el = document.querySelector(sel);
+                if (el && el.hasAttribute('data-route')) {
+                    location.hash = '#/' + el.getAttribute('data-route');
+                    return;
+                }
                 if (el) el.scrollIntoView({ behavior: "smooth" });
             }
+
+            /* ============================================================
+               SPA ROUTER — un solo data-route activo a la vez
+               URL: #/home #/lecciones #/playground #/referencia #/progreso
+                    #/sobre #/licencia
+            ============================================================ */
+            (function() {
+                const VALID_ROUTES = ['home','lecciones','playground','referencia','progreso','sobre','licencia'];
+                // Mapeo legacy: anclas viejas → ruta nueva
+                const LEGACY = {
+                    'hero':'home', 'lecciones':'lecciones', 'playground':'playground',
+                    'referencia':'referencia', 'progreso':'progreso'
+                };
+
+                function activate(route) {
+                    if (!VALID_ROUTES.includes(route)) route = 'home';
+                    document.querySelectorAll('[data-route]').forEach(s => {
+                        s.removeAttribute('data-active');
+                    });
+                    const target = document.querySelector('[data-route="' + route + '"]');
+                    if (target) target.setAttribute('data-active', 'true');
+                    // Highlight nav link activo
+                    document.querySelectorAll('.nav-links a').forEach(a => {
+                        const href = a.getAttribute('href') || '';
+                        a.classList.toggle('active', href === '#/' + route);
+                    });
+                    // Cerrar el menú mobile si está abierto
+                    const navLinks = document.getElementById('navLinks');
+                    if (navLinks) navLinks.classList.remove('open');
+                    // Scroll al top de la nueva página
+                    window.scrollTo({ top: 0, behavior: 'instant' in window ? 'instant' : 'auto' });
+                }
+
+                function parseRoute() {
+                    const h = (location.hash || '').replace(/^#/, '');
+                    if (h.startsWith('/')) return h.slice(1).split(/[/?]/)[0] || 'home';
+                    // Compatibilidad con hashes antiguos: #hero → home, etc.
+                    if (h && LEGACY[h]) return LEGACY[h];
+                    return 'home';
+                }
+
+                function onChange() {
+                    // Cerrar modales abiertos al cambiar de ruta (UX consistente)
+                    document.querySelectorAll('.modal-overlay.open').forEach(m => {
+                        m.classList.remove('open');
+                    });
+                    activate(parseRoute());
+                }
+
+                window.addEventListener('hashchange', onChange);
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', onChange);
+                } else {
+                    onChange();
+                }
+
+                // Exponer para usar desde otros lados si hace falta
+                window.navigateTo = function(route) {
+                    location.hash = '#/' + route;
+                };
+            })();
 
             /* ============================================================
    FILTRO DE NIVELES
