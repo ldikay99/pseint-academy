@@ -5499,11 +5499,12 @@ FinProceso`,
             function showInputModal(varName, promptText) {
                 const consoleId = _activeConsoleId || 'playgroundConsole';
                 // FIX timeout: pausar el wall-clock del intérprete durante el input.
-                // Sin esto, el usuario tardando >30s en escribir cualquier respuesta
-                // dispara el timeout, aunque el programa no haya consumido CPU.
                 if (window._currentInterpreter && typeof window._currentInterpreter.pauseTimerForInput === 'function') {
                     window._currentInterpreter.pauseTimerForInput();
                 }
+                // FIX batching: flush del buffer de consola antes de mostrar el prompt
+                // — así el usuario ve el "Escribir" anterior YA renderizado.
+                if (typeof _flushConsoleBuffer === 'function') _flushConsoleBuffer(consoleId);
                 return new Promise((resolve, reject) => {
                     inputResolve = (v) => {
                         if (window._currentInterpreter && typeof window._currentInterpreter.resumeTimerAfterInput === 'function') {
@@ -5654,6 +5655,79 @@ FinProceso`,
                     el.insertBefore(document.createElement('br'), el.firstChild.nextSibling);
                 }
             }
+            // ── BATCHING DE OUTPUT ──────────────────────────────────────
+            // Para evitar que `Para i <- 1 Hasta 10000 Hacer Escribir i FinPara`
+            // genere 10k operaciones DOM individuales, juntamos las escrituras
+            // en un buffer y las flusheamos en lote vía DocumentFragment cada
+            // animation frame. El navegador hace UN solo reflow por flush.
+            const _consoleBuffers = new Map();
+            function _flushConsoleBuffer(elId) {
+                const el = document.getElementById(elId);
+                const buf = _consoleBuffers.get(elId);
+                if (!el || !buf || buf.entries.length === 0) {
+                    if (buf) buf.scheduled = false;
+                    return;
+                }
+                const entries = buf.entries;
+                buf.entries = [];
+                buf.scheduled = false;
+
+                const frag = document.createDocumentFragment();
+                // El primer entry puede mergear con el último span real del DOM
+                // SOLO si es Sin Saltar Y mismo tipo.
+                let lastInDom = null;
+                for (let i = el.childNodes.length - 1; i >= 0; i--) {
+                    const n = el.childNodes[i];
+                    if (n.nodeType === 1 && n.nodeName === 'BR') break;
+                    if (n.nodeType === 1 && n.classList && n.classList.contains('cout-line') &&
+                        !n.classList.contains('cout-input-echo') &&
+                        !n.classList.contains('cout-info') &&
+                        !n.classList.contains('cout-err') &&
+                        !n.classList.contains('cout-prompt')) {
+                        lastInDom = n;
+                        break;
+                    }
+                }
+
+                let pending = lastInDom;  // span que estamos extendiendo si hay merges Sin Saltar
+                for (const e of entries) {
+                    if (e.noNewline && pending && !e.cls) {
+                        // Extend pending span
+                        pending.textContent += e.text;
+                    } else {
+                        const span = document.createElement('span');
+                        span.className = 'cout-line' + (e.cls ? ' cout-' + e.cls : '');
+                        span.textContent = e.text;
+                        frag.appendChild(span);
+                        if (!e.noNewline) {
+                            frag.appendChild(document.createElement('br'));
+                            pending = null;
+                        } else {
+                            pending = e.cls ? null : span;
+                        }
+                    }
+                }
+
+                // Insert before input row if present
+                const inputRow = el.querySelector('.console-input-row');
+                if (inputRow) {
+                    el.insertBefore(frag, inputRow);
+                } else {
+                    el.appendChild(frag);
+                }
+
+                _trimConsoleIfNeeded(el);
+                const nearBottom = (el.scrollHeight - el.scrollTop - el.clientHeight) < 80;
+                if (nearBottom || !el._userScrolledUp) {
+                    el.scrollTop = el.scrollHeight;
+                }
+                if (elId === 'playgroundConsole' && window._fsSyncConsole) {
+                    window._fsSyncConsole();
+                    const fsPane = document.querySelector('.fs-bottom-content.fs-pane-console');
+                    if (fsPane) fsPane.scrollTop = fsPane.scrollHeight;
+                }
+            }
+
             function appendConsole(elId, text, cls, noNewline) {
                 let el = document.getElementById(elId);
                 if (!el) return;
@@ -5665,6 +5739,22 @@ FinProceso`,
                         el._userScrolledUp = !nearBottom;
                     }, { passive: true });
                 }
+
+                // FIX performance: batching. Programas con bucles grandes
+                // (ej. Para 1..10000 Escribir i) ahora hacen UN reflow por
+                // animation frame en vez de 10k. La pagina ya no se traba.
+                let buf = _consoleBuffers.get(elId);
+                if (!buf) {
+                    buf = { entries: [], scheduled: false };
+                    _consoleBuffers.set(elId, buf);
+                }
+                buf.entries.push({ text, cls, noNewline });
+                if (!buf.scheduled) {
+                    buf.scheduled = true;
+                    requestAnimationFrame(() => _flushConsoleBuffer(elId));
+                }
+                return;
+                // — código viejo (no se ejecuta, lo dejo como referencia comentada) —
                 let span = document.createElement("span");
                 span.className = "cout-line" + (cls ? " cout-" + cls : "");
 
@@ -6020,6 +6110,10 @@ FinProceso`,
                     }
                 } finally {
                     _currentInterp = null;
+                    // FIX batching: forzar flush del buffer al terminar la ejecucion
+                    // para que el mensaje final "✓ Ejecución completada" sea visible
+                    // sin esperar al proximo RAF.
+                    if (typeof _flushConsoleBuffer === 'function') _flushConsoleBuffer(consoleId);
                     // Restaurar el botón Ejecutar de cualquier editor (playground, lecciones, fullscreen)
                     if (typeof _restoreRunButtons === 'function') _restoreRunButtons();
                     // Limpiar legacy si quedó visible

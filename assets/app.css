@@ -1929,15 +1929,43 @@
                     font-size: 0.7rem;
                 }
                 .fs-bottombar .fs-tab-btn {
-                    padding: 3px 7px;
-                    font-size: 0.7rem;
+                    /* FIX touch target: minimo 36x36 px tappable comodo */
+                    padding: 8px 12px !important;
+                    font-size: 0.75rem !important;
+                    min-height: 36px;
+                    min-width: 64px;
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    flex-shrink: 0;
+                }
+                .fs-bottombar {
+                    min-height: 44px !important;
+                    padding: 4px 8px !important;
                 }
                 .fs-bottombar .fs-status {
                     font-size: 0.66rem;
                 }
-                /* En mobile, hacer la consola más pequeña por defecto */
+                /* En mobile, hacer la consola mas grande por defecto para
+                   ver el contenido sin ahogarlo con el teclado virtual */
                 .playground-grid.fullscreen {
-                    --fs-bottom-height: 180px;
+                    --fs-bottom-height: 220px;
+                }
+                /* Panel inferior: padding mas comodo y font legible en touch */
+                .fs-bottom-content {
+                    padding: 12px 14px !important;
+                    -webkit-overflow-scrolling: touch;
+                }
+                .fs-bottom-content.fs-pane-console {
+                    font-size: 0.82rem !important;
+                    line-height: 1.5;
+                }
+                .fs-bottom-content .fs-error-item,
+                .fs-bottom-content .fs-warn-item {
+                    padding: 10px 12px !important;
+                    font-size: 0.78rem !important;
+                    line-height: 1.5;
+                    min-height: 44px;
                 }
                 /* El editor en mobile usa fuente ligeramente más pequeña */
                 .playground-grid.fullscreen .big-editor,
@@ -2671,7 +2699,11 @@
                 border: 1px solid var(--border);
                 border-radius: var(--radius);
                 padding: 24px;
-                max-width: 480px;
+                /* FIX offset: el grid padre maneja el ancho con auto-fit minmax(280px,1fr).
+                   max-width: 480 forzaba a las cards a quedar pegadas a la izquierda
+                   con huecos. Ahora cada card llena su celda del grid. */
+                width: 100%;
+                box-sizing: border-box;
             }
 
             .progress-section h3 {
