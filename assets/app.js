@@ -5717,15 +5717,39 @@ FinProceso`,
                     }
                 }
 
-                let pending = lastInDom;  // span que estamos extendiendo si hay merges Sin Saltar
+                // FEATURE: agrupar lineas IDENTICAS consecutivas (ej. 100x "Hola").
+                // Comprimimos en una sola con badge "100×" para no inundar la consola.
+                // Solo aplica a entries plenas (no noNewline) sin clase especial.
+                const grouped = [];
                 for (const e of entries) {
+                    const prev = grouped[grouped.length - 1];
+                    if (prev && !e.noNewline && !prev.noNewline &&
+                        e.cls === prev.cls && e.text === prev.text) {
+                        prev.count = (prev.count || 1) + 1;
+                    } else {
+                        grouped.push({ ...e, count: 1 });
+                    }
+                }
+
+                let pending = lastInDom;  // span que estamos extendiendo si hay merges Sin Saltar
+                for (const e of grouped) {
                     if (e.noNewline && pending && !e.cls) {
                         // Extend pending span
                         pending.textContent += e.text;
                     } else {
                         const span = document.createElement('span');
                         span.className = 'cout-line' + (e.cls ? ' cout-' + e.cls : '');
-                        span.textContent = e.text;
+                        if (e.count > 1) {
+                            // Badge "Nx" antes del texto
+                            const badge = document.createElement('span');
+                            badge.className = 'cout-repeat-badge';
+                            badge.textContent = e.count + '×';
+                            badge.title = e.count + ' líneas idénticas consecutivas';
+                            span.appendChild(badge);
+                            span.appendChild(document.createTextNode(' ' + e.text));
+                        } else {
+                            span.textContent = e.text;
+                        }
                         frag.appendChild(span);
                         if (!e.noNewline) {
                             frag.appendChild(document.createElement('br'));

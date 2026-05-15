@@ -898,6 +898,11 @@ FinProceso</textarea>
                                 <li>✅ SPA con rutas (#/home, #/lecciones, #/playground, #/referencia, #/progreso, #/sobre, #/licencia)</li>
                                 <li>✅ Responsive completo (mobile, tablet, desktop, 4K) con tipografía fluida</li>
                                 <li>✅ Glass effects + animaciones (reveal on scroll, hover shimmer, pulse)</li>
+                                <li>✅ Find/Replace widget (Ctrl+F / Ctrl+H) con contador y reemplazo único/todos</li>
+                                <li>✅ Indicadores de error/sugerencia en gutter (punto rojo/ámbar por línea con issue)</li>
+                                <li>✅ Multi-asset cache: assets/ separado del HTML para reload rápido</li>
+                                <li>✅ Badges con contador de errores/warns en pestañas fullscreen</li>
+                                <li>✅ Timer en tiempo real en botón "Detener" durante ejecución</li>
                                 <li>⬜ Múltiples pestañas de archivos en el editor</li>
                                 <li>⬜ Mini-mapa del código (scrollbar semántico)</li>
                                 <li>⬜ Drag &amp; drop de bloques en el diagrama de flujo</li>
@@ -906,36 +911,39 @@ FinProceso</textarea>
                                 <li>⬜ Modo "Tour guiado" para nuevos usuarios (onboarding)</li>
                                 <li>⬜ Sistema de logros / badges gamificado</li>
                                 <li>⬜ Comparar solución propia con solución modelo (diff visual)</li>
-                                <li>⬜ Find/Replace widget visual (hay binding Ctrl+F, falta UI)</li>
                                 <li>⬜ Code folding (colapsar bloques Si/FinSi, Para/FinPara)</li>
-                                <li>⬜ Indicadores de error en gutter (puntos rojos en números de línea)</li>
                             </ul>
                         </div>
 
                         <!-- BACKEND / INTÉRPRETE -->
                         <div class="theory-block">
-                            <h3>⚙️ Intérprete / Analizador</h3>
+                            <h3>⚙️ Intérprete / Analizador / Consola</h3>
                             <ul style="list-style:none;display:flex;flex-direction:column;gap:6px;font-size:0.85rem;color:var(--text-muted)">
                                 <li>✅ Compatibilidad con PSeInt estricto (`<>`, `Por Referencia`, `Sin Saltar`)</li>
                                 <li>✅ Detección de casing inconsistente en identificadores</li>
                                 <li>✅ Detección de tipos incompatibles (asignar string a Entero, etc.)</li>
                                 <li>✅ Detección de redeclaración case-insensitive</li>
                                 <li>✅ Mensajes de error accionables (división por cero explica cómo prevenirlo)</li>
-                                <li>✅ Test harness con 16 casos analyzer + 33 casos interpreter (no se sube a git)</li>
+                                <li>✅ Test harness con 16 casos analyzer + 33 casos interpreter</li>
                                 <li>✅ Auditoría automática de todas las lecciones</li>
-                                <li>✅ Timeout pausado durante Leer (input del usuario no cuenta para wall-clock)</li>
-                                <li>⬜ <strong>Modo depuración paso a paso (F9 Continue / F10 Step)</strong> ← solicitado por usuario</li>
+                                <li>✅ Timeout pausado durante Leer (input del usuario no cuenta)</li>
+                                <li>✅ Console batching real: bucle de 10k iteraciones ya no traba la página</li>
+                                <li>✅ Cancel ≠ timeout: detener manual muestra "⏹ Ejecución detenida"</li>
+                                <li>✅ Mensajes de timeout claros (sugieren reducir rango o usar Sin Saltar)</li>
+                                <li>✅ Autoscroll inteligente (no salta si el usuario subió manualmente)</li>
+                                <li>✅ Caps subidos: maxSteps 100k, maxLoopIters 100k, maxOutputLines 10k</li>
+                                <li>✅ Historial de inputs (↑/↓ en campo Leer)</li>
+                                <li>✅ Agrupación de líneas idénticas consecutivas (badge "N×")</li>
+                                <li>✅ Click-to-jump desde errores/sugerencias en panel fullscreen</li>
+                                <li>⬜ <strong>Modo depuración paso a paso (F9 Continue / F10 Step)</strong> — feature mayor solicitada</li>
                                 <li>⬜ <strong>Breakpoints clic en número de línea</strong></li>
                                 <li>⬜ <strong>Watch list (panel de variables en tiempo real)</strong></li>
-                                <li>⬜ <strong>Breakpoints condicionados (PSeInt escritorio no los tiene — sería diferencial)</strong></li>
+                                <li>⬜ <strong>Breakpoints condicionados</strong> (PSeInt escritorio no los tiene — diferencial)</li>
                                 <li>⬜ <strong>Breakpoints on-change y on-value</strong></li>
                                 <li>⬜ Call stack visible al disparar error</li>
-                                <li>⬜ Click-to-jump al error desde el mensaje en consola</li>
                                 <li>⬜ Exportar código a Python / JavaScript equivalente</li>
                                 <li>⬜ Soporte para módulos / include de archivos externos</li>
                                 <li>⬜ Límite de tiempo configurable por el usuario</li>
-                                <li>⬜ Historial de inputs (flecha-arriba en el campo Leer)</li>
-                                <li>⬜ Agrupación automática de líneas repetidas en la consola</li>
                             </ul>
                         </div>
 

@@ -1251,6 +1251,20 @@
             .big-console .cout-line {
                 display: inline;
             }
+            /* FEATURE: badge "Nx" para lineas idénticas consecutivas en consola */
+            .cout-repeat-badge {
+                display: inline-block;
+                background: rgba(124, 58, 237, 0.18);
+                color: var(--accent2);
+                border: 1px solid rgba(124, 58, 237, 0.4);
+                border-radius: 10px;
+                padding: 0 6px;
+                font-size: 0.7em;
+                font-weight: 700;
+                margin-right: 4px;
+                vertical-align: middle;
+                user-select: none;
+            }
 
             .console-out .cout-err,
             .big-console .cout-err {
