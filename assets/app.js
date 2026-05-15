@@ -10354,6 +10354,12 @@ FinProceso`,
                             } catch(_) {}
                         };
 
+                        // FIX UX: actualizar badges de las pestañas fullscreen
+                        // cuando cambia el conteo de errores/warns
+                        if (typeof _fsUpdateTabButtons === 'function') {
+                            try { _fsUpdateTabButtons(); } catch(_) {}
+                        }
+
                         if (this.state.errors.length > 0) {
                             ep.classList.add('has-errors');
                             ep.classList.add('expanded');
@@ -12661,6 +12667,34 @@ FinProceso</textarea>
                     let btn = document.getElementById(btnId);
                     if (btn) btn.classList.toggle('active', _fsActiveTab === tab);
                 }
+                // FIX UX: badges con conteo de errores/warns en las pestañas
+                // del fullscreen. Sin esto, en mobile el usuario no sabia que
+                // habia errores nuevos hasta abrir cada tab.
+                try {
+                    const errorList = document.getElementById('playgroundErrorList');
+                    const warnList = document.getElementById('playgroundWarnList');
+                    const errCount = errorList ? errorList.children.length : 0;
+                    const warnCount = warnList ? warnList.children.length : 0;
+                    const errBtn = document.getElementById('fsTabErrors');
+                    const warnBtn = document.getElementById('fsTabWarns');
+                    function setBadge(btn, count, cls) {
+                        if (!btn) return;
+                        btn.classList.toggle(cls, count > 0);
+                        let badge = btn.querySelector('.fs-tab-count');
+                        if (count > 0) {
+                            if (!badge) {
+                                badge = document.createElement('span');
+                                badge.className = 'fs-tab-count';
+                                btn.appendChild(badge);
+                            }
+                            badge.textContent = count > 99 ? '99+' : String(count);
+                        } else if (badge) {
+                            badge.remove();
+                        }
+                    }
+                    setBadge(errBtn, errCount, 'has-errors');
+                    setBadge(warnBtn, warnCount, 'has-warns');
+                } catch(_) {}
             }
             window._fsUpdateTabButtons = _fsUpdateTabButtons;
 

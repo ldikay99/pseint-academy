@@ -1668,24 +1668,13 @@
             .playground-grid.fullscreen .playground-editor-panel > .playground-toolbar {
                 display: none !important;
             }
-            /* FIX bug mobile/fullscreen: diag-panel VISIBLE pero compacto */
+            /* FIX: en fullscreen los errores/sugerencias se ven en las pestañas
+               inferiores (fs-bottombar > Errores / Sugerencias), NO flotando
+               sobre el código. El overlay flotante anterior tapaba las primeras
+               líneas del editor en mobile. Ocultamos diag-panel inline en
+               fullscreen — el badge en la pestaña indica cantidad de issues. */
             .playground-grid.fullscreen .playground-editor-panel > .diag-panel,
             .playground-grid.fullscreen .ide-diag-host {
-                position: fixed !important;
-                top: 48px !important;
-                left: 8px !important;
-                right: 8px !important;
-                z-index: 2147481000 !important;
-                max-height: 35vh !important;
-                overflow-y: auto !important;
-                background: var(--bg-card) !important;
-                border-radius: 8px !important;
-                box-shadow: 0 8px 32px rgba(0,0,0,0.5) !important;
-                pointer-events: auto !important;
-            }
-            /* Cuando no hay errores ni warns, ocultar */
-            .playground-grid.fullscreen .ide-diag-host:empty,
-            .playground-grid.fullscreen .playground-editor-panel > .diag-panel:empty {
                 display: none !important;
             }
             /* Editor container ocupa todo el panel */
