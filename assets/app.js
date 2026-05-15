@@ -4716,13 +4716,13 @@ FinProceso`,
                             throw new Error("Límite de pasos alcanzado (" + this.maxSteps + "). Revisa si tu Mientras tiene una condición de salida válida.");
                         // Cap de wall-clock (30s) — evita colgar la pestaña indefinidamente
                         if (this.effectiveElapsed() > this.maxRunMs)
-                            throw new Error("⏱ Tiempo máximo (30s) excedido. Probable bucle infinito en 'Mientras " + condStr + "'.");
+                            throw new Error("⏱ Tiempo máximo (30 s) de ejecución excedido en 'Mientras " + condStr + "'. La página podría ralentizarse con bucles muy largos. Si tu programa imprime miles de líneas, reduce el rango o usa 'Escribir Sin Saltar' para acumular en una sola línea.");
                         // CEDER control al event loop cada 500 iteraciones — sin esto, el
                         // thread del navegador queda bloqueado y la página se congela.
                         // Yield al event loop sincronizado con el repaint del browser.
                         // RAF + setTimeout encadenados permiten que la consola se vea
                         // actualizando en tiempo real (no se ve "trabada hasta el timeout").
-                        if (iters % 25 === 0) await new Promise(r => {
+                        if (iters % 100 === 0) await new Promise(r => {
                             if (typeof requestAnimationFrame !== 'undefined')
                                 requestAnimationFrame(() => setTimeout(r, 0));
                             else setTimeout(r, 0);
@@ -4766,11 +4766,11 @@ FinProceso`,
                         if (this.steps > this.maxSteps)
                             throw new Error("Límite de pasos alcanzado (" + this.maxSteps + "). Revisa la condición 'Hasta Que " + condStr + "'.");
                         if (this.effectiveElapsed() > this.maxRunMs)
-                            throw new Error("⏱ Tiempo máximo (30s) excedido. Probable bucle infinito en 'Repetir...Hasta Que " + condStr + "'.");
+                            throw new Error("⏱ Tiempo máximo (30 s) de ejecución excedido en 'Repetir...Hasta Que " + condStr + "'. La página podría ralentizarse con bucles muy largos. Si tu programa imprime miles de líneas, reduce el rango.");
                         // Yield al event loop sincronizado con el repaint del browser.
                         // RAF + setTimeout encadenados permiten que la consola se vea
                         // actualizando en tiempo real (no se ve "trabada hasta el timeout").
-                        if (iters % 25 === 0) await new Promise(r => {
+                        if (iters % 100 === 0) await new Promise(r => {
                             if (typeof requestAnimationFrame !== 'undefined')
                                 requestAnimationFrame(() => setTimeout(r, 0));
                             else setTimeout(r, 0);
@@ -4824,11 +4824,11 @@ FinProceso`,
                         if (this.steps > this.maxSteps)
                             throw new Error("Límite de pasos alcanzado (" + this.maxSteps + ").");
                         if (this.effectiveElapsed() > this.maxRunMs)
-                            throw new Error("⏱ Tiempo máximo (30s) excedido en el bucle 'Para " + varN + "'.");
+                            throw new Error("⏱ Tiempo máximo (30 s) de ejecución excedido en 'Para " + varN + "'. La página podría ralentizarse con bucles muy largos. Si tu programa imprime miles de líneas (ej: 'Para i <- 1 Hasta 10000 Hacer Escribir i'), reduce el rango.");
                         // Yield al event loop sincronizado con el repaint del browser.
                         // RAF + setTimeout encadenados permiten que la consola se vea
                         // actualizando en tiempo real (no se ve "trabada hasta el timeout").
-                        if (iters % 25 === 0) await new Promise(r => {
+                        if (iters % 100 === 0) await new Promise(r => {
                             if (typeof requestAnimationFrame !== 'undefined')
                                 requestAnimationFrame(() => setTimeout(r, 0));
                             else setTimeout(r, 0);
@@ -6009,7 +6009,14 @@ FinProceso`,
                     }
                 } catch(e) {
                     if (e && e.message) {
-                        appendConsole(consoleId, "⛔ " + e.message, "err");
+                        // FIX: si el usuario CANCELÓ la ejecución, mostrar mensaje
+                        // claro de cancelación, NO el error de timeout/runtime que
+                        // venga del bucle interrumpido.
+                        if (_execAborted || /cancelada|cancelled/i.test(e.message)) {
+                            appendConsole(consoleId, "⏹ Ejecución detenida por el usuario", "info");
+                        } else {
+                            appendConsole(consoleId, "⛔ " + e.message, "err");
+                        }
                     }
                 } finally {
                     _currentInterp = null;
