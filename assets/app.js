@@ -3996,16 +3996,45 @@ FinProceso`,
                     // Si el modo debug esta activo, pausamos antes de ejecutar
                     // cada linea y esperamos a que la UI nos despierte (con un
                     // step o continue). Marcamos visualmente la linea actual.
-                    if ((window._debugMode || (window._debugBreakpoints && window._debugBreakpoints.size > 0)) && !_execAborted) {
+                    const _hasBPs = (window._debugBreakpoints && window._debugBreakpoints.size > 0);
+                    const _hasWOC = (window._debugWatchOnChange && window._debugWatchOnChange.size > 0);
+                    if ((window._debugMode || _hasBPs || _hasWOC) && !_execAborted) {
                         const currentLine = (this.pos || 0); // 0-based
                         const lineNum1Based = currentLine + 1;
-                        // BREAKPOINTS: si la linea actual tiene un breakpoint, forzar pausa
-                        const hitBreakpoint = window._debugBreakpoints &&
-                            window._debugBreakpoints.has(lineNum1Based);
-                        if (hitBreakpoint && !window._debugMode) {
-                            // Auto-activar debug al pegar un breakpoint
+                        // BREAKPOINTS condicionales: si la linea tiene BP, eval condición
+                        let hitBreakpoint = false;
+                        if (window._debugBreakpoints && window._debugBreakpoints.has(lineNum1Based)) {
+                            const bp = window._debugBreakpoints.get(lineNum1Based);
+                            if (bp && bp.condition) {
+                                // Eval condición en el scope actual del interprete
+                                let condValue = false;
+                                try { condValue = !!this.evalExpr(bp.condition); } catch(_) { condValue = false; }
+                                hitBreakpoint = condValue;
+                                if (condValue && typeof showToast === 'function') {
+                                    showToast('🟣 Breakpoint condicional: ' + bp.condition + ' = verdadero (linea ' + lineNum1Based + ')');
+                                }
+                            } else {
+                                hitBreakpoint = true; // sin condición = siempre
+                            }
+                        }
+                        // WATCH ON CHANGE: si alguna variable observada cambió, pausar
+                        let changedVar = null;
+                        if (_hasWOC) {
+                            for (const [varName, lastVal] of window._debugWatchOnChange.entries()) {
+                                const curVal = this.vars[varName.toLowerCase()];
+                                if (lastVal !== undefined && curVal !== lastVal) {
+                                    changedVar = { name: varName, prev: lastVal, now: curVal };
+                                    if (typeof showToast === 'function') {
+                                        showToast('👁 ' + varName + ' cambió: ' + lastVal + ' → ' + curVal + ' (linea ' + lineNum1Based + ')');
+                                    }
+                                }
+                                window._debugWatchOnChange.set(varName, curVal);
+                            }
+                        }
+                        if ((hitBreakpoint || changedVar) && !window._debugMode) {
+                            // Auto-activar debug al pegar un breakpoint o detectar cambio
                             window._debugMode = true;
-                            if (typeof showToast === 'function') {
+                            if (!changedVar && typeof showToast === 'function') {
                                 showToast('🔴 Breakpoint en linea ' + lineNum1Based + ' · F10 step · F9 continue');
                             }
                         }
@@ -7317,18 +7346,57 @@ FinProceso`,
             window._debugMode = false;
             window._debugResume = null;
             window._debugCurrentLine = 0;
-            window._debugBreakpoints = new Set(); // line numbers (1-based)
+            // Breakpoints: Map<lineNum, { condition?: string }>.
+            // .has(n) sigue funcionando (Map y Set comparten esa API).
+            window._debugBreakpoints = new Map();
+            // Watch-on-change: Map<varName, lastValue>. Cuando el valor cambia
+            // entre líneas ejecutadas, se dispara una pausa.
+            window._debugWatchOnChange = new Map();
 
-            // Toggle breakpoint en una linea via click en el gutter
-            window._debugToggleBreakpoint = function(lineNum) {
-                if (window._debugBreakpoints.has(lineNum)) {
-                    window._debugBreakpoints.delete(lineNum);
+            // Toggle breakpoint (clic simple = sin condición, Shift+clic = condicional)
+            window._debugToggleBreakpoint = function(lineNum, opts) {
+                opts = opts || {};
+                if (opts.editCondition) {
+                    // Pedir condición al usuario (deja vacío para quitar)
+                    const existing = window._debugBreakpoints.get(lineNum);
+                    const current = (existing && existing.condition) || '';
+                    const cond = prompt(
+                        'Breakpoint condicional en linea ' + lineNum + '\n\n' +
+                        'Escribe una expresion PSeInt (ej. "i = 50", "x > 100").\n' +
+                        'La ejecucion se pausara solo cuando la condicion sea verdadera.\n' +
+                        'Deja vacio para quitar el breakpoint.',
+                        current
+                    );
+                    if (cond === null) return; // cancel
+                    if (cond.trim() === '') {
+                        window._debugBreakpoints.delete(lineNum);
+                    } else {
+                        window._debugBreakpoints.set(lineNum, { condition: cond.trim() });
+                    }
                 } else {
-                    window._debugBreakpoints.add(lineNum);
+                    if (window._debugBreakpoints.has(lineNum)) {
+                        window._debugBreakpoints.delete(lineNum);
+                    } else {
+                        window._debugBreakpoints.set(lineNum, {}); // sin condición
+                    }
                 }
-                // Refrescar gutter para mostrar/quitar el marcador rojo
+                // Refrescar gutter
                 if (typeof updateLineNums === 'function') {
                     updateLineNums('playgroundEditor', 'playgroundLineNums');
+                }
+            };
+
+            // Activar/desactivar watch-on-change sobre una variable
+            window._debugToggleWatchOnChange = function(varName) {
+                if (window._debugWatchOnChange.has(varName)) {
+                    window._debugWatchOnChange.delete(varName);
+                } else {
+                    window._debugWatchOnChange.set(varName, undefined);
+                }
+                // Actualizar UI del watch panel si está abierto
+                const inter = window._currentInterpreter;
+                if (inter && typeof window._debugUpdateWatches === 'function') {
+                    window._debugUpdateWatches(inter.vars, inter.varTypes);
                 }
             };
 
@@ -7367,10 +7435,29 @@ FinProceso`,
                     if (Array.isArray(v)) val = '[' + v.length + ' elementos]';
                     else if (typeof v === 'string') val = '"' + v + '"';
                     else val = String(v);
+                    // Botón watch-on-change por variable (👁)
+                    const isWatched = window._debugWatchOnChange && window._debugWatchOnChange.has(k);
+                    const eyeBtn = '<button class="dw-eye' + (isWatched ? ' dw-eye-active' : '') +
+                        '" data-var="' + k + '" title="' +
+                        (isWatched ? 'Quitar watch on-change' : 'Pausar ejecucion cuando ' + k + ' cambie') +
+                        '">👁</button>';
                     row.innerHTML = '<span class="dw-name">' + k + '</span>'
                         + (t ? '<span class="dw-type">' + t + '</span>' : '')
-                        + '<span class="dw-val">' + val + '</span>';
+                        + '<span class="dw-val">' + val + '</span>'
+                        + eyeBtn;
                     body.appendChild(row);
+                }
+                // Delegado: clic en .dw-eye → toggle watch-on-change
+                if (!body._watchClickAttached) {
+                    body._watchClickAttached = true;
+                    body.addEventListener('click', (ev) => {
+                        const btn = ev.target.closest('.dw-eye');
+                        if (!btn) return;
+                        const varName = btn.dataset.var;
+                        if (varName && typeof window._debugToggleWatchOnChange === 'function') {
+                            window._debugToggleWatchOnChange(varName);
+                        }
+                    });
                 }
             };
             window._debugClosePanel = function() {
@@ -11125,15 +11212,20 @@ FinProceso`,
                 // error/sugerencia/breakpoint desde los Sets globales (1-based).
                 const errSet = (window._errorLineSet instanceof Set) ? window._errorLineSet : null;
                 const warnSet = (window._warnLineSet instanceof Set) ? window._warnLineSet : null;
-                const bpSet = (window._debugBreakpoints instanceof Set) ? window._debugBreakpoints : null;
+                const bpMap = (window._debugBreakpoints instanceof Map) ? window._debugBreakpoints : null;
                 ln.innerHTML = lines.map((_, i) => {
                     const lineNum = i + 1;
                     let cls = 'ln-row';
                     let dot = '';
-                    const hasBp = bpSet && bpSet.has(lineNum);
-                    if (hasBp) {
-                        cls += ' ln-has-breakpoint';
-                        dot = '<span class="ln-dot ln-dot-bp" title="Breakpoint activo · clic para quitarlo"></span>';
+                    const bp = bpMap && bpMap.get(lineNum);
+                    if (bp) {
+                        const isCond = !!bp.condition;
+                        cls += isCond ? ' ln-has-breakpoint-cond' : ' ln-has-breakpoint';
+                        const dotCls = isCond ? 'ln-dot-bp-cond' : 'ln-dot-bp';
+                        const title = isCond
+                            ? 'Breakpoint condicional: pausa si "' + bp.condition + '" es verdadero · Shift+click para editar · click para quitar'
+                            : 'Breakpoint · clic para quitarlo · Shift+clic para hacerlo condicional';
+                        dot = '<span class="ln-dot ' + dotCls + '" title="' + title.replace(/"/g, '&quot;') + '"></span>';
                     } else if (errSet && errSet.has(lineNum)) {
                         cls += ' ln-has-error';
                         dot = '<span class="ln-dot ln-dot-error" title="Esta línea tiene un error de sintaxis"></span>';
@@ -11144,7 +11236,9 @@ FinProceso`,
                     // data-line para que el click handler sepa que linea es
                     return '<div class="' + cls + '" data-line="' + lineNum + '">' + dot + lineNum + '</div>';
                 }).join('');
-                // Adjuntar handler de click solo una vez por gutter
+                // Adjuntar handler de click solo una vez por gutter.
+                // Click simple: toggle breakpoint normal.
+                // Shift+click: editar condición (breakpoint condicional).
                 if (!ln._bpListenerAttached) {
                     ln._bpListenerAttached = true;
                     ln.style.pointerEvents = 'auto';
@@ -11153,7 +11247,10 @@ FinProceso`,
                         const row = ev.target.closest('.ln-row');
                         if (!row) return;
                         const n = parseInt(row.dataset.line, 10);
-                        if (!isNaN(n) && typeof window._debugToggleBreakpoint === 'function') {
+                        if (isNaN(n)) return;
+                        if (ev.shiftKey && typeof window._debugToggleBreakpoint === 'function') {
+                            window._debugToggleBreakpoint(n, { editCondition: true });
+                        } else if (typeof window._debugToggleBreakpoint === 'function') {
                             window._debugToggleBreakpoint(n);
                         }
                     });

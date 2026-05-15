@@ -3949,7 +3949,7 @@
             }
             .ln-dot-error { background: var(--color-error-strong); box-shadow: 0 0 4px rgba(239,68,68,0.6); }
             .ln-dot-warn  { background: var(--color-warn-strong);  box-shadow: 0 0 4px rgba(245,158,11,0.5); }
-            /* Breakpoint dot — mas grande y prominente para mostrar al lado de la linea */
+            /* Breakpoint dot — mas grande y prominente */
             .ln-dot-bp {
                 width: 10px;
                 height: 10px;
@@ -3957,9 +3957,33 @@
                 box-shadow: 0 0 6px rgba(239,68,68,0.8);
                 border: 1px solid #fff;
             }
-            .big-line-nums .ln-row.ln-has-breakpoint {
+            /* Breakpoint CONDICIONAL — morado en lugar de rojo */
+            .ln-dot-bp-cond {
+                width: 10px;
+                height: 10px;
+                background: var(--accent2);
+                box-shadow: 0 0 6px rgba(124,58,237,0.7);
+                border: 1px solid #fff;
+                position: relative;
+            }
+            .ln-dot-bp-cond::after {
+                content: '?';
+                position: absolute;
+                top: -5px;
+                left: 2px;
+                font-size: 0.65rem;
+                font-weight: 800;
+                color: #fff;
+                line-height: 1;
+                pointer-events: none;
+            }
+            .big-line-nums .ln-row.ln-has-breakpoint,
+            .big-line-nums .ln-row.ln-has-breakpoint-cond {
                 color: var(--color-error-strong);
                 font-weight: 800;
+            }
+            .big-line-nums .ln-row.ln-has-breakpoint-cond {
+                color: var(--accent2);
             }
 
             /* ────────── DEPURADOR: watch panel flotante ────────── */
@@ -4024,6 +4048,29 @@
                 color: var(--text-main);
                 flex: 1;
                 word-break: break-all;
+            }
+            .debug-watch-row .dw-eye {
+                background: transparent;
+                border: 1px solid var(--border);
+                color: var(--text-muted);
+                width: 28px;
+                height: 28px;
+                border-radius: 50%;
+                cursor: pointer;
+                font-size: 0.9rem;
+                padding: 0;
+                transition: all 0.15s;
+                flex-shrink: 0;
+            }
+            .debug-watch-row .dw-eye:hover {
+                border-color: var(--accent2);
+                color: var(--accent2);
+            }
+            .debug-watch-row .dw-eye.dw-eye-active {
+                background: rgba(124, 58, 237, 0.25);
+                border-color: var(--accent2);
+                color: #fff;
+                box-shadow: 0 0 8px rgba(124, 58, 237, 0.5);
             }
             .debug-watch-controls {
                 padding: 8px 12px;
