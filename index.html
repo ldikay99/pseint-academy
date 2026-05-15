@@ -8743,6 +8743,7 @@ FinProceso`,
                 "NO",
             ];
 
+            // <INTERPRETER_BEGIN> — marcador para tests/interpreter_smoke.js
             class PSeIntInterpreter {
                 constructor(outputFn, inputFn) {
                     this.output = outputFn;
@@ -10362,6 +10363,11 @@ FinProceso`,
                                 )
                                     continue;
                                 if (op === ">" && expr[i + 1] === "=") continue;
+                                // FIX CRÍTICO: prevenir que el `>` de `<>` se interprete
+                                // como operador `>` cuando se escanea de derecha a izquierda.
+                                // Antes, `intento <> secreto` partía en `intento <` vs `secreto`
+                                // y disparaba "Expresión inválida".
+                                if (op === ">" && expr[i - 1] === "<") continue;
                                 if (
                                     op === "=" &&
                                     (expr[i - 1] === "<" ||
@@ -10445,6 +10451,7 @@ FinProceso`,
                     }
                 }
             }
+            // <INTERPRETER_END>
 
             /* ============================================================
            INPUT ASYNC — SISTEMA INLINE EN CONSOLA
