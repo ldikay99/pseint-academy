@@ -12027,6 +12027,7 @@ FinProceso`,
                 } catch(e) { /* no critical */ }
             }
 
+            // <ANALYZE_SYNTAX_BEGIN> — marcador para tests/analyzer_smoke.js
             function analyzeSyntax(code) {
                 let errors = [];
                 // FIX: normalizar CRLF defensivamente
@@ -13432,6 +13433,7 @@ FinProceso`,
                     return true;
                 });
             }
+            // <ANALYZE_SYNTAX_END>
 
             function analyzeWarnings(code) {
                 let warns = [];
