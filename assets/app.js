@@ -5567,7 +5567,7 @@ FinProceso`,
                     hint.setAttribute('role', 'status');
                     const hintSpan = document.createElement('span');
                     hintSpan.style.cssText = 'color:var(--text-muted);font-size:0.7rem;font-family:var(--font-mono)';
-                    hintSpan.textContent = '↵ Enter · Esc cancela';
+                    hintSpan.textContent = '↵ Enter · Esc cancela · ↑↓ historial';
                     hint.appendChild(hintSpan);
                     consoleEl.appendChild(hint);
 
@@ -5594,9 +5594,37 @@ FinProceso`,
                         consoleEl.scrollTop = consoleEl.scrollHeight;
                     };
 
+                    // FEATURE: historial de inputs. Cada vez que el usuario
+                    // confirma un valor, se guarda en window._inputHistory
+                    // (persistente durante la sesion). Flecha-arriba/abajo
+                    // navega el historial, estilo terminal real.
+                    if (!window._inputHistory) window._inputHistory = [];
+                    let _histIdx = window._inputHistory.length; // empieza fuera del final
                     field.addEventListener('keydown', (e) => {
-                        if (e.key === 'Enter') { e.preventDefault(); confirm(); }
-                        if (e.key === 'Escape') { e.preventDefault(); cancelInput(); }
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            // Guardar en historial si no esta vacio y no es duplicado del ultimo
+                            const v = field.value;
+                            if (v !== '' && window._inputHistory[window._inputHistory.length-1] !== v) {
+                                window._inputHistory.push(v);
+                                if (window._inputHistory.length > 50) window._inputHistory.shift();
+                            }
+                            confirm();
+                        } else if (e.key === 'Escape') {
+                            e.preventDefault();
+                            cancelInput();
+                        } else if (e.key === 'ArrowUp' && window._inputHistory.length > 0) {
+                            e.preventDefault();
+                            _histIdx = Math.max(0, _histIdx - 1);
+                            field.value = window._inputHistory[_histIdx] || '';
+                            // Mover cursor al final
+                            field.setSelectionRange(field.value.length, field.value.length);
+                        } else if (e.key === 'ArrowDown' && window._inputHistory.length > 0) {
+                            e.preventDefault();
+                            _histIdx = Math.min(window._inputHistory.length, _histIdx + 1);
+                            field.value = window._inputHistory[_histIdx] || '';
+                            field.setSelectionRange(field.value.length, field.value.length);
+                        }
                     });
                     okBtn.addEventListener('click', confirm);
                 });
@@ -6486,6 +6514,17 @@ FinProceso`,
 
                 // Actualizar conjunto de líneas con error para el resaltador
                 window._errorLineSet = new Set(errors.map(e => e.line));
+                // FEATURE gutter dots: tambien trackear lineas con warns.
+                // Las warns vienen en formato "Línea N: mensaje" — extraemos N.
+                window._warnLineSet = new Set();
+                (warns || []).forEach(w => {
+                    const m = (typeof w === 'string' ? w : w.msg || '').match(/^Línea\s+(\d+):/);
+                    if (m) window._warnLineSet.add(parseInt(m[1], 10));
+                });
+                // Refrescar el gutter con los nuevos indicadores (red/yellow dots)
+                if (typeof updateLineNums === 'function') {
+                    updateLineNums('playgroundEditor', 'playgroundLineNums');
+                }
                 // Re-sincronizar el highlight con las líneas de error marcadas
                 window.syncHighlight && syncHighlight("playgroundEditor", "playgroundHighlight");
                 // FIX: renderizar los overlays de rangos problemáticos
@@ -10762,19 +10801,27 @@ FinProceso`,
                 let ln = document.getElementById(lineNumId);
                 if (!ta || !ln) return;
                 let lines = ta.value.split("\n");
-                // FIX: usar <div class="ln-row"> por número para forzar un número
-                // por línea visual. Antes se usaba .join("\n"), pero como el
-                // contenedor es un <div> sin white-space:pre, los \n se
-                // colapsaban a espacios y los números de 1 dígito (1..9)
-                // entraban de a 2 por línea ("1 2", "3 4"...). Con cajas
-                // de bloque ya queda 1 por fila siempre.
-                ln.innerHTML = lines.map((_, i) =>
-                    '<div class="ln-row">' + (i + 1) + '</div>'
-                ).join('');
+                // FEATURE: indicadores en gutter. Calculamos qué líneas tienen
+                // error o sugerencia desde los Sets que mantiene el analizador
+                // (window._errorLineSet y window._warnLineSet, ambos 1-based).
+                const errSet = (window._errorLineSet instanceof Set) ? window._errorLineSet : null;
+                const warnSet = (window._warnLineSet instanceof Set) ? window._warnLineSet : null;
+                ln.innerHTML = lines.map((_, i) => {
+                    const lineNum = i + 1;
+                    let cls = 'ln-row';
+                    let dot = '';
+                    if (errSet && errSet.has(lineNum)) {
+                        cls += ' ln-has-error';
+                        dot = '<span class="ln-dot ln-dot-error" title="Esta línea tiene un error de sintaxis"></span>';
+                    } else if (warnSet && warnSet.has(lineNum)) {
+                        cls += ' ln-has-warn';
+                        dot = '<span class="ln-dot ln-dot-warn" title="Esta línea tiene una sugerencia"></span>';
+                    }
+                    return '<div class="' + cls + '">' + dot + lineNum + '</div>';
+                }).join('');
                 // Sync scroll
                 ln.scrollTop = ta.scrollTop;
                 // FIX: invalidar y reaplicar el highlight de fila actual
-                // porque los nodos del gutter fueron regenerados.
                 if (window._invalidateActiveRowRef) window._invalidateActiveRowRef();
                 if (window._reapplyCurrentRow) window._reapplyCurrentRow(ta);
             }

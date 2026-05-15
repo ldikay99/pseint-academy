@@ -3891,7 +3891,24 @@
                 height: 1.6em;
                 min-height: 1.6em;
                 white-space: nowrap;
+                position: relative;
             }
+            /* FEATURE: indicadores en gutter (punto rojo error / amarillo warn).
+               Lineas con error/warn ademas pintan el numero en color semantico. */
+            .big-line-nums .ln-row.ln-has-error { color: var(--color-error-strong); font-weight: 700; }
+            .big-line-nums .ln-row.ln-has-warn  { color: var(--color-warn-strong); font-weight: 700; }
+            .ln-dot {
+                display: inline-block;
+                width: 6px;
+                height: 6px;
+                border-radius: 50%;
+                margin-right: 4px;
+                vertical-align: middle;
+                /* Activar pointer-events para tooltip (el padre lo desactiva) */
+                pointer-events: auto;
+            }
+            .ln-dot-error { background: var(--color-error-strong); box-shadow: 0 0 4px rgba(239,68,68,0.6); }
+            .ln-dot-warn  { background: var(--color-warn-strong);  box-shadow: 0 0 4px rgba(245,158,11,0.5); }
             /* ── Botón cancelar input ────────────────────────────── */
             .input-hint-row {
                 display: flex;
