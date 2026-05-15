@@ -5993,6 +5993,12 @@ FinProceso`,
             }
 
             async function runCode(editorId, consoleId) {
+                // Expandir todos los bloques plegados antes de leer el código.
+                // El intérprete no debe ver placeholders (los trataría como
+                // comentarios y omitiría el código oculto).
+                if (typeof window._foldExpandAll === 'function') {
+                    window._foldExpandAll(editorId);
+                }
                 let code = document.getElementById(editorId).value;
                 // FIX: normalizar CRLF defensivamente. Si el editor recibió
                 // pegado anterior sin normalización o el localStorage tiene
@@ -7344,16 +7350,25 @@ FinProceso`,
             //   window._debugHighlightLine(n) — resalta visualmente la linea n (1-based)
             // ════════════════════════════════════════════════════════════
             // ════════════════════════════════════════════════════════════
-            // CODE FOLDING — colapsar bloques Si/Para/Mientras/Segun/Subprocesos
+            // CODE FOLDING — NO DESTRUCTIVO
             //
-            // Estado: window._foldedBlocks = Map<foldId, originalText>
-            // El placeholder en el textarea contiene el foldId para recuperar.
+            // Diseño:
+            //   - window._foldStore = Map<fid, {hidden: string, count: number}>
+            //     persiste el contenido oculto. Si el usuario destruye un
+            //     placeholder por edición, el contenido sigue acá hasta que
+            //     se libere explícitamente (o se haga undo y vuelva a aparecer).
+            //   - Placeholder embebe el fid: lo recuperamos por regex.
+            //   - El gutter muestra números canónicos (contando líneas ocultas),
+            //     calculados por _foldComputeLineMap(visibleLines).
+            //   - Funciona en cualquier textarea (no solo playground), pasamos
+            //     el id al fold/unfold.
             // ════════════════════════════════════════════════════════════
-            window._foldedBlocks = new Map();
+            window._foldStore = new Map();
             window._foldNextId = 1;
 
-            // Detecta pares de apertura/cierre. Devuelve Array<{openLine, closeLine, kind}>
-            // line numbers 1-based.
+            // Detecta pares de apertura/cierre en el CONTENIDO VISIBLE (puede
+            // contener placeholders, que se tratan como una línea opaca). Devuelve
+            // Array<{openLine, closeLine, kind}> con line numbers VISIBLES 1-based.
             window._detectFoldRanges = function(code) {
                 const lines = code.split('\n');
                 const ranges = [];
@@ -7414,60 +7429,172 @@ FinProceso`,
                 return ranges;
             };
 
-            // Folding marker en placeholder: identificable via regex
-            // Formato: // ▶ Bloque plegado (N lineas) #ID
-            window._FOLD_PLACEHOLDER_RE = /^\s*\/\/\s*▶\s+Bloque plegado \((\d+)\s+l[ií]neas?\)\s+#(\d+)\s*$/;
+            // Placeholder con fid embebido. El fid permite recuperar el contenido
+            // desde _foldStore aunque el usuario mueva el placeholder de línea
+            // (al editar arriba/abajo). Formato:
+            //   // ▶ Bloque plegado (N líneas) [fid:42] — clic ▶ en gutter para expandir
+            window._FOLD_PLACEHOLDER_RE = /^\s*\/\/\s*▶\s+Bloque plegado \((\d+)\s+l[ií]neas?\)\s+\[fid:(\d+)\]/;
+            window._FOLD_PLACEHOLDER_RE_GLOBAL = /\/\/\s*▶\s+Bloque plegado \(\d+\s+l[ií]neas?\)\s+\[fid:(\d+)\]/g;
 
-            window._foldBlock = function(openLine) {
-                const ta = document.getElementById('playgroundEditor');
+            // Cuenta líneas CANÓNICAS (totalmente expandidas) representadas por
+            // un fid, recursivamente. Si el contenido oculto contiene placeholders,
+            // sus líneas se cuentan totalmente.
+            window._foldCanonicalCount = function(fid, _cache) {
+                _cache = _cache || new Map();
+                if (_cache.has(fid)) return _cache.get(fid);
+                const entry = window._foldStore.get(fid);
+                if (!entry) { _cache.set(fid, 0); return 0; }
+                const lines = entry.hidden.split('\n');
+                let total = 0;
+                for (const line of lines) {
+                    const m = line.match(window._FOLD_PLACEHOLDER_RE);
+                    if (m) total += window._foldCanonicalCount(parseInt(m[2], 10), _cache);
+                    else total += 1;
+                }
+                _cache.set(fid, total);
+                return total;
+            };
+
+            // Mapea cada línea visible a su número CANÓNICO 1-based.
+            // Devuelve Array<number> mismo length que visLines.
+            window._foldComputeLineMap = function(visLines) {
+                const map = new Array(visLines.length);
+                const cache = new Map();
+                let canCount = 1;
+                for (let i = 0; i < visLines.length; i++) {
+                    map[i] = canCount;
+                    const m = visLines[i].match(window._FOLD_PLACEHOLDER_RE);
+                    if (m) {
+                        const fid = parseInt(m[2], 10);
+                        const cnt = window._foldCanonicalCount(fid, cache);
+                        canCount += Math.max(1, cnt);
+                    } else {
+                        canCount += 1;
+                    }
+                }
+                return map;
+            };
+
+            window._foldBlock = function(openLine, editorId) {
+                const ta = document.getElementById(editorId || 'playgroundEditor');
                 if (!ta) return;
                 const ranges = window._detectFoldRanges(ta.value);
                 const r = ranges.find(x => x.openLine === openLine);
                 if (!r) return;
                 const lines = ta.value.split('\n');
-                // openLine y closeLine son 1-based; índices 0-based: openLine-1, closeLine-1
-                // El interior a plegar va desde openLine (índice) hasta closeLine-2 inclusive,
-                // dejando la linea OPEN y CLOSE visibles, y reemplazando el contenido entre ellas.
-                const innerStart = openLine; // 0-based: la linea siguiente a la apertura
-                const innerEnd = r.closeLine - 1; // 0-based: la linea anterior al cierre
+                const innerStart = openLine;          // 0-based: línea después de apertura
+                const innerEnd = r.closeLine - 1;     // 0-based exclusive: línea anterior al cierre
                 const innerCount = innerEnd - innerStart;
                 if (innerCount < 1) return;
                 const innerLines = lines.slice(innerStart, innerEnd);
                 const innerText = innerLines.join('\n');
-                const foldId = window._foldNextId++;
-                window._foldedBlocks.set(foldId, innerText);
-                // Indent base: usar la indentacion de la linea de apertura + 1 tab
+                // Contar líneas CANÓNICAS ocultas (expandiendo placeholders anidados)
+                const cache = new Map();
+                let canonicalCount = 0;
+                for (const line of innerLines) {
+                    const mm = line.match(window._FOLD_PLACEHOLDER_RE);
+                    if (mm) canonicalCount += window._foldCanonicalCount(parseInt(mm[2], 10), cache);
+                    else canonicalCount += 1;
+                }
+                const fid = window._foldNextId++;
+                window._foldStore.set(fid, { hidden: innerText, count: canonicalCount });
+                // Indentación: usar la línea de apertura
                 const openIndent = (lines[openLine - 1].match(/^[\t ]*/) || [''])[0];
-                const placeholder = openIndent + '\t// ▶ Bloque plegado (' + innerCount + ' líneas) #' + foldId;
+                const placeholder = openIndent + '    // ▶ Bloque plegado (' + canonicalCount + ' líneas) [fid:' + fid + '] — clic ▶ en gutter para expandir';
                 const newLines = lines.slice(0, innerStart).concat([placeholder]).concat(lines.slice(innerEnd));
+                // Preservar cursor/scroll
+                const prevScroll = ta.scrollTop;
                 ta.value = newLines.join('\n');
-                // Refresh editor
+                ta.scrollTop = prevScroll;
+                // Marcar este placeholder como "recién creado" — protege de auto-unfold espurio
+                if (!ta._foldKnownFids) ta._foldKnownFids = new Set();
+                ta._foldKnownFids.add(fid);
                 ta.dispatchEvent(new Event('input'));
             };
 
-            window._unfoldBlock = function(placeholderLine) {
-                const ta = document.getElementById('playgroundEditor');
+            window._unfoldBlock = function(placeholderLine, editorId) {
+                const ta = document.getElementById(editorId || 'playgroundEditor');
                 if (!ta) return;
                 const lines = ta.value.split('\n');
                 const ln = lines[placeholderLine - 1];
                 if (!ln) return;
                 const m = ln.match(window._FOLD_PLACEHOLDER_RE);
                 if (!m) return;
-                const foldId = parseInt(m[2], 10);
-                const originalText = window._foldedBlocks.get(foldId);
-                if (originalText === undefined) {
+                const fid = parseInt(m[2], 10);
+                const entry = window._foldStore.get(fid);
+                if (!entry) {
                     if (typeof showToast === 'function') {
-                        showToast('No se encontró el contenido original del bloque plegado');
+                        showToast('No se encontró el contenido original. Usa Ctrl+Z para recuperarlo.');
                     }
                     return;
                 }
-                window._foldedBlocks.delete(foldId);
-                const originalLines = originalText.split('\n');
+                const originalLines = entry.hidden.split('\n');
                 const newLines = lines.slice(0, placeholderLine - 1)
                     .concat(originalLines)
                     .concat(lines.slice(placeholderLine));
+                window._foldStore.delete(fid);
+                if (ta._foldKnownFids) ta._foldKnownFids.delete(fid);
+                const prevScroll = ta.scrollTop;
                 ta.value = newLines.join('\n');
+                ta.scrollTop = prevScroll;
                 ta.dispatchEvent(new Event('input'));
+            };
+
+            // Expande TODOS los placeholders activos en un textarea. Devuelve
+            // true si había folds para expandir, false si nada cambió.
+            // Se llama antes de ejecutar/depurar para que el intérprete vea
+            // el código completo (no comentarios placeholder).
+            window._foldExpandAll = function(editorId) {
+                const ta = document.getElementById(editorId || 'playgroundEditor');
+                if (!ta) return false;
+                let changed = false;
+                // Iterar mientras queden placeholders. Cada unfold puede revelar
+                // placeholders anidados, así que repetimos hasta que no haya.
+                for (let safety = 0; safety < 1000; safety++) {
+                    const lines = ta.value.split('\n');
+                    let phLine = -1;
+                    for (let i = 0; i < lines.length; i++) {
+                        if (window._FOLD_PLACEHOLDER_RE.test(lines[i])) { phLine = i + 1; break; }
+                    }
+                    if (phLine === -1) break;
+                    window._unfoldBlock(phLine, ta.id);
+                    changed = true;
+                }
+                return changed;
+            };
+
+            // Devuelve la línea (1-based) donde está el cursor en el textarea.
+            window._foldLineOfCursor = function(ta) {
+                const pos = ta.selectionStart;
+                return ta.value.substring(0, pos).split('\n').length;
+            };
+
+            // Protege placeholders: si el cursor está en una línea placeholder y
+            // el usuario va a editar, expandimos esa línea ANTES para que la
+            // edición caiga sobre el código real y no destruya el placeholder.
+            window._foldInstallGuard = function(ta) {
+                if (!ta || ta._foldGuardInstalled) return;
+                ta._foldGuardInstalled = true;
+                ta.addEventListener('beforeinput', (ev) => {
+                    const lines = ta.value.split('\n');
+                    const startLine = ta.value.substring(0, ta.selectionStart).split('\n').length;
+                    const endLine = ta.value.substring(0, ta.selectionEnd).split('\n').length;
+                    const toExpand = [];
+                    for (let i = startLine; i <= endLine; i++) {
+                        if (lines[i - 1] && window._FOLD_PLACEHOLDER_RE.test(lines[i - 1])) toExpand.push(i);
+                    }
+                    if (toExpand.length === 0) return;
+                    // Cancelar el input. Expandimos los placeholders y avisamos.
+                    // Así el usuario nunca pierde el contenido oculto por una
+                    // edición accidental.
+                    try { ev.preventDefault(); } catch(_) {}
+                    for (let k = toExpand.length - 1; k >= 0; k--) {
+                        window._unfoldBlock(toExpand[k], ta.id);
+                    }
+                    if (typeof showToast === 'function') {
+                        showToast('Bloque expandido. Vuelve a hacer tu cambio sobre el código real.');
+                    }
+                });
             };
 
             window._debugMode = false;
@@ -7479,6 +7606,17 @@ FinProceso`,
             // Watch-on-change: Map<varName, lastValue>. Cuando el valor cambia
             // entre líneas ejecutadas, se dispara una pausa.
             window._debugWatchOnChange = new Map();
+
+            // Tutorial primera vez: explicar qué es un breakpoint
+            window._showBreakpointTutorialIfNew = function() {
+                try {
+                    if (localStorage.getItem('pseinc_bp_tutorial_seen')) return;
+                    localStorage.setItem('pseinc_bp_tutorial_seen', '1');
+                } catch(_) { return; }
+                if (typeof showToast === 'function') {
+                    showToast('🔴 Breakpoint puesto. Aprieta el botón 🐛 Debug para ejecutar paso a paso. Vuelve a hacer clic en el número para quitarlo.');
+                }
+            };
 
             // Toggle breakpoint (clic simple = sin condición, Shift+clic = condicional)
             window._debugToggleBreakpoint = function(lineNum, opts) {
@@ -7505,6 +7643,7 @@ FinProceso`,
                         window._debugBreakpoints.delete(lineNum);
                     } else {
                         window._debugBreakpoints.set(lineNum, {}); // sin condición
+                        window._showBreakpointTutorialIfNew();
                     }
                 }
                 // Refrescar gutter
@@ -7619,9 +7758,12 @@ FinProceso`,
             };
 
             window._debugHighlightLine = function(n) {
+                const prev = window._debugCurrentLine;
                 window._debugCurrentLine = n;
-                // Resaltar la linea n en el editor: posicionar cursor allí y
-                // hacer scroll para que sea visible
+                // Re-renderizar gutter para mover la flecha ▶ a la línea actual
+                if (prev !== n && typeof updateLineNums === 'function') {
+                    updateLineNums('playgroundEditor', 'playgroundLineNums');
+                }
                 const ta = document.getElementById('playgroundEditor');
                 if (!ta) return;
                 const lines = ta.value.split('\n');
@@ -7654,31 +7796,61 @@ FinProceso`,
 
             window.debugContinue = function() {
                 window._debugMode = false;
+                window._debugCurrentLine = 0;
+                window._hideDebugBanner();
                 if (typeof window._debugResume === 'function') {
                     window._debugResume();
                 }
                 window._debugResume = null;
-                // Quitar el highlight del debug
+                if (typeof updateLineNums === 'function') {
+                    updateLineNums('playgroundEditor', 'playgroundLineNums');
+                }
                 if (typeof showToast === 'function') showToast('▶ Continuando ejecución sin debug');
             };
 
+            window._showDebugBanner = function() {
+                let banner = document.getElementById('debugModeBanner');
+                if (!banner) {
+                    banner = document.createElement('div');
+                    banner.id = 'debugModeBanner';
+                    banner.className = 'debug-mode-banner';
+                    banner.innerHTML = '<span>🐛 <strong>MODO DEBUG</strong></span>'
+                        + '<span style="opacity:.85">·</span>'
+                        + '<kbd>F10</kbd> Paso'
+                        + '<kbd>F9</kbd> Continuar'
+                        + '<kbd>Esc</kbd> Detener';
+                    document.body.appendChild(banner);
+                }
+                banner.classList.add('active');
+            };
+            window._hideDebugBanner = function() {
+                const banner = document.getElementById('debugModeBanner');
+                if (banner) banner.classList.remove('active');
+            };
+
             window.debugStart = function() {
-                // Activar modo debug y arrancar ejecucion
                 window._debugMode = true;
+                window._debugCurrentLine = 0;
+                window._showDebugBanner();
                 if (typeof showToast === 'function') {
                     showToast('🐛 Debug iniciado · F10 = Paso · F9 = Continuar · Esc = Detener');
                 }
-                // Llamar al run normal — el modo debug se chequea en execLine
                 if (typeof runPlayground === 'function') runPlayground();
             };
 
             window.debugStop = function() {
                 window._debugMode = false;
+                window._debugCurrentLine = 0;
+                window._hideDebugBanner();
                 if (typeof window._debugResume === 'function') {
                     window._debugResume();
                 }
                 window._debugResume = null;
                 if (typeof stopExecution === 'function') stopExecution();
+                // Forzar refresco del gutter para limpiar la flecha
+                if (typeof updateLineNums === 'function') {
+                    updateLineNums('playgroundEditor', 'playgroundLineNums');
+                }
             };
 
             // Atajos de teclado: F9 continue, F10 step
@@ -11341,10 +11513,10 @@ FinProceso`,
                 const warnSet = (window._warnLineSet instanceof Set) ? window._warnLineSet : null;
                 const bpMap = (window._debugBreakpoints instanceof Map) ? window._debugBreakpoints : null;
                 // FEATURE: code folding — detectar bloques plegables y placeholders
-                // Solo para el editor del playground (single editor, single state)
                 const isPlayground = editorId === 'playgroundEditor';
-                let foldOpeners = null; // Set de openLine numbers
-                let foldPlaceholders = null; // Set de lineNum que es placeholder
+                let foldOpeners = null;
+                let foldPlaceholders = null;
+                let lineMap = null;       // visible idx -> canonical line num
                 if (isPlayground && typeof window._detectFoldRanges === 'function') {
                     try {
                         const ranges = window._detectFoldRanges(ta.value);
@@ -11356,9 +11528,21 @@ FinProceso`,
                             if (window._FOLD_PLACEHOLDER_RE.test(line)) foldPlaceholders.add(i + 1);
                         });
                     }
+                    // Calcular números canónicos solo si hay folds activos
+                    if (foldPlaceholders.size > 0 && typeof window._foldComputeLineMap === 'function') {
+                        try { lineMap = window._foldComputeLineMap(lines); } catch(_) {}
+                    }
+                    // Instalar guard contra edición de placeholders
+                    if (typeof window._foldInstallGuard === 'function') {
+                        window._foldInstallGuard(ta);
+                    }
                 }
+                const debugLine = (typeof window._debugCurrentLine === 'number') ? window._debugCurrentLine : 0;
                 ln.innerHTML = lines.map((_, i) => {
                     const lineNum = i + 1;
+                    // Número que se MUESTRA: canónico si hay folds, si no visible idx
+                    const displayNum = (lineMap && lineMap[i]) ? lineMap[i] : lineNum;
+                    const isDebugCurrent = (debugLine === lineNum) && window._debugMode;
                     let cls = 'ln-row';
                     let dot = '';
                     const bp = bpMap && bpMap.get(lineNum);
@@ -11384,8 +11568,15 @@ FinProceso`,
                     } else if (foldPlaceholders && foldPlaceholders.has(lineNum)) {
                         foldMarker = '<span class="ln-fold ln-fold-closed" data-line="' + lineNum + '" title="Expandir bloque plegado (click)">▶</span>';
                     }
-                    // data-line para que el click handler sepa que linea es
-                    return '<div class="' + cls + '" data-line="' + lineNum + '">' + foldMarker + dot + lineNum + '</div>';
+                    // Flecha de línea activa durante debug — pisa todos los otros markers
+                    let debugArrow = '';
+                    if (isDebugCurrent) {
+                        cls += ' ln-debug-current';
+                        debugArrow = '<span class="ln-debug-arrow" title="Línea ejecutándose ahora">▶</span>';
+                    }
+                    // data-line guarda la línea VISIBLE para click handlers,
+                    // displayNum es el número CANÓNICO que se renderiza.
+                    return '<div class="' + cls + '" data-line="' + lineNum + '">' + debugArrow + foldMarker + dot + displayNum + '</div>';
                 }).join('');
                 // Adjuntar handler de click solo una vez por gutter.
                 // Click en ▼/▶ (fold marker): plegar/expandir bloque.
