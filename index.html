@@ -986,9 +986,10 @@
             }
 
             .theory-block p {
-                font-size: 0.9rem;
-                line-height: 1.7;
-                color: var(--text-muted);
+                font-size: 0.95rem;
+                line-height: 1.75;
+                /* FIX contraste: text-main es más legible que text-muted en el bg-card2 */
+                color: var(--text-main);
             }
 
             .theory-block p + p {
@@ -996,24 +997,27 @@
             }
 
             .inline-code {
-                background: rgba(0, 212, 255, 0.1);
+                background: rgba(0, 212, 255, 0.14);
                 color: var(--accent1);
-                padding: 1px 6px;
+                padding: 2px 7px;
                 border-radius: 4px;
                 font-family: var(--font-mono);
-                font-size: 0.85em;
+                font-size: 0.88em;
+                font-weight: 600;
             }
 
             .tip-box {
-                background: rgba(16, 185, 129, 0.08);
-                border: 1px solid rgba(16, 185, 129, 0.3);
+                background: rgba(16, 185, 129, 0.10);
+                border: 1px solid rgba(16, 185, 129, 0.45);
                 border-radius: 10px;
                 padding: 14px 16px;
                 margin-bottom: 16px;
-                font-size: 0.85rem;
-                color: #6ee7b7;
-                line-height: 1.6;
+                font-size: 0.92rem;
+                /* FIX contraste: usar text-main del tema + reservar el verde solo para acentos */
+                color: var(--text-main);
+                line-height: 1.65;
             }
+            .tip-box strong { color: #34d399; }
 
             .warn-box {
                 background: rgba(245, 158, 11, 0.08);
@@ -3842,10 +3846,23 @@
      RESPONSIVE
   ============================================================ */
 
+            /* FIX responsive: breakpoint intermedio para laptops/zoom moderado.
+               El playground colapsa a 1 col mucho antes (1100px en vez de 900px),
+               y el cheat panel se contrae automáticamente. */
+            @media (max-width: 1100px) {
+                .playground-grid { grid-template-columns: 1fr !important; }
+                .cheat-panel:not(.collapsed) { width: 240px; }
+            }
+
             @media (max-width: 900px) {
                 .playground-grid {
                     grid-template-columns: 1fr;
                 }
+                /* En layout estrecho ocultamos el cheat panel por defecto;
+                   el usuario lo abre con el botón si lo necesita. */
+                .cheat-panel { width: 36px !important; }
+                .cheat-panel .cheat-body { display: none; }
+                .cheat-panel .cheat-collapsed-strip { display: flex; }
                 .nav-links {
                     display: none;
                     flex-direction: column;
@@ -5189,14 +5206,14 @@ FinProceso`,
                             return { ok: true };
                         },
                         solution: `Proceso SumarNumeros
-	Definir a Como Entero
-	Definir b Como Entero
+	Definir num1 Como Entero
+	Definir num2 Como Entero
 	Definir suma Como Entero
-	Escribir "Ingresa el primer número:"
-	Leer a
-	Escribir "Ingresa el segundo número:"
-	Leer b
-	suma <- a + b
+	Escribir "Ingresa el primer numero:"
+	Leer num1
+	Escribir "Ingresa el segundo numero:"
+	Leer num2
+	suma <- num1 + num2
 	Escribir "La suma es: ", suma
 FinProceso`,
                     },
@@ -5219,18 +5236,18 @@ FinProceso`,
 		<div class="warn-box">⚠️ La división entera entre dos enteros puede dar decimales en PSeInt. Usa TRUNC() si necesitas solo la parte entera.</div>
 	 `,
                     example: `Proceso Operadores
-	Definir a Como Real
-	Definir b Como Real
-	a <- 15
-	b <- 4
-	Escribir "Suma: ", a + b
-	Escribir "Resta: ", a - b
-	Escribir "Producto: ", a * b
-	Escribir "Division: ", a / b
-	Escribir "Potencia: ", a ^ 2
-	Escribir "Modulo (resto): ", a MOD b
-	Escribir "Raiz de a: ", RAIZ(a)
-	Escribir "Truncado: ", TRUNC(a / b)
+	Definir num1 Como Real
+	Definir num2 Como Real
+	num1 <- 15
+	num2 <- 4
+	Escribir "Suma: ", num1 + num2
+	Escribir "Resta: ", num1 - num2
+	Escribir "Producto: ", num1 * num2
+	Escribir "Division: ", num1 / num2
+	Escribir "Potencia: ", num1 ^ 2
+	Escribir "Modulo (resto): ", num1 MOD num2
+	Escribir "Raiz de num1: ", RAIZ(num1)
+	Escribir "Truncado: ", TRUNC(num1 / num2)
 FinProceso`,
                     challenge: {
                         desc: "Calcula el área y perímetro de un rectángulo. Pide al usuario la base y la altura. Área = base * altura, Perímetro = 2*(base+altura).",
@@ -5278,16 +5295,16 @@ FinProceso`,
 		</div>
 	 `,
                     example: `Proceso Logicos
-	Definir a Como Entero
-	Definir b Como Entero
-	a <- 10
-	b <- 5
-	Escribir "a > b: ", a > b
-	Escribir "a = b: ", a = b
-	Escribir "a <> b: ", a <> b
-	Escribir "(a>0) Y (b>0): ", (a > 0) Y (b > 0)
-	Escribir "(a<0) O (b>0): ", (a < 0) O (b > 0)
-	Escribir "NO (a>b): ", NO (a > b)
+	Definir num1 Como Entero
+	Definir num2 Como Entero
+	num1 <- 10
+	num2 <- 5
+	Escribir "num1 > num2: ", num1 > num2
+	Escribir "num1 = num2: ", num1 = num2
+	Escribir "num1 <> num2: ", num1 <> num2
+	Escribir "(num1>0) Y (num2>0): ", (num1 > 0) Y (num2 > 0)
+	Escribir "(num1<0) O (num2>0): ", (num1 < 0) O (num2 > 0)
+	Escribir "NO (num1>num2): ", NO (num1 > num2)
 FinProceso`,
                     challenge: {
                         desc: "Pide un número al usuario y muestra si es positivo (> 0), negativo (< 0) o cero (= 0). Usa tres Escribir con los resultados booleanos.",
@@ -5307,12 +5324,12 @@ FinProceso`,
                             return { ok: true };
                         },
                         solution: `Proceso ClasificarNumero
-	Definir n Como Real
-	Escribir "Ingresa un número:"
-	Leer n
-	Escribir "¿Es positivo? ", n > 0
-	Escribir "¿Es negativo? ", n < 0
-	Escribir "¿Es cero? ", n = 0
+	Definir numero Como Real
+	Escribir "Ingresa un numero:"
+	Leer numero
+	Escribir "Es positivo? ", numero > 0
+	Escribir "Es negativo? ", numero < 0
+	Escribir "Es cero? ", numero = 0
 FinProceso`,
                     },
                 },
@@ -5405,19 +5422,19 @@ FinProceso`,
 		<div class="tip-box">💡 <span class="inline-code">contador &lt;- contador + 1</span> es tan común que se llama "incremento". En algoritmos lo verás constantemente.</div>
 	 `,
                     example: `Proceso Asignaciones
-	Definir a Como Entero
-	Definir b Como Entero
+	Definir num1 Como Entero
+	Definir num2 Como Entero
 	Definir aux Como Entero
 
-	a <- 10
-	b <- 20
-	Escribir "Antes: a=", a, " b=", b
+	num1 <- 10
+	num2 <- 20
+	Escribir "Antes: num1=", num1, " num2=", num2
 
 	// Intercambiar valores (swap)
-	aux <- a
-	a <- b
-	b <- aux
-	Escribir "Despues: a=", a, " b=", b
+	aux <- num1
+	num1 <- num2
+	num2 <- aux
+	Escribir "Despues: num1=", num1, " num2=", num2
 
 	// Acumuladores
 	Definir suma Como Entero
@@ -5431,21 +5448,21 @@ FinProceso`,
                         desc: "Pide dos números al usuario. Muestra cuál es mayor y cuál es menor. Luego intercámbialos (swap) y vuelve a mostrarlos.",
                         expected: null,
                         solution: `Proceso SwapNumeros
-	Definir a Como Real
-	Definir b Como Real
+	Definir num1 Como Real
+	Definir num2 Como Real
 	Definir aux Como Real
-	Escribir "Primer número:"
-	Leer a
-	Escribir "Segundo número:"
-	Leer b
-	Escribir "Mayor: ", a
-	Escribir "Menor: ", b
-	aux <- a
-	a <- b
-	b <- aux
-	Escribir "Después del swap:"
-	Escribir "a = ", a
-	Escribir "b = ", b
+	Escribir "Primer numero:"
+	Leer num1
+	Escribir "Segundo numero:"
+	Leer num2
+	Escribir "Mayor: ", num1
+	Escribir "Menor: ", num2
+	aux <- num1
+	num1 <- num2
+	num2 <- aux
+	Escribir "Despues del swap:"
+	Escribir "num1 = ", num1
+	Escribir "num2 = ", num2
 FinProceso`,
                     },
                 },
@@ -6618,12 +6635,15 @@ FinProceso`,
                         expected: null,
                         solution: `Proceso Convertir25
 	Definir n, resto Como Entero
-	Definir b Como Texto
-	n <- 25; b <- ""
+	Definir binario Como Texto
+	n <- 25
+	binario <- ""
 	Mientras n > 0 Hacer
-		resto <- n MOD 2; b <- ConvertirATexto(resto) + b; n <- TRUNC(n/2)
+		resto <- n MOD 2
+		binario <- ConvertirATexto(resto) + binario
+		n <- TRUNC(n / 2)
 	FinMientras
-	Escribir "25 en binario es: ", b
+	Escribir "25 en binario es: ", binario
 FinProceso`,
                     },
                 },
