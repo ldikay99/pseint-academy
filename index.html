@@ -867,7 +867,7 @@
 
             .badge-experto {
                 background: rgba(239, 68, 68, 0.15);
-                color: #f87171;
+                color: var(--color-error-strong);
             }
 
             .level-tab[data-level="experto"].active {
@@ -876,7 +876,7 @@
             }
 
             .level-tab[data-level="experto"]:hover {
-                color: #f87171;
+                color: var(--color-error-strong);
                 border-color: var(--accent5);
             }
             /* ============================================================
@@ -908,7 +908,10 @@
                 border: 1px solid var(--border);
                 border-radius: 18px;
                 width: 100%;
-                max-width: 900px;
+                /* FIX responsive: modal escala con viewport — 90% en pantallas
+                   normales, hasta 1400px en monitores grandes. Antes 900px fijo
+                   dejaba el modal pequeño en zoom-out / 4K. */
+                max-width: min(1400px, 92vw);
                 margin: auto;
                 overflow: hidden;
                 transform: scale(0.95);
@@ -1258,17 +1261,17 @@
 
             .console-out .cout-err,
             .big-console .cout-err {
-                color: #f87171;
+                color: var(--color-error-strong);
             }
 
             .console-out .cout-info,
             .big-console .cout-info {
-                color: #38bdf8;
+                color: var(--accent1);
             }
 
             .console-out .cout-prompt,
             .big-console .cout-prompt {
-                color: #fbbf24;
+                color: var(--color-warn-strong);
             }
 
             .console-label {
@@ -1337,7 +1340,7 @@
             .verdict.correct {
                 background: rgba(16, 185, 129, 0.15);
                 border: 1px solid var(--accent4);
-                color: #6ee7b7;
+                color: var(--accent4);
                 display: block;
             }
 
@@ -3103,11 +3106,11 @@
             }
             .diag-panel.error-panel .diag-panel-header {
                 background: rgba(239,68,68,0.1);
-                color: #f87171;
+                color: var(--color-error-strong);
             }
             .diag-panel.warn-panel .diag-panel-header {
                 background: rgba(245,158,11,0.08);
-                color: #fbbf24;
+                color: var(--color-warn-strong);
             }
             .diag-panel.error-panel .diag-panel-header:hover {
                 background: rgba(239,68,68,0.16);
@@ -3469,7 +3472,7 @@
             .diag-ok-badge {
                 display: inline-block;
                 background: rgba(16,185,129,0.15);
-                color: #34d399;
+                color: var(--accent4);
                 border: 1px solid rgba(16,185,129,0.4);
                 border-radius: var(--radius);
                 padding: 5px 12px;
@@ -3655,7 +3658,7 @@
                 padding: 12px 20px;
                 font-size: 0.88rem;
                 font-weight: 600;
-                color: #6ee7b7;
+                color: var(--accent4);
                 box-shadow: 0 8px 32px rgba(0,0,0,0.5);
                 display: none;
                 animation: toastIn 0.25s ease;
@@ -4173,7 +4176,7 @@
                 </h2>
                 <p
                     class="section-sub"
-                    style="max-width: 1200px; margin: 0 auto 24px"
+                    style="max-width: min(1400px, 95vw); margin: 0 auto 24px"
                 >
                     Escribe y ejecuta cualquier programa PSeInt. Tu código se
                     guarda automáticamente.
@@ -16535,7 +16538,7 @@ FinProceso</textarea>
                             } else if (expL !== undefined && actL === undefined) {
                                 diffHtml += `<div style="color:#f87171;padding:2px 6px">❌ Falta: "${escapeHtml(expL)}"</div>`;
                             } else if (expL === undefined && actL !== undefined) {
-                                diffHtml += `<div style="color:#fbbf24;padding:2px 6px">⚠ Extra: "${escapeHtml(actL)}"</div>`;
+                                diffHtml += `<div style="color:var(--color-warn-strong);padding:2px 6px">⚠ Extra: "${escapeHtml(actL)}"</div>`;
                             } else {
                                 diffHtml += `<div style="color:#f87171;padding:2px 6px">❌ Esperado: "${escapeHtml(expL||'')}" · Tu salida: "${escapeHtml(actL||'')}"</div>`;
                             }
@@ -16564,7 +16567,7 @@ FinProceso</textarea>
                         verdict.className = "verdict wrong";
                         verdict.style.display = "block";
                         verdict.innerHTML =
-                            '<div style="color:#fbbf24;font-weight:600">⚠ Falta completar el reto:</div>' +
+                            '<div style="color:var(--color-warn-strong);font-weight:600">⚠ Falta completar el reto:</div>' +
                             '<div style="color:#f87171;margin-top:6px;padding:6px 10px;background:rgba(239,68,68,0.08);border-radius:6px;border-left:3px solid #f87171">❌ ' + (result.hint || "Revisa los requisitos del reto.") + '</div>' +
                             outPreview;
                     }
@@ -16608,7 +16611,7 @@ FinProceso</textarea>
                             (nonEmptyOutputs.length>5?'...':'') + '</div>';
                         verdict.className = "verdict wrong";
                         verdict.style.display = "block";
-                        verdict.innerHTML = '<div style="color:#fbbf24;font-weight:600;margin-bottom:6px">⚠ El reto no está completo:</div>' + issueHtml + outPreview;
+                        verdict.innerHTML = '<div style="color:var(--color-warn-strong);font-weight:600;margin-bottom:6px">⚠ El reto no está completo:</div>' + issueHtml + outPreview;
                     } else {
                         // Todo bien: completar automáticamente
                         verdict.className = "verdict correct";
@@ -21789,7 +21792,7 @@ function showTT(word, clientX, clientY, sourceTa) {
 
     let html = `<span class="tt-header">${escH(word)}</span>`;
     if (isUndecl) {
-        html += `<span class="tt-type" style="color:#fca5a5"> ⚠ Variable no declarada</span>`;
+        html += `<span class="tt-type" style="color:var(--color-error)"> ⚠ Variable no declarada</span>`;
     } else if (type) {
         html += `<span class="tt-type">: ${escH(type)}</span>`;
     }
