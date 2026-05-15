@@ -7343,6 +7343,133 @@ FinProceso`,
             //   window.debugStop()       — alias de stopExecution()
             //   window._debugHighlightLine(n) — resalta visualmente la linea n (1-based)
             // ════════════════════════════════════════════════════════════
+            // ════════════════════════════════════════════════════════════
+            // CODE FOLDING — colapsar bloques Si/Para/Mientras/Segun/Subprocesos
+            //
+            // Estado: window._foldedBlocks = Map<foldId, originalText>
+            // El placeholder en el textarea contiene el foldId para recuperar.
+            // ════════════════════════════════════════════════════════════
+            window._foldedBlocks = new Map();
+            window._foldNextId = 1;
+
+            // Detecta pares de apertura/cierre. Devuelve Array<{openLine, closeLine, kind}>
+            // line numbers 1-based.
+            window._detectFoldRanges = function(code) {
+                const lines = code.split('\n');
+                const ranges = [];
+                const stack = []; // {kind, openLine}
+                const trim = (s) => s.trim();
+                for (let i = 0; i < lines.length; i++) {
+                    const ln = trim(lines[i]);
+                    // Aperturas
+                    if (/^Si\s+.+\s+Entonces\s*$/i.test(ln) && !/\bFinSi\s*$/i.test(ln)) {
+                        stack.push({ kind: 'si', openLine: i + 1 });
+                    } else if (/^Para\s+\w+\s*<-.*\s+Hacer\s*$/i.test(ln) && !/\bFinPara\s*$/i.test(ln)) {
+                        stack.push({ kind: 'para', openLine: i + 1 });
+                    } else if (/^Mientras\s+.+\s+Hacer\s*$/i.test(ln) && !/\bFinMientras\s*$/i.test(ln)) {
+                        stack.push({ kind: 'mientras', openLine: i + 1 });
+                    } else if (/^Segun\s+.+\s+Hacer\s*$/i.test(ln) && !/\bFinSegun\s*$/i.test(ln)) {
+                        stack.push({ kind: 'segun', openLine: i + 1 });
+                    } else if (/^Repetir\s*$/i.test(ln)) {
+                        stack.push({ kind: 'repetir', openLine: i + 1 });
+                    } else if (/^Proceso\s+\w+/i.test(ln) || /^Algoritmo\s+\w+/i.test(ln)) {
+                        stack.push({ kind: 'proceso', openLine: i + 1 });
+                    } else if (/^SubProceso\s+/i.test(ln)) {
+                        stack.push({ kind: 'subproceso', openLine: i + 1 });
+                    } else if (/^Funcion\s+/i.test(ln) || /^Función\s+/i.test(ln)) {
+                        stack.push({ kind: 'funcion', openLine: i + 1 });
+                    } else if (/^Procedimiento\s+/i.test(ln)) {
+                        stack.push({ kind: 'procedimiento', openLine: i + 1 });
+                    }
+                    // Cierres
+                    else if (/^FinSi\s*$/i.test(ln) && stack.length && stack[stack.length-1].kind === 'si') {
+                        const o = stack.pop();
+                        if (i + 1 - o.openLine >= 2) ranges.push({ openLine: o.openLine, closeLine: i + 1, kind: o.kind });
+                    } else if (/^FinPara\s*$/i.test(ln) && stack.length && stack[stack.length-1].kind === 'para') {
+                        const o = stack.pop();
+                        if (i + 1 - o.openLine >= 2) ranges.push({ openLine: o.openLine, closeLine: i + 1, kind: o.kind });
+                    } else if (/^FinMientras\s*$/i.test(ln) && stack.length && stack[stack.length-1].kind === 'mientras') {
+                        const o = stack.pop();
+                        if (i + 1 - o.openLine >= 2) ranges.push({ openLine: o.openLine, closeLine: i + 1, kind: o.kind });
+                    } else if (/^FinSegun\s*$/i.test(ln) && stack.length && stack[stack.length-1].kind === 'segun') {
+                        const o = stack.pop();
+                        if (i + 1 - o.openLine >= 2) ranges.push({ openLine: o.openLine, closeLine: i + 1, kind: o.kind });
+                    } else if (/^Hasta\s+Que\b/i.test(ln) && stack.length && stack[stack.length-1].kind === 'repetir') {
+                        const o = stack.pop();
+                        if (i + 1 - o.openLine >= 2) ranges.push({ openLine: o.openLine, closeLine: i + 1, kind: o.kind });
+                    } else if (/^(FinProceso|FinAlgoritmo)\s*$/i.test(ln) && stack.length && stack[stack.length-1].kind === 'proceso') {
+                        const o = stack.pop();
+                        if (i + 1 - o.openLine >= 2) ranges.push({ openLine: o.openLine, closeLine: i + 1, kind: o.kind });
+                    } else if (/^FinSubProceso\s*$/i.test(ln) && stack.length && stack[stack.length-1].kind === 'subproceso') {
+                        const o = stack.pop();
+                        if (i + 1 - o.openLine >= 2) ranges.push({ openLine: o.openLine, closeLine: i + 1, kind: o.kind });
+                    } else if (/^(FinFuncion|FinFunción)\s*$/i.test(ln) && stack.length && (stack[stack.length-1].kind === 'funcion')) {
+                        const o = stack.pop();
+                        if (i + 1 - o.openLine >= 2) ranges.push({ openLine: o.openLine, closeLine: i + 1, kind: o.kind });
+                    } else if (/^FinProcedimiento\s*$/i.test(ln) && stack.length && stack[stack.length-1].kind === 'procedimiento') {
+                        const o = stack.pop();
+                        if (i + 1 - o.openLine >= 2) ranges.push({ openLine: o.openLine, closeLine: i + 1, kind: o.kind });
+                    }
+                }
+                return ranges;
+            };
+
+            // Folding marker en placeholder: identificable via regex
+            // Formato: // ▶ Bloque plegado (N lineas) #ID
+            window._FOLD_PLACEHOLDER_RE = /^\s*\/\/\s*▶\s+Bloque plegado \((\d+)\s+l[ií]neas?\)\s+#(\d+)\s*$/;
+
+            window._foldBlock = function(openLine) {
+                const ta = document.getElementById('playgroundEditor');
+                if (!ta) return;
+                const ranges = window._detectFoldRanges(ta.value);
+                const r = ranges.find(x => x.openLine === openLine);
+                if (!r) return;
+                const lines = ta.value.split('\n');
+                // openLine y closeLine son 1-based; índices 0-based: openLine-1, closeLine-1
+                // El interior a plegar va desde openLine (índice) hasta closeLine-2 inclusive,
+                // dejando la linea OPEN y CLOSE visibles, y reemplazando el contenido entre ellas.
+                const innerStart = openLine; // 0-based: la linea siguiente a la apertura
+                const innerEnd = r.closeLine - 1; // 0-based: la linea anterior al cierre
+                const innerCount = innerEnd - innerStart;
+                if (innerCount < 1) return;
+                const innerLines = lines.slice(innerStart, innerEnd);
+                const innerText = innerLines.join('\n');
+                const foldId = window._foldNextId++;
+                window._foldedBlocks.set(foldId, innerText);
+                // Indent base: usar la indentacion de la linea de apertura + 1 tab
+                const openIndent = (lines[openLine - 1].match(/^[\t ]*/) || [''])[0];
+                const placeholder = openIndent + '\t// ▶ Bloque plegado (' + innerCount + ' líneas) #' + foldId;
+                const newLines = lines.slice(0, innerStart).concat([placeholder]).concat(lines.slice(innerEnd));
+                ta.value = newLines.join('\n');
+                // Refresh editor
+                ta.dispatchEvent(new Event('input'));
+            };
+
+            window._unfoldBlock = function(placeholderLine) {
+                const ta = document.getElementById('playgroundEditor');
+                if (!ta) return;
+                const lines = ta.value.split('\n');
+                const ln = lines[placeholderLine - 1];
+                if (!ln) return;
+                const m = ln.match(window._FOLD_PLACEHOLDER_RE);
+                if (!m) return;
+                const foldId = parseInt(m[2], 10);
+                const originalText = window._foldedBlocks.get(foldId);
+                if (originalText === undefined) {
+                    if (typeof showToast === 'function') {
+                        showToast('No se encontró el contenido original del bloque plegado');
+                    }
+                    return;
+                }
+                window._foldedBlocks.delete(foldId);
+                const originalLines = originalText.split('\n');
+                const newLines = lines.slice(0, placeholderLine - 1)
+                    .concat(originalLines)
+                    .concat(lines.slice(placeholderLine));
+                ta.value = newLines.join('\n');
+                ta.dispatchEvent(new Event('input'));
+            };
+
             window._debugMode = false;
             window._debugResume = null;
             window._debugCurrentLine = 0;
@@ -11213,6 +11340,23 @@ FinProceso`,
                 const errSet = (window._errorLineSet instanceof Set) ? window._errorLineSet : null;
                 const warnSet = (window._warnLineSet instanceof Set) ? window._warnLineSet : null;
                 const bpMap = (window._debugBreakpoints instanceof Map) ? window._debugBreakpoints : null;
+                // FEATURE: code folding — detectar bloques plegables y placeholders
+                // Solo para el editor del playground (single editor, single state)
+                const isPlayground = editorId === 'playgroundEditor';
+                let foldOpeners = null; // Set de openLine numbers
+                let foldPlaceholders = null; // Set de lineNum que es placeholder
+                if (isPlayground && typeof window._detectFoldRanges === 'function') {
+                    try {
+                        const ranges = window._detectFoldRanges(ta.value);
+                        foldOpeners = new Set(ranges.map(r => r.openLine));
+                    } catch(_) {}
+                    foldPlaceholders = new Set();
+                    if (window._FOLD_PLACEHOLDER_RE) {
+                        lines.forEach((line, i) => {
+                            if (window._FOLD_PLACEHOLDER_RE.test(line)) foldPlaceholders.add(i + 1);
+                        });
+                    }
+                }
                 ln.innerHTML = lines.map((_, i) => {
                     const lineNum = i + 1;
                     let cls = 'ln-row';
@@ -11233,17 +11377,38 @@ FinProceso`,
                         cls += ' ln-has-warn';
                         dot = '<span class="ln-dot ln-dot-warn" title="Esta línea tiene una sugerencia"></span>';
                     }
+                    // Fold marker (▼ = colapsable, ▶ = ya plegado para expandir)
+                    let foldMarker = '';
+                    if (foldOpeners && foldOpeners.has(lineNum)) {
+                        foldMarker = '<span class="ln-fold ln-fold-open" data-line="' + lineNum + '" title="Plegar bloque (click)">▼</span>';
+                    } else if (foldPlaceholders && foldPlaceholders.has(lineNum)) {
+                        foldMarker = '<span class="ln-fold ln-fold-closed" data-line="' + lineNum + '" title="Expandir bloque plegado (click)">▶</span>';
+                    }
                     // data-line para que el click handler sepa que linea es
-                    return '<div class="' + cls + '" data-line="' + lineNum + '">' + dot + lineNum + '</div>';
+                    return '<div class="' + cls + '" data-line="' + lineNum + '">' + foldMarker + dot + lineNum + '</div>';
                 }).join('');
                 // Adjuntar handler de click solo una vez por gutter.
-                // Click simple: toggle breakpoint normal.
-                // Shift+click: editar condición (breakpoint condicional).
+                // Click en ▼/▶ (fold marker): plegar/expandir bloque.
+                // Shift+click en numero: editar condición (breakpoint condicional).
+                // Click simple en numero: toggle breakpoint normal.
                 if (!ln._bpListenerAttached) {
                     ln._bpListenerAttached = true;
                     ln.style.pointerEvents = 'auto';
                     ln.style.cursor = 'pointer';
                     ln.addEventListener('click', (ev) => {
+                        // Fold marker tiene prioridad si se hace click sobre él
+                        const foldEl = ev.target.closest('.ln-fold');
+                        if (foldEl) {
+                            ev.stopPropagation();
+                            const n = parseInt(foldEl.dataset.line, 10);
+                            if (isNaN(n)) return;
+                            if (foldEl.classList.contains('ln-fold-open')) {
+                                if (typeof window._foldBlock === 'function') window._foldBlock(n);
+                            } else if (foldEl.classList.contains('ln-fold-closed')) {
+                                if (typeof window._unfoldBlock === 'function') window._unfoldBlock(n);
+                            }
+                            return;
+                        }
                         const row = ev.target.closest('.ln-row');
                         if (!row) return;
                         const n = parseInt(row.dataset.line, 10);
