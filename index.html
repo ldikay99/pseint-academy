@@ -12958,7 +12958,13 @@ FinProceso`,
                         const hasMultiStmt = _noStrForSemicolon.includes(';');
                         const hasInlineCtrl = /^(si|sino)\s+.+\s+entonces\s+\S/i.test(t2)
                                            || /^sino\s+\S/i.test(t2) && !/^sino\s*$/i.test(t2);
-                        const hasSegunLabelInline = /^([^:]+):\s*\S/.test(t2) && !/^(de\s+otro\s+modo)\s*:/i.test(t2);
+                        // FIX bug crítico: `:` DENTRO de un string literal (ej.
+                        // `Escribir "Tirada ", n, ": ", x`) hacía que la línea se
+                        // tratara como case-label de Segun y se saltara la validación
+                        // de variables → falsos NEGATIVOS (vars no declaradas no se
+                        // reportaban). Ahora chequeamos contra el código con strings
+                        // enmascarados.
+                        const hasSegunLabelInline = /^([^:]+):\s*\S/.test(_noStrForSemicolon) && !/^(de\s+otro\s+modo)\s*:/i.test(_noStrForSemicolon);
                         if (hasMultiStmt || hasInlineCtrl || hasSegunLabelInline) continue;
                         // ── FIX: Si INLINE — extraer solo la condición y el RHS de la asignación
                         // interna, NO toda la expresión que incluiría 'FinSi'.
