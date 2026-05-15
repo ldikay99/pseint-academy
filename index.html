@@ -17,15 +17,15 @@
 
         <!-- NAVBAR -->
         <nav id="navbar" role="navigation" aria-label="Navegación principal">
-            <a href="index.html" class="nav-logo" style="text-decoration:none;color:inherit">⬡ <span>PSeInt</span> Academy</a>
+            <a href="#/home" class="nav-logo" style="text-decoration:none;color:inherit">⬡ <span>PSeInt</span> Academy</a>
             <div class="nav-links" id="navLinks">
-                <a href="index.html" aria-label="Inicio">🏠 Inicio</a>
-                <a href="lecciones.html" aria-label="Lecciones">📚 Lecciones</a>
-                <a href="playground.html" aria-label="Editor">⚡ Editor</a>
-                <a href="referencia.html" aria-label="Referencia">📖 Referencia</a>
-                <a href="progreso.html" aria-label="Progreso">🏆 Progreso</a>
-                <a href="sobre.html" aria-label="Sobre">👤 Sobre</a>
-                <a href="licencia.html" aria-label="Licencia">📜 Licencia</a>
+                <a href="#/home" aria-label="Inicio">🏠 Inicio</a>
+                <a href="#/lecciones" aria-label="Lecciones">📚 Lecciones</a>
+                <a href="#/playground" aria-label="Editor">⚡ Editor</a>
+                <a href="#/referencia" aria-label="Referencia">📖 Referencia</a>
+                <a href="#/progreso" aria-label="Progreso">🏆 Progreso</a>
+                <a href="#/sobre" aria-label="Sobre">👤 Sobre</a>
+                <a href="#/licencia" aria-label="Licencia">📜 Licencia</a>
             </div>
             <button
                 class="nav-burger"
@@ -39,7 +39,7 @@
         </nav>
 
         <!-- HERO / INICIO (ruta: #/home) -->
-        <section id="hero" role="banner">
+        <section id="hero" role="banner" data-route="home">
             <div class="hero-badge">
                 🚀 Plataforma interactiva de programación
             </div>
@@ -52,10 +52,10 @@
                 vivo y ejercicios interactivos. Compatible 100% con PSeInt para Windows.
             </p>
             <div class="hero-btns">
-                <a href="lecciones.html" class="btn-primary" style="text-decoration:none;display:inline-block">
+                <a href="#/lecciones" class="btn-primary" style="text-decoration:none;display:inline-block">
                     Comenzar ahora →
                 </a>
-                <a href="playground.html" class="btn-ghost" style="text-decoration:none;display:inline-block">
+                <a href="#/playground" class="btn-ghost" style="text-decoration:none;display:inline-block">
                     ⚡ Abrir editor libre
                 </a>
             </div>
@@ -145,12 +145,650 @@
                 </div>
             </div>
 
+            <!-- ════════ SOBRE EL PROYECTO (inline, ancla #/sobre) ════════ -->
+            <div id="sobre-anchor" class="home-subsection reveal" style="margin-top:96px;max-width:min(900px,95vw);margin-left:auto;margin-right:auto">
+                <div class="about-hero">
+                    <div class="about-avatar pulse">👨‍💻</div>
+                    <h2 class="section-title" style="margin-bottom:8px">👤 Sobre el proyecto</h2>
+                    <p class="section-sub" style="margin:0 auto 0">
+                        La historia detrás de PSeInt Academy y por qué decidí construirlo.
+                    </p>
+                </div>
 
+                <div class="about-card">
+                    <h3>🎓 Quién soy</h3>
+                    <p>Soy <strong>Jonathan C.</strong> (<a href="https://github.com/ldikay99" target="_blank" rel="noopener" style="color:var(--accent1)">@ldikay99</a>), <strong>Técnico en Desarrollo de Software</strong> en formación. Me apasiona la programación, las herramientas modernas de desarrollo y el uso aplicado de inteligencias artificiales para acelerar el aprendizaje y la productividad. Trabajo con HTML, CSS, JavaScript, manejo flujos asistidos por IA y disfruto construyendo plataformas web que resuelvan problemas reales.</p>
+                    <p>Mi primer contacto con la programación fue, como el de muchos estudiantes, a través de <strong>PSeInt</strong>: ese lenguaje pseudo-código en español que enseña a pensar en términos de variables, condicionales, ciclos y funciones antes de pasar a un lenguaje de producción.</p>
+                </div>
+
+                <div class="about-card">
+                    <h3>💡 Por qué nació este proyecto</h3>
+                    <p>Comencé este proyecto durante mi formación en el instituto, al darme cuenta de que existía una necesidad clara: muchos estudiantes que se inician en programación necesitan una herramienta accesible, sin instalaciones, que les permita practicar pseudocódigo desde cualquier dispositivo y en cualquier momento.</p>
+                    <p>El editor oficial de PSeInt para Windows es excelente, pero no siempre se puede instalar (computadores compartidos, equipos antiguos, celulares). PSeInt Academy nació para cubrir ese vacío con tres principios:</p>
+                    <p>1. <strong>Cero fricción para empezar</strong>: abrir un enlace, escribir código, ejecutar. Sin cuentas, sin descargas.</p>
+                    <p>2. <strong>Enseñanza activa</strong>: cada lección tiene teoría, ejemplo ejecutable y un reto con validación automática — el estudiante aprende haciendo.</p>
+                    <p>3. <strong>Fidelidad al PSeInt oficial</strong>: el código que pasa el analizador aquí debe ejecutarse igual en PSeInt de escritorio. El analizador es estricto a propósito.</p>
+                </div>
+
+                <div class="about-card">
+                    <h3>🚧 Proyecto en construcción activa</h3>
+                    <p><strong>PSeInt Academy se sigue mejorando todos los días.</strong> Hay áreas funcionando perfectamente y otras en pulido constante. Las contribuciones, reportes de bugs y sugerencias son fundamentales para que la plataforma crezca.</p>
+                    <p>Si encuentras un problema, una falla del analizador, una lección que podría explicarse mejor o tienes una idea para una nueva funcionalidad, hazlo saber. Cada reporte ayuda a que la experiencia mejore para el siguiente estudiante.</p>
+                    <p style="margin-top:14px">
+                        <button onclick="document.getElementById('reportModal').classList.add('open')" class="btn-ghost" style="display:inline-block;text-decoration:none;margin-right:8px">🐛 Reportar bug o sugerencia</button>
+                        <a href="https://github.com/ldikay99/pseint-academy/issues" target="_blank" rel="noopener" class="btn-ghost" style="display:inline-block;text-decoration:none">⬢ Abrir issue en GitHub</a>
+                    </p>
+                </div>
+
+                <div class="about-grid reveal">
+                    <div class="about-stat">
+                        <div class="about-stat-icon">⚙️</div>
+                        <div class="about-stat-label">Stack</div>
+                        <div class="about-stat-value">HTML · CSS · JS vanilla</div>
+                    </div>
+                    <div class="about-stat">
+                        <div class="about-stat-icon">📦</div>
+                        <div class="about-stat-label">Dependencias</div>
+                        <div class="about-stat-value">Cero (offline 100%)</div>
+                    </div>
+                    <div class="about-stat">
+                        <div class="about-stat-icon">📚</div>
+                        <div class="about-stat-label">Lecciones</div>
+                        <div class="about-stat-value">56 con reto incluido</div>
+                    </div>
+                    <div class="about-stat">
+                        <div class="about-stat-icon">🎨</div>
+                        <div class="about-stat-label">Temas</div>
+                        <div class="about-stat-value">5 (Dark · Light · Solarized · Monokai · Ocean)</div>
+                    </div>
+                </div>
+
+                <div class="about-card">
+                    <h3>🤝 Cómo puedes ayudar</h3>
+                    <p>Si encuentras un bug, un falso positivo del analizador o tienes una idea para una lección nueva, abre un issue en <a href="https://github.com/ldikay99/pseint-academy/issues" target="_blank" rel="noopener" style="color:var(--accent1)">GitHub</a>. El proyecto es open source bajo licencia MIT — puedes clonarlo, modificarlo y usarlo en tu institución sin pedir permiso, siempre manteniendo la atribución al autor.</p>
+                    <p>Si esta plataforma te ayudó a aprobar algoritmos, cuéntamelo: <a href="mailto:heydikay@gmail.com" style="color:var(--accent1)">heydikay@gmail.com</a>. Es la mejor parte del proyecto.</p>
+                </div>
+            </div>
+
+            <!-- ════════ LICENCIA Y CRÉDITOS (inline, ancla #/licencia) ════════ -->
+            <div id="licencia-anchor" class="home-subsection reveal" style="margin-top:96px;max-width:min(900px,95vw);margin-left:auto;margin-right:auto">
+                <h2 class="section-title">📜 Licencia y créditos</h2>
+                <p class="section-sub">
+                    PSeInt Academy es <strong>open source bajo licencia MIT</strong>. Puedes usar, copiar, modificar y distribuir el código — siempre incluyendo la atribución a su autor.
+                </p>
+
+                <!-- Bloque destacado de autoría -->
+                <div class="author-banner">
+                    <div class="author-banner-avatar">⬡</div>
+                    <div class="author-banner-info">
+                        <div class="author-banner-label">Creado y mantenido por</div>
+                        <div class="author-banner-name">Jonathan C.</div>
+                        <div class="author-banner-handle">
+                            <a href="https://github.com/ldikay99" target="_blank" rel="noopener">@ldikay99</a> ·
+                            <a href="mailto:heydikay@gmail.com">heydikay@gmail.com</a>
+                        </div>
+                        <div class="author-banner-copyright">© 2026 · Todos los derechos reservados al autor · Distribuido bajo licencia MIT</div>
+                    </div>
+                </div>
+
+                <div class="about-card">
+                    <h3>✅ Qué puedes hacer</h3>
+                    <p>• <strong>Usar</strong> el editor sin pagar nada, sin cuenta, sin límites de uso.</p>
+                    <p>• <strong>Clonar</strong> el repositorio y modificarlo para tus alumnos, tu institución, tu empresa o tu uso personal.</p>
+                    <p>• <strong>Publicar</strong> tu propia versión derivada (incluso comercial) mientras incluyas el aviso de copyright original y la atribución al autor.</p>
+                    <p>• <strong>Combinarlo</strong> con otro software, libre o privativo.</p>
+                </div>
+
+                <div class="about-card">
+                    <h3>📋 Condiciones de uso y distribución</h3>
+                    <p>Cualquier persona o institución que <strong>edite, reutilice o redistribuya</strong> esta plataforma debe:</p>
+                    <p>• Mantener el aviso de copyright original: <code style="color:var(--accent1)">Copyright (c) 2026 Jonathan C.</code></p>
+                    <p>• Incluir el texto completo de la licencia MIT en copias o porciones sustanciales del software.</p>
+                    <p>• Atribuir al autor original (Jonathan C. @ldikay99) en créditos visibles si se publica una versión derivada.</p>
+                    <p>El software se distribuye <strong>"tal cual"</strong>, sin garantías. Si se rompe algo al usarlo, no se puede reclamar al autor — pero sí se puede abrir un issue en GitHub para que sea arreglado.</p>
+                </div>
+
+                <h3 style="color:var(--accent2);margin:32px 0 14px;font-size:1.1rem">📄 Texto completo de la licencia MIT</h3>
+                <div class="license-block">MIT License
+
+Copyright (c) 2026 Jonathan C. &lt;heydikay@gmail.com&gt; (@ldikay99)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.</div>
+
+                <div class="about-card" style="margin-top:32px">
+                    <h3>🙏 Atribución a PSeInt</h3>
+                    <p>Esta plataforma se inspira en <a href="http://pseint.sourceforge.net/" target="_blank" rel="noopener" style="color:var(--accent1)">PSeInt</a> — el intérprete de pseudocódigo educativo creado por <strong>Pablo Novara</strong>. PSeInt Academy es una <strong>implementación web independiente</strong> que respeta la sintaxis oficial, pero su código (editor, intérprete, analizador, lecciones, UI, todo) fue <strong>diseñado y escrito desde cero</strong> por Jonathan C.</p>
+                    <p>El lenguaje PSeInt es propiedad de su autor original. La implementación web de esta academia es propiedad intelectual de Jonathan C. — dos proyectos distintos que comparten el espíritu educativo.</p>
+                </div>
+
+                <div style="text-align:center;margin-top:32px">
+                    <a href="https://github.com/ldikay99/pseint-academy" target="_blank" rel="noopener" class="btn-primary" style="text-decoration:none;display:inline-block;margin-right:8px">⬢ Ver código en GitHub</a>
+                    <a href="#/lecciones" class="btn-ghost" style="text-decoration:none;display:inline-block">📚 Empezar a aprender</a>
+                </div>
+            </div>
         </section>
 
+        <!-- LECCIONES -->
+        <section id="lecciones" class="section" aria-label="Lecciones" data-route="lecciones">
+            <div class="animate-in">
+                <h2 class="section-title">📚 Lecciones</h2>
+                <p class="section-sub">
+                    Aprende de forma progresiva. Cada lección tiene teoría,
+                    ejemplos ejecutables y un mini-reto para practicar.
+                </p>
+                <div class="level-tabs" role="tablist">
+                    <button
+                        class="level-tab active"
+                        data-level="todos"
+                        role="tab"
+                        aria-selected="true"
+                    >
+                        🔍 Todos
+                    </button>
+                    <button
+                        class="level-tab"
+                        data-level="basico"
+                        role="tab"
+                        aria-selected="false"
+                    >
+                        🟢 Básico
+                    </button>
+                    <button
+                        class="level-tab"
+                        data-level="intermedio"
+                        role="tab"
+                        aria-selected="false"
+                    >
+                        🟡 Intermedio
+                    </button>
+                    <button
+                        class="level-tab"
+                        data-level="avanzado"
+                        role="tab"
+                        aria-selected="false"
+                    >
+                        🟣 Avanzado
+                    </button>
+                    <button
+                        class="level-tab"
+                        data-level="experto"
+                        role="tab"
+                        aria-selected="false"
+                    >
+                        🔴 Experto
+                    </button>
+                </div>
+                <div class="lessons-grid" id="lessonsGrid"></div>
+            </div>
+        </section>
 
+        <!-- PLAYGROUND -->
+        <section id="playground" aria-label="Editor de código" data-route="playground">
+            <div class="animate-in">
+                <h2
+                    class="section-title"
+                    style="max-width: min(1400px, 95vw); margin: 0 auto 8px"
+                >
+                    ⚡ Editor libre
+                </h2>
+                <p
+                    class="section-sub"
+                    style="max-width: min(1400px, 95vw); margin: 0 auto 24px"
+                >
+                    Escribe y ejecuta cualquier programa PSeInt. Tu código se
+                    guarda automáticamente.
+                </p>
+                <div class="playground-grid">
+                    <div class="playground-editor-panel">
+                        <div class="panel-header">
+                            <h3>📝 Editor PSeInt</h3>
+                            <div style="display:flex;align-items:center;gap:8px">
+                                <span id="playAutoSave" style="font-size:0.72rem;color:var(--accent4)">✓ Auto-guardado</span>
+                                <!-- Menú Archivo -->
+                                <div class="file-menu-wrap" id="fileMenuWrap">
+                                    <button class="btn-ghost file-menu-btn" style="padding:4px 12px;font-size:0.72rem"
+                                            onclick="toggleFileMenu()" title="Menú Archivo">
+                                        📁 Archivo ▾
+                                    </button>
+                                    <div class="file-menu-dropdown" id="fileMenuDropdown">
+                                        <button onclick="closeFileMenu();importCode()">
+                                            <span class="fmi-icon">📂</span>
+                                            <span class="fmi-label">Abrir archivo...</span>
+                                            <span class="fmi-shortcut">Ctrl+O</span>
+                                        </button>
+                                        <button onclick="closeFileMenu();formatPlaygroundCode()">
+                                            <span class="fmi-icon">✨</span>
+                                            <span class="fmi-label">Formatear código</span>
+                                            <span class="fmi-shortcut">Ctrl+S</span>
+                                        </button>
+                                        <div class="file-menu-sep"></div>
+                                        <button onclick="closeFileMenu();downloadCode()">
+                                            <span class="fmi-icon">⬇</span>
+                                            <span class="fmi-label">Descargar .psc</span>
+                                            <span class="fmi-shortcut">Ctrl+Shift+S</span>
+                                        </button>
+                                        <button onclick="closeFileMenu();copyCode()">
+                                            <span class="fmi-icon">📋</span>
+                                            <span class="fmi-label">Copiar todo al portapapeles</span>
+                                            <span class="fmi-shortcut">Ctrl+Shift+C</span>
+                                        </button>
+                                        <div class="file-menu-sep"></div>
+                                        <button onclick="closeFileMenu();clearEditor()">
+                                            <span class="fmi-icon">🗑</span>
+                                            <span class="fmi-label">Limpiar editor</span>
+                                            <span class="fmi-shortcut">Ctrl+L</span>
+                                        </button>
+                                    </div>
+                                </div>
+                                <button class="btn-ghost" style="padding:4px 10px;font-size:0.72rem" onclick="toggleEditorFullscreen()" title="Pantalla completa (F11)">⛶</button>
+                                <button class="btn-ghost" style="padding:4px 10px;font-size:0.72rem" onclick="toggleShortcuts()" title="Atajos de teclado">⌨</button>
+                            </div>
+                        </div>
+                        <!-- Snippets panel -->
+                        <div class="snippets-panel" id="snippetsPanel">
+                            <div class="snippets-header">
+                                <h4>📋 Plantillas rápidas</h4>
+                                <button class="btn-clear" style="padding:3px 10px;font-size:0.75rem" onclick="toggleSnippets()">✕</button>
+                            </div>
+                            <div class="snippets-grid" id="snippetsGrid"></div>
+                        </div>
+                        <div class="big-editor-container" id="playgroundEditorContainer" style="min-height:340px">
+                            <div class="big-line-nums" id="playgroundLineNums"></div>
+                            <!-- Resaltado de la línea actual (estilo VS Code) -->
+                            <div class="active-line-highlight" id="playgroundActiveLine" aria-hidden="true" style="display:none"></div>
+                            <div class="big-editor-highlight" id="playgroundHighlight" aria-hidden="true"></div>
+                        <textarea
+                            class="big-editor"
+                            id="playgroundEditor"
+                            spellcheck="false"
+                            wrap="off"
+                            aria-label="Editor de código PSeInt"
+                            autocomplete="off" autocorrect="off" autocapitalize="off"
+                        >
+Proceso MiPrograma
+	Definir x Como Entero
+	Definir y Como Entero
+	x <- 10
+	y <- 5
+	Escribir "Suma: ", x + y
+	Escribir "Resta: ", x - y
+	Escribir "Producto: ", x * y
+	Escribir "Division: ", x / y
+FinProceso</textarea>
+                        </div><!-- end big-editor-container -->
+                        <!-- Status bar -->
+                        <div class="editor-status-bar" id="editorStatusBar">
+                            <span class="status-item" id="statusSyntax">⬤ PSeInt</span>
+                            <span class="status-item" id="statusLines">Líneas: 1</span>
+                            <span class="status-item" id="statusCursor">Ln 1, Col 1</span>
+                            <span class="status-item" id="statusChars">Chars: 0</span>
+                            <span class="status-item" style="margin-left:auto;color:var(--text-dim)">F5: Ejecutar · F7: Diagrama · F11: Pantalla completa · Ctrl+D: Duplicar · Alt+↑↓: Mover</span>
+                        </div>
+                        <!-- Error panel (colapsable) -->
+                        <div class="diag-panel error-panel" id="playgroundErrorPanel">
+                            <div class="diag-panel-header" onclick="toggleDiagPanel('playgroundErrorPanel')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleDiagPanel('playgroundErrorPanel');}" role="button" tabindex="0" aria-expanded="false" aria-label="Panel de errores. Presiona Enter para expandir o contraer.">
+                                <span class="diag-toggle-icon">▸</span>
+                                <span class="diag-panel-title">⛔ Errores de sintaxis</span>
+                                <span class="diag-count" id="errorCount">0</span>
+                                <span class="diag-spacer"></span>
+                                <span class="diag-hint">Clic para expandir / contraer</span>
+                            </div>
+                            <div class="diag-panel-body" id="playgroundErrorList"></div>
+                        </div>
+                        <div class="diag-panel warn-panel" id="playgroundWarnPanel">
+                            <div class="diag-panel-header" onclick="toggleDiagPanel('playgroundWarnPanel')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleDiagPanel('playgroundWarnPanel');}" role="button" tabindex="0" aria-expanded="false" aria-label="Panel de sugerencias. Presiona Enter para expandir o contraer.">
+                                <span class="diag-toggle-icon">▸</span>
+                                <span class="diag-panel-title">💡 Sugerencias</span>
+                                <span class="diag-count" id="warnCount">0</span>
+                                <span class="diag-spacer"></span>
+                                <span class="diag-hint">Clic para expandir / contraer</span>
+                            </div>
+                            <div class="diag-panel-body" id="playgroundWarnList"></div>
+                        </div>
+                        <div class="playground-toolbar">
+                            <button
+                                class="btn-run"
+                                onclick="runPlayground()"
+                                aria-label="Ejecutar código (F5)"
+                                title="Ejecutar (F5)"
+                            >
+                                ▶ Ejecutar
+                            </button>
+                            <button
+                                class="btn-flowchart"
+                                onclick="openFlowchart()"
+                                aria-label="Ver diagrama de flujo (F7)"
+                                title="Diagrama de flujo (F7)"
+                                style="background:linear-gradient(135deg,#7c3aed,#a78bfa);color:#fff;border:none;padding:8px 14px;font-size:0.85rem;border-radius:8px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(124,58,237,0.35)"
+                            >
+                                🔀 Diagrama
+                            </button>
+                            <button
+                                class="btn-ghost"
+                                style="padding: 8px 14px; font-size: 0.85rem"
+                                onclick="importCode()"
+                                aria-label="Importar archivo .psc"
+                                title="Importar código desde archivo .psc"
+                            >
+                                📂 Importar
+                            </button>
+                            <button
+                                class="btn-clear"
+                                onclick="clearPlayground()"
+                                aria-label="Limpiar código"
+                            >
+                                🗑 Limpiar
+                            </button>
+                            <button
+                                class="btn-ghost"
+                                style="padding: 8px 14px; font-size: 0.85rem"
+                                onclick="toggleSnippets()"
+                                aria-label="Plantillas de código"
+                            >
+                                📋 Plantillas
+                            </button>
+                            <button type="button" class="fg-toggle-btn" onclick="cycleFlowMode()" aria-label="Alternar guías visuales" title="Líneas de indent / Flechas de flujo / Off" style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;background:var(--bg-card2);color:var(--text-main);border:1px solid var(--border);border-radius:8px;font-size:0.78rem;font:inherit;cursor:pointer">
+                                <span aria-hidden="true">🧭</span>
+                                <span>Guías:</span>
+                                <span class="fg-mode-label" style="font-weight:700;color:var(--accent1)">Tabs</span>
+                            </button>
+                            <div class="theme-picker-wrap" style="position:relative;display:inline-block">
+                                <button type="button" class="theme-picker-btn" onclick="toggleThemePicker(this)" aria-label="Seleccionar tema del editor" aria-haspopup="true" aria-expanded="false" style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;background:var(--bg-card2);color:var(--text-main);border:1px solid var(--border);border-radius:8px;font-size:0.78rem;font:inherit;cursor:pointer">
+                                    <span aria-hidden="true">🎨</span>
+                                    <span>Tema:</span>
+                                    <span class="theme-picker-label" style="font-weight:700;color:var(--accent1)">Dark</span>
+                                    <span aria-hidden="true" style="font-size:0.7rem;opacity:0.7">▾</span>
+                                </button>
+                                <!-- select oculto para mantener compatibilidad -->
+                                <select id="themeSelector" aria-hidden="true" tabindex="-1" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none">
+                                    <option value="dark">Dark</option>
+                                    <option value="light">Light</option>
+                                    <option value="solarized">Solarized</option>
+                                    <option value="monokai">Monokai</option>
+                                    <option value="ocean">Ocean</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- ============================================================
+                         ELEMENTOS DEL MODO PANTALLA COMPLETA
+                         Solo visibles cuando .playground-grid tiene .fullscreen
+                         ============================================================ -->
+                    <!-- TOPBAR: ARCHIVO, atajos, ejecutar, diagrama, tabs, status -->
+                    <!-- TOPBAR: Título | Archivo | Atajos | Diagrama | Ejecutar | (spacer) | Salir -->
+                    <div class="fs-topbar" id="fsTopbar">
+                        <span class="fs-title">📝 Editor PSeInt</span>
+                        <span class="fs-sep"></span>
+                        <!-- Menú Archivo desplegable -->
+                        <div class="file-menu-wrap" id="fsFileMenuWrap">
+                            <button class="fs-icon-btn" onclick="fsToggleFileMenu(event)" title="Menú Archivo">📁 Archivo ▾</button>
+                            <div class="file-menu-dropdown" id="fsFileMenuDropdown">
+                                <button onclick="fsCloseFileMenu();importCode()">
+                                    <span class="fmi-icon">📂</span>
+                                    <span class="fmi-label">Abrir archivo...</span>
+                                    <span class="fmi-shortcut">Ctrl+O</span>
+                                </button>
+                                <button onclick="fsCloseFileMenu();formatPlaygroundCode()">
+                                    <span class="fmi-icon">✨</span>
+                                    <span class="fmi-label">Formatear código</span>
+                                    <span class="fmi-shortcut">Ctrl+S</span>
+                                </button>
+                                <div class="file-menu-sep"></div>
+                                <button onclick="fsCloseFileMenu();downloadCode()">
+                                    <span class="fmi-icon">⬇</span>
+                                    <span class="fmi-label">Descargar .psc</span>
+                                    <span class="fmi-shortcut">Ctrl+Shift+S</span>
+                                </button>
+                                <button onclick="fsCloseFileMenu();copyCode()">
+                                    <span class="fmi-icon">📋</span>
+                                    <span class="fmi-label">Copiar todo al portapapeles</span>
+                                    <span class="fmi-shortcut">Ctrl+Shift+C</span>
+                                </button>
+                                <div class="file-menu-sep"></div>
+                                <button onclick="fsCloseFileMenu();clearEditor()">
+                                    <span class="fmi-icon">🗑</span>
+                                    <span class="fmi-label">Limpiar editor</span>
+                                    <span class="fmi-shortcut">Ctrl+L</span>
+                                </button>
+                            </div>
+                        </div>
+                        <button class="fs-icon-btn" onclick="toggleShortcuts()" title="Atajos de teclado">⌨ Atajos</button>
+                        <button class="fs-icon-btn" onclick="openFlowchart()" title="Ver diagrama de flujo (F7)">🔀 Diagrama</button>
+                        <!-- Toggle Flow Guides en fullscreen -->
+                        <button type="button" class="fs-icon-btn fg-toggle-btn" onclick="cycleFlowMode()" title="Alternar guías visuales (tabs / guías / off)">
+                            🧭 <span class="fg-mode-label">Tabs</span>
+                        </button>
+                        <!-- Theme picker en pantalla completa -->
+                        <div class="theme-picker-wrap" style="position:relative;display:inline-block">
+                            <button type="button" class="theme-picker-btn fs-icon-btn" onclick="toggleThemePicker(this)" aria-label="Seleccionar tema del editor" aria-haspopup="true" aria-expanded="false">
+                                🎨 <span class="theme-picker-label">Dark</span> ▾
+                            </button>
+                        </div>
+                        <button class="fs-run-btn" id="fsRunBtn" onclick="runPlayground()" title="Ejecutar (F5)">▶ Ejecutar</button>
+                        <button class="fs-stop-btn" id="fsStopBtn" onclick="stopExecution()" title="Detener ejecución" style="display:none">⏹ Detener</button>
+                        <!-- spacer empuja Salir a la derecha -->
+                        <span class="fs-spacer"></span>
+                        <button class="fs-exit-btn" onclick="toggleEditorFullscreen()" title="Salir de pantalla completa (Esc o F11)">✕ Salir</button>
+                    </div>
+                    <!-- BOTTOM PANEL: contiene la consola/errores/sugerencias según el tab activo (se inserta ANTES de la bottom-bar) -->
+                    <!-- SPLITTER para redimensionar el panel inferior -->
+                    <div class="fs-splitter" id="fsSplitter" title="Arrastra para redimensionar"></div>
+                    <div class="fs-bottom-panel" id="fsBottomPanel">
+                        <div class="fs-bottom-header">
+                            <span class="fs-bh-title" id="fsBottomTitle">Consola</span>
+                            <button class="fs-bh-close" onclick="fsCloseBottomPanel()" title="Cerrar panel">✕ Cerrar</button>
+                        </div>
+                        <div class="fs-bottom-content" id="fsBottomContent"></div>
+                    </div>
+                    <!-- BOTTOM BAR: Errores/Sugerencias/Consola (izquierda) | Ln/Col (derecha) -->
+                    <div class="fs-bottombar" id="fsBottombar">
+                        <button class="fs-tab-btn" id="fsTabErrors" onclick="fsToggleTab('errors')" title="Errores de sintaxis" style="display:none">
+                            ⛔ Errores <span class="fs-tab-count" id="fsTabErrorsCount">0</span>
+                        </button>
+                        <button class="fs-tab-btn" id="fsTabWarns" onclick="fsToggleTab('warns')" title="Sugerencias y advertencias" style="display:none">
+                            💡 Sugerencias <span class="fs-tab-count" id="fsTabWarnsCount">0</span>
+                        </button>
+                        <button class="fs-tab-btn" id="fsTabConsole" onclick="fsToggleTab('console')" title="Consola (Ctrl+`)">
+                            💻 Consola
+                        </button>
+                        <!-- spacer empuja status a la derecha -->
+                        <span class="fs-spacer"></span>
+                        <span class="fs-status" id="fsStatus">Ln 1, Col 1 · 0 chars</span>
+                    </div>
+                    <!-- Panel original de consola (sigue siendo el "real", solo oculto en fullscreen) -->
+                    <div class="playground-output-panel">
+                        <div class="panel-header">
+                            <h3>💻 Consola de salida</h3>
+                            <div style="display:flex;align-items:center;gap:8px">
+                                <span id="execTimeDisplay" style="font-size:0.72rem;color:var(--text-dim);display:none"></span>
+                                <button id="stopBtn" class="btn-clear" style="padding:4px 12px;font-size:0.78rem;display:none;color:var(--color-error-strong);border-color:rgba(239,68,68,0.4)" onclick="stopExecution()" title="Detener ejecución">⏹ Detener</button>
+                                <button
+                                    class="btn-clear"
+                                    style="padding: 4px 12px; font-size: 0.78rem"
+                                    onclick="clearConsole('playgroundConsole')"
+                                    aria-label="Limpiar consola"
+                                >
+                                    🗑
+                                </button>
+                            </div>
+                        </div>
+                        <div class="big-console" id="playgroundConsole" role="log" aria-live="polite" aria-atomic="false" aria-label="Consola del playground">
+                            <span class="cout-line cout-info" style="color:var(--text-muted)">// 💡 Presiona F5 o el botón ▶ Ejecutar para ver la salida aquí.</span><br>
+                            <span class="cout-line cout-info" style="color:var(--text-muted)">// 📋 Tu código se guarda automáticamente en el navegador.</span><br>
+                            <span class="cout-line cout-info" style="color:var(--text-muted)">// ⌨ Ctrl+Space activa el autocompletado.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
 
+        <!-- REFERENCIA -->
+        <section
+            id="referencia"
+            class="section"
+            aria-label="Referencia de palabras clave"
+            data-route="referencia"
+        >
+            <div class="animate-in">
+                <h2 class="section-title">📖 Referencia rápida</h2>
+                <p class="section-sub">
+                    Todas las palabras clave de PSeInt con ejemplos listos para
+                    usar.
+                </p>
+                <div class="ref-grid" id="refGrid"></div>
+            </div>
+        </section>
 
+        <!-- PROGRESO -->
+        <section id="progreso" class="section" aria-label="Tu progreso" data-route="progreso">
+            <div class="animate-in">
+                <h2 class="section-title">🏆 Tu progreso</h2>
+                <p class="section-sub">
+                    Cada lección tiene 3 estados: 📖 Leída → ✓ Ejemplo ejecutado → ✓✓ Reto completado. ¡Completa todos los retos para dominar PSeInt!
+                </p>
+                <div
+                    style="
+                        display: grid;
+                        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+                        gap: 20px;
+                        max-width: min(900px, 95vw);
+                        margin: 0 auto;
+                    "
+                    class="progress-grid"
+                >
+                    <div class="progress-section">
+                        <h3>Progreso general</h3>
+                        <div class="prog-row">
+                            <div class="prog-row-label">
+                                <span>🟢 Básico</span
+                                ><span id="prog-basico-text">0/6</span>
+                            </div>
+                            <div class="progress-bar-wrap">
+                                <div
+                                    class="progress-bar"
+                                    id="prog-basico"
+                                    style="width: 0%"
+                                ></div>
+                            </div>
+                        </div>
+                        <div class="prog-row">
+                            <div class="prog-row-label">
+                                <span>🟡 Intermedio</span
+                                ><span id="prog-intermedio-text">0/6</span>
+                            </div>
+                            <div class="progress-bar-wrap">
+                                <div
+                                    class="progress-bar"
+                                    id="prog-intermedio"
+                                    style="
+                                        width: 0%;
+                                        background: linear-gradient(
+                                            90deg,
+                                            var(--accent3),
+                                            #f97316
+                                        );
+                                    "
+                                ></div>
+                            </div>
+                        </div>
+                        <div class="prog-row">
+                            <div class="prog-row-label">
+                                <span>🟣 Avanzado</span
+                                ><span id="prog-avanzado-text">0/0</span>
+                            </div>
+                            <div class="progress-bar-wrap">
+                                <div
+                                    class="progress-bar"
+                                    id="prog-avanzado"
+                                    style="
+                                        width: 0%;
+                                        background: linear-gradient(
+                                            90deg,
+                                            var(--accent2),
+                                            #7c3aed
+                                        );
+                                    "
+                                ></div>
+                            </div>
+                        </div>
+                        <div class="prog-row">
+                            <div class="prog-row-label">
+                                <span>🔴 Experto</span
+                                ><span id="prog-experto-text">0/0</span>
+                            </div>
+                            <div class="progress-bar-wrap">
+                                <div
+                                    class="progress-bar"
+                                    id="prog-experto"
+                                    style="
+                                        width: 0%;
+                                        background: linear-gradient(
+                                            90deg,
+                                            var(--accent5),
+                                            #dc2626
+                                        );
+                                    "
+                                ></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div
+                        class="progress-section"
+                        style="
+                            display: flex;
+                            flex-direction: column;
+                            align-items: center;
+                            justify-content: center;
+                        "
+                    >
+                        <div
+                            style="font-size: 4rem; margin-bottom: 8px"
+                            id="prog-emoji"
+                        >
+                            🌱
+                        </div>
+                        <div
+                            style="font-size: 1.4rem; font-weight: 800"
+                            id="prog-total-text"
+                        >
+                            0%
+                        </div>
+                        <div
+                            style="color: var(--text-muted); font-size: 0.85rem"
+                        >
+                            completado
+                        </div>
+                        <button
+                            class="btn-clear"
+                            style="
+                                margin-top: 16px;
+                                padding: 8px 16px;
+                                font-size: 0.82rem;
+                            "
+                            onclick="resetProgress()"
+                        >
+                            🔄 Reiniciar progreso
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
 
         <footer class="site-footer">
             <div class="footer-grid">
@@ -160,16 +798,16 @@
                 </div>
                 <div>
                     <h4>Navegación</h4>
-                    <a href="index.html">🏠 Inicio</a>
-                    <a href="lecciones.html">📚 Lecciones</a>
-                    <a href="playground.html">⚡ Editor libre</a>
-                    <a href="referencia.html">📖 Referencia</a>
+                    <a href="#/home">🏠 Inicio</a>
+                    <a href="#/lecciones">📚 Lecciones</a>
+                    <a href="#/playground">⚡ Editor libre</a>
+                    <a href="#/referencia">📖 Referencia</a>
                 </div>
                 <div>
                     <h4>Recursos</h4>
-                    <a href="progreso.html">🏆 Mi progreso</a>
-                    <a href="sobre.html">👤 Sobre el proyecto</a>
-                    <a href="licencia.html">📜 Licencia MIT</a>
+                    <a href="#/progreso">🏆 Mi progreso</a>
+                    <a href="#/sobre">👤 Sobre el proyecto</a>
+                    <a href="#/licencia">📜 Licencia MIT</a>
                     <a href="https://github.com/ldikay99/pseint-academy" target="_blank" rel="noopener">⬢ GitHub</a>
                 </div>
                 <div>
@@ -178,7 +816,7 @@
                 </div>
             </div>
             <div class="site-footer-bottom">
-                <p>© 2026 <strong>Jonathan C.</strong> (<a href="https://github.com/ldikay99" target="_blank" rel="noopener" style="color:var(--accent1)">@ldikay99</a>) · Distribuido bajo licencia <a href="licencia.html" style="color:var(--accent1)">MIT</a>.</p>
+                <p>© 2026 <strong>Jonathan C.</strong> (<a href="https://github.com/ldikay99" target="_blank" rel="noopener" style="color:var(--accent1)">@ldikay99</a>) · Distribuido bajo licencia <a href="#/licencia" style="color:var(--accent1)">MIT</a>.</p>
                 <p style="margin-top:6px">Todo se ejecuta 100% en tu navegador. Sin instalaciones. Sin dependencias externas. Sin tracking.</p>
                 <p style="margin-top:14px">
                     <button onclick="document.getElementById('roadmapModal').classList.add('open')" style="background:rgba(124,58,237,0.15);border:1px solid rgba(124,58,237,0.4);color:#a78bfa;padding:7px 18px;border-radius:8px;font-size:0.8rem;font-weight:600;cursor:pointer;transition:all 0.2s">
